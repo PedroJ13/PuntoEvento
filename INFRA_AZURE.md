@@ -22,6 +22,7 @@ El proyecto actual es una pagina estatica:
 - `data/providers.json`
 - `data/packages.json`
 - `data/categories.json`
+- `api/`
 - `staticwebapp.config.json`
 - Sin backend.
 - Sin base de datos.
@@ -29,6 +30,7 @@ El proyecto actual es una pagina estatica:
 - Sin login de proveedores.
 - Datos de proveedores cargados desde JSON estatico.
 - Paquetes y categorias cargados desde JSON estatico.
+- API minima en Azure Functions para registro de proveedores e imagenes pendientes.
 - Imagenes demo cargadas desde Unsplash, con camino preparado para Azure Blob Storage.
 
 Esto es ideal para una demo y para un primer despliegue barato.

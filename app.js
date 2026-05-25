@@ -6,6 +6,9 @@ const CONFIG = {
   packagesUrl: "data/packages.json",
   categoriesUrl: "data/categories.json",
   fallbackProviderImage: "assets/images/fallback-provider.svg",
+  apiBaseUrl: "/api",
+  maxProviderImages: 6,
+  maxProviderImageSize: 5 * 1024 * 1024,
 };
 
 let providers = [];
@@ -67,6 +70,32 @@ async function loadProviderData() {
 
 function imageFallbackAttribute() {
   return `onerror="this.onerror=null;this.src='${CONFIG.fallbackProviderImage}'"`;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function isAllowedProviderImage(file) {
+  return ["image/jpeg", "image/png", "image/webp"].includes(file.type);
+}
+
+function setButtonLoading(button, isLoading, loadingText = "Procesando...") {
+  if (!button) return;
+  if (isLoading) {
+    button.dataset.originalText = button.textContent;
+    button.textContent = loadingText;
+    button.disabled = true;
+  } else {
+    button.textContent = button.dataset.originalText || button.textContent;
+    button.disabled = false;
+    delete button.dataset.originalText;
+  }
 }
 
 function providerHref(provider) {
@@ -493,7 +522,7 @@ function companiesPage() {
           <p class="eyebrow">Proveedores</p>
           <h1>Recibi clientes interesados en tus servicios de eventos</h1>
           <p>Crea un perfil profesional, publica paquetes, muestra fotos y recibe solicitudes de presupuesto desde un solo lugar.</p>
-          <button class="primary-button" data-toast="Registro demo: aqui empezaria el alta de empresa.">Crear perfil gratis</button>
+          <a class="primary-button" href="#registro-empresa" data-scroll-register>Crear perfil gratis</a>
         </div>
         <img src="${image("photo-1556761175-b413da4baf72")}" alt="Equipo revisando solicitudes">
       </div>
@@ -516,6 +545,96 @@ function companiesPage() {
       </div>
     </section>
 
+    <section class="section" id="registro-empresa">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Alta gratuita</p>
+          <h2 id="registroEmpresaTitle" tabindex="-1">Registra tu empresa y publica tu perfil</h2>
+        </div>
+        <p>Por ahora el registro es gratis. El pago entraria despues solo para empresas que quieran mejor posicion, aparecer arriba o estar destacadas en categorias clave.</p>
+      </div>
+      <form class="company-form" id="companyForm">
+        <div class="form-panel">
+          <h3>Datos de la empresa</h3>
+          <div class="company-form-grid">
+            <label>
+              Nombre comercial
+              <input name="companyName" type="text" placeholder="Ej. Casa Arboleda Eventos" required>
+            </label>
+            <label>
+              Categoria principal
+              <select name="category" required>
+                <option value="">Seleccionar categoria</option>
+                <option>Salon y jardin</option>
+                <option>Catering</option>
+                <option>Musica y luces</option>
+                <option>Decoracion</option>
+                <option>Fotografia</option>
+                <option>Organizacion de eventos</option>
+              </select>
+            </label>
+            <label>
+              Provincia / zona
+              <input name="location" type="text" placeholder="Ej. Santa Ana, San Jose" required>
+            </label>
+            <label>
+              WhatsApp comercial
+              <input name="whatsapp" type="tel" placeholder="50688888888" inputmode="tel" required>
+            </label>
+            <label>
+              Email de contacto
+              <input name="email" type="email" placeholder="contacto@empresa.com" autocomplete="email" required>
+            </label>
+            <label>
+              Precio desde
+              <input name="price" type="text" placeholder="Ej. Desde CRC 28,500 / pers.">
+            </label>
+            <label>
+              Sitio web o Instagram
+              <input name="website" type="url" placeholder="https://...">
+            </label>
+            <label class="full">
+              Descripcion corta
+              <textarea name="description" rows="4" placeholder="Describe que ofrecen, para que eventos trabajan y que los hace diferentes." required></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-panel">
+          <h3>Fotos del perfil</h3>
+          <p class="form-help">Sube logo, portada y fotos de galeria. En esta demo se previsualizan localmente; en produccion se guardarian en Azure Blob Storage.</p>
+          <label class="upload-box">
+            <input id="companyPhotos" name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
+            <span>Agregar fotos</span>
+            <small>Maximo 6 imagenes JPG, PNG o WEBP. Hasta 5 MB cada una.</small>
+          </label>
+          <div class="upload-preview" id="companyPhotoPreview" aria-live="polite">
+            <div class="preview-empty">Las fotos cargadas apareceran aqui.</div>
+          </div>
+        </div>
+
+        <div class="form-panel">
+          <h3>Publicacion</h3>
+          <div class="publish-summary">
+            <div>
+              <strong>Plan gratis</strong>
+              <span>Perfil publicado en categoria principal, con fotos, descripcion y contacto.</span>
+            </div>
+            <div>
+              <strong>Destacado despues</strong>
+              <span>Pago unico o plan para aparecer arriba, en portada o en el top de resultados.</span>
+            </div>
+          </div>
+          <label class="consent-row">
+            <input name="terms" type="checkbox" required>
+            Confirmo que tengo permiso para publicar esta informacion y estas imagenes.
+          </label>
+          <button class="primary-button" type="submit">Enviar registro gratis</button>
+        </div>
+      </form>
+      <div class="company-confirmation is-hidden" id="companyConfirmation" tabindex="-1" aria-live="polite"></div>
+    </section>
+
     <section class="band">
       <div class="section">
         <div class="section-header">
@@ -533,7 +652,7 @@ function companiesPage() {
               <li>Categoria principal</li>
               <li>Contacto directo</li>
             </ul>
-            <button class="ghost-button" data-toast="Plan gratis seleccionado.">Empezar</button>
+            <a class="ghost-button" href="#registro-empresa" data-scroll-register>Empezar</a>
           </article>
           <article class="plan-card featured">
             <span class="tag verified">Recomendado</span>
@@ -585,6 +704,16 @@ function bindPageEvents() {
   document.querySelectorAll("[data-toast]").forEach((button) => {
     button.addEventListener("click", () => showToast(button.dataset.toast));
   });
+  document.querySelectorAll("[data-scroll-register]").forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      document.querySelector("#registro-empresa")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+      document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
+    });
+  });
 
   const homeSearch = document.querySelector("#homeSearch");
   if (homeSearch) {
@@ -603,7 +732,240 @@ function bindPageEvents() {
     });
   }
 
+  bindCompanyRegistration();
   bindCarousel();
+}
+
+function bindCompanyRegistration() {
+  const form = document.querySelector("#companyForm");
+  if (!form) return;
+
+  const photoInput = document.querySelector("#companyPhotos");
+  const preview = document.querySelector("#companyPhotoPreview");
+  const confirmation = document.querySelector("#companyConfirmation");
+  let previewUrls = [];
+
+  const clearPreviewUrls = () => {
+    previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    previewUrls = [];
+  };
+
+  const resetPreview = () => {
+    clearPreviewUrls();
+    preview.innerHTML = '<div class="preview-empty">Las fotos cargadas apareceran aqui.</div>';
+  };
+
+  const selectedValidFiles = () =>
+    [...(photoInput?.files || [])]
+      .slice(0, CONFIG.maxProviderImages)
+      .filter((file) => isAllowedProviderImage(file) && file.size <= CONFIG.maxProviderImageSize);
+
+  const renderCompanyConfirmation = ({
+    companyName,
+    category,
+    location,
+    photosCount,
+    providerId = "",
+    mode = "demo",
+  }) => {
+    const isAzure = mode === "azure";
+    confirmation.innerHTML = `
+      <div class="form-panel">
+        <p class="eyebrow">${isAzure ? "Registro recibido" : "Registro demo recibido"}</p>
+        <h3>${escapeHtml(companyName)}</h3>
+        <div class="publish-summary">
+          <div>
+            <strong>Categoria</strong>
+            <span>${escapeHtml(category)}</span>
+          </div>
+          <div>
+            <strong>Zona</strong>
+            <span>${escapeHtml(location)}</span>
+          </div>
+          <div>
+            <strong>Fotos ${isAzure ? "subidas" : "seleccionadas"}</strong>
+            <span>${photosCount} archivo(s)</span>
+          </div>
+          <div>
+            <strong>Siguiente paso</strong>
+            <span>${isAzure ? "El perfil queda pendiente de revision." : "En produccion pasaria a revision antes de publicarse."}</span>
+          </div>
+        </div>
+        ${providerId ? `<p class="form-help">ID interno: ${escapeHtml(providerId)}</p>` : ""}
+        <p class="form-help">${isAzure ? "Solicitud recibida. Revisaremos la informacion y las imagenes antes de publicar el perfil." : "Esta demo no guarda datos ni sube fotos. Puedes editar el formulario o limpiar la simulacion."}</p>
+        <div class="card-actions">
+          <button class="secondary-button" type="button" data-edit-company>Editar datos</button>
+          <button class="primary-button" type="button" data-reset-company>Limpiar demo</button>
+        </div>
+      </div>
+    `;
+    confirmation.classList.remove("is-hidden");
+    confirmation.focus();
+
+    confirmation.querySelector("[data-edit-company]").addEventListener("click", () => {
+      document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    confirmation.querySelector("[data-reset-company]").addEventListener("click", () => {
+      form.reset();
+      resetPreview();
+      confirmation.classList.add("is-hidden");
+      confirmation.innerHTML = "";
+      document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
+    });
+  };
+
+  const registerProviderInAzure = async (formData, files) => {
+    const providerResponse = await fetch(`${CONFIG.apiBaseUrl}/register-provider`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        companyName: formData.get("companyName"),
+        name: formData.get("companyName"),
+        email: formData.get("email"),
+        whatsapp: formData.get("whatsapp"),
+        phone: formData.get("whatsapp"),
+        category: formData.get("category"),
+        location: formData.get("location"),
+        description: formData.get("description"),
+        price: formData.get("price"),
+        website: formData.get("website"),
+      }),
+    });
+
+    if (!providerResponse.ok) {
+      throw new Error("No se pudo registrar la empresa en Azure.");
+    }
+
+    const providerResult = await providerResponse.json();
+
+    for (const [index, file] of files.entries()) {
+      const imageType = index === 0 ? "cover" : "gallery";
+      const uploadResponse = await fetch(`${CONFIG.apiBaseUrl}/create-upload-url`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          providerId: providerResult.providerId,
+          fileName: file.name,
+          contentType: file.type,
+          size: file.size,
+          imageType,
+        }),
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error("No se pudo crear el permiso temporal de subida.");
+      }
+
+      const upload = await uploadResponse.json();
+      const blobResponse = await fetch(upload.uploadUrl, {
+        method: "PUT",
+        headers: {
+          "x-ms-blob-type": "BlockBlob",
+          "Content-Type": file.type,
+        },
+        body: file,
+      });
+
+      if (!blobResponse.ok) {
+        throw new Error("No se pudo subir una imagen a Azure Blob Storage.");
+      }
+
+      const registerUploadResponse = await fetch(`${CONFIG.apiBaseUrl}/register-upload`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          providerId: providerResult.providerId,
+          imageId: upload.imageId,
+          imageType,
+          pendingBlobUrl: upload.pendingBlobUrl,
+        }),
+      });
+
+      if (!registerUploadResponse.ok) {
+        throw new Error("No se pudo registrar una imagen subida.");
+      }
+    }
+
+    return providerResult;
+  };
+
+  photoInput?.addEventListener("change", () => {
+    clearPreviewUrls();
+    const allFiles = [...photoInput.files];
+    const invalidFiles = allFiles.filter(
+      (file) => !isAllowedProviderImage(file) || file.size > CONFIG.maxProviderImageSize,
+    );
+    if (allFiles.length > CONFIG.maxProviderImages || invalidFiles.length) {
+      showToast("Usa maximo 6 imagenes JPG, PNG o WEBP de hasta 5 MB.");
+    }
+    const files = selectedValidFiles();
+    if (!files.length) {
+      resetPreview();
+      return;
+    }
+
+    preview.innerHTML = files
+      .map((file) => {
+        const url = URL.createObjectURL(file);
+        previewUrls.push(url);
+        const safeName = escapeHtml(file.name);
+        return `
+          <figure class="preview-item">
+            <img src="${url}" alt="Vista previa ${safeName}">
+            <figcaption>${safeName}</figcaption>
+          </figure>
+        `;
+      })
+      .join("");
+  });
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    if (!form.reportValidity()) {
+      return;
+    }
+
+    const formData = new FormData(form);
+    const files = selectedValidFiles();
+    const submitButton = form.querySelector('button[type="submit"]');
+    if ((photoInput?.files?.length || 0) !== files.length) {
+      showToast("Algunas imagenes no cumplen formato o peso maximo.");
+      return;
+    }
+
+    setButtonLoading(submitButton, true, "Enviando registro...");
+    const companyName = formData.get("companyName") || "Empresa demo";
+    const category = formData.get("category") || "Categoria pendiente";
+    const location = formData.get("location") || "Zona pendiente";
+
+    try {
+      const result = await registerProviderInAzure(formData, files);
+      renderCompanyConfirmation({
+        companyName,
+        category,
+        location,
+        photosCount: files.length,
+        providerId: result.providerId,
+        mode: "azure",
+      });
+      showToast("Registro recibido. Queda pendiente de revision.");
+    } catch (error) {
+      console.warn(error);
+      renderCompanyConfirmation({
+        companyName,
+        category,
+        location,
+        photosCount: files.length,
+        mode: "demo",
+      });
+      showToast("API no disponible: mostrando confirmacion demo.");
+    } finally {
+      setButtonLoading(submitButton, false);
+    }
+  });
 }
 
 function bindCarousel() {

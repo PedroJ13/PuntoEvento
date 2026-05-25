@@ -15,6 +15,7 @@ La demo local ya funciona como prototipo navegable:
 - Fichas por proveedor con rutas tipo `#proveedor/casa-arboleda`.
 - Fallback de imagen en `assets/images/fallback-provider.svg`.
 - Configuracion base para Azure Static Web Apps.
+- Carpeta `api/` creada con endpoints minimos de registro, subida de imagenes y lectura de proveedores publicados.
 
 Validacion actual:
 
@@ -24,11 +25,13 @@ Validacion actual:
 - El formulario de cotizacion valida campos minimos, pero no envia datos reales.
 - Al enviar una cotizacion demo se muestra una confirmacion dentro del drawer.
 - El boton de WhatsApp muestra una accion demo; no abre conversaciones reales todavia.
+- El registro de empresas intenta usar Azure Functions; en local cae a confirmacion demo si la API no esta disponible.
 
 Nota de alcance:
 
 - Esta version sigue siendo una demo estatica.
-- No hay backend, base de datos, envio de correos, integracion con WhatsApp ni registro real de empresas.
+- No hay envio de correos, integracion con WhatsApp ni publicacion automatica de empresas.
+- La API de registro ya esta en el repo, pero requiere variables de entorno en Azure para operar.
 - Los leads reales deben definirse en una fase posterior o enviarse primero a un formulario externo.
 
 ## Prioridad 1: Pulir la demo comercial
@@ -149,29 +152,118 @@ Entregable:
 
 - Roadmap de plataforma completa.
 
-## Recomendacion inmediata
+## Estado actualizado: ya publicada en Azure
 
-El siguiente paso recomendado es convertir la demo en una version presentable de venta antes de invertir en backend:
+Como la pagina ya esta en Azure, el foco deja de ser publicar y pasa a ser validar, medir y convertir.
 
-1. Completar contenido demo de proveedores y paquetes.
-2. Mover paquetes y categorias a JSON para que el contenido sea facil de editar.
-3. Pulir responsive mobile y accesibilidad de carrusel/formulario.
-4. Preparar una narrativa de presentacion con 3 flujos:
-   - cliente busca proveedores,
-   - cliente cotiza con varios,
-   - proveedor entiende por que registrarse.
-5. Publicarla temporalmente en Azure Static Web Apps.
+Objetivos inmediatos:
+
+- Validar que la version publica funcione bien.
+- Medir visitas e interes real.
+- Capturar solicitudes de cotizacion.
+- Preparar contenido mas creible.
+- Decidir que se construye como MVP y que se deja para despues.
+
+## Recomendacion inmediata post Azure
+
+El siguiente paso recomendado es convertir la pagina publicada en una demo comercial medible:
+
+1. Revisar la URL publica en desktop y mobile.
+2. Configurar dominio propio, por ejemplo `puntoevento.cr`.
+3. Activar analitica para medir visitas, clicks y formularios.
+4. Conectar el formulario de cotizacion a un destino real.
+5. Reemplazar imagenes demo por imagenes propias o autorizadas.
+6. Completar 8 a 12 proveedores demo con datos mas reales.
+7. Preparar una presentacion corta para mostrar la propuesta.
 
 Con eso se puede validar la propuesta antes de invertir en backend, panel de administracion o pagos.
+
+## Checklist post despliegue Azure
+
+## 1. Validacion tecnica
+
+- Confirmar que la URL publica carga sin errores.
+- Probar rutas:
+  - inicio,
+  - bodas,
+  - proveedor,
+  - empresas.
+- Probar que `data/providers.json` carga en produccion.
+- Probar que las imagenes externas cargan correctamente.
+- Revisar consola del navegador en produccion.
+- Revisar mobile real, no solo desktop.
+
+## 2. Dominio y confianza
+
+- Conectar dominio propio.
+- Verificar HTTPS.
+- Crear favicon.
+- Agregar imagen social para compartir por WhatsApp, Facebook y LinkedIn.
+- Agregar nombre, descripcion y metadata SEO basica.
+
+## 3. Captura de leads
+
+- Definir a donde llega una solicitud de cotizacion:
+  - email,
+  - WhatsApp,
+  - Google Sheet,
+  - Airtable,
+  - Azure Function.
+- Guardar campos minimos:
+  - tipo de evento,
+  - fecha,
+  - invitados,
+  - presupuesto,
+  - nombre,
+  - telefono,
+  - mensaje.
+- Crear mensaje de confirmacion claro.
+- Medir cuantos usuarios abren y envian el formulario.
+
+## 4. Medicion
+
+- Instalar analitica.
+- Medir:
+  - visitas,
+  - busquedas,
+  - clicks en proveedor,
+  - clicks en WhatsApp,
+  - envios de cotizacion,
+  - clicks en "Publicar empresa".
+- Crear eventos separados para cliente final y proveedor.
+
+## 5. Contenido para validacion
+
+- Crear proveedores demo por categoria:
+  - salones,
+  - catering,
+  - musica,
+  - decoracion,
+  - fotografia,
+  - organizacion.
+- Usar precios consistentes.
+- Agregar fotos coherentes.
+- Agregar paquetes mas comerciales.
+- Agregar testimonios demo o reales si existen.
+
+## 6. Decision de MVP
+
+Despues de medir la demo publicada, decidir entre:
+
+- Mantener MVP estatico con JSON y formulario conectado.
+- Agregar Azure Function para recibir leads.
+- Agregar base de datos.
+- Crear panel de proveedores.
+- Crear planes pagados y destacados.
 
 ## Sprint corto sugerido
 
 Para el proximo bloque de trabajo, el orden mas conveniente es:
 
-1. Probar responsive en 375px, 768px y desktop.
-2. Agregar filtros reales en la landing de bodas.
-3. Pulir copy final para presentacion comercial.
-4. Reemplazar imagenes de Unsplash por imagenes propias o Blob Storage.
-5. Publicar una version temporal en Azure Static Web Apps.
+1. Configurar variables de entorno de la API en Azure Static Web Apps.
+2. Probar registro real con `uploads-pending`, `Providers` y `ProviderImages`.
+3. Revisar la URL publica en produccion.
+4. Probar responsive en 375px, 768px y desktop.
+5. Agregar analitica y eventos de conversion.
 
-Este sprint mantiene el proyecto barato y estatico, pero lo acerca mucho mas a una demo vendible.
+Este sprint mantiene el proyecto barato y estatico, pero ya lo acerca a una validacion comercial real.

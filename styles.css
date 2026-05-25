@@ -290,6 +290,13 @@ h3 {
   border-color: var(--teal);
 }
 
+a:focus-visible,
+button:focus-visible,
+[tabindex="-1"]:focus-visible {
+  outline: 3px solid rgba(0, 127, 122, 0.22);
+  outline-offset: 3px;
+}
+
 .trust-strip {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -327,6 +334,10 @@ h3 {
   width: min(1180px, calc(100% - 36px));
   margin: 0 auto;
   padding: 72px 0;
+}
+
+#registro-empresa {
+  scroll-margin-top: 96px;
 }
 
 .section-header {
@@ -926,6 +937,180 @@ h3 {
   align-items: stretch;
 }
 
+.company-form {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.form-panel {
+  display: grid;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 22px;
+}
+
+.form-panel:last-child {
+  grid-column: 1 / -1;
+}
+
+.company-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.company-form label {
+  display: grid;
+  gap: 6px;
+  color: #42515e;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.company-form input,
+.company-form select,
+.company-form textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  background: #fff;
+  padding: 10px 12px;
+}
+
+.company-form input:focus,
+.company-form select:focus,
+.company-form textarea:focus {
+  outline: 3px solid rgba(0, 127, 122, 0.16);
+  border-color: var(--teal);
+}
+
+.company-form .full {
+  grid-column: 1 / -1;
+}
+
+.form-help {
+  margin: 0;
+  color: var(--muted);
+}
+
+.upload-box {
+  min-height: 132px;
+  place-items: center;
+  border: 1px dashed #a9bbc1;
+  border-radius: 8px;
+  background: #f7faf8;
+  cursor: pointer;
+  padding: 18px;
+  text-align: center;
+}
+
+.upload-box:focus-within {
+  outline: 3px solid rgba(0, 127, 122, 0.18);
+  border-color: var(--teal);
+}
+
+.upload-box input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.upload-box span {
+  color: var(--teal-dark);
+  font-size: 1.05rem;
+  font-weight: 850;
+}
+
+.upload-box small {
+  color: var(--muted);
+  font-weight: 650;
+}
+
+.upload-preview {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.preview-empty {
+  grid-column: 1 / -1;
+  border-radius: 8px;
+  color: var(--muted);
+  background: #f3f6f6;
+  padding: 18px;
+  text-align: center;
+}
+
+.preview-item {
+  min-width: 0;
+  margin: 0;
+}
+
+.preview-item img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.preview-item figcaption {
+  overflow: hidden;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.publish-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.publish-summary > div {
+  border-radius: 8px;
+  background: #f4f8f7;
+  padding: 16px;
+}
+
+.publish-summary strong,
+.publish-summary span {
+  display: block;
+}
+
+.publish-summary span {
+  margin-top: 5px;
+  color: var(--muted);
+}
+
+.consent-row {
+  display: flex !important;
+  align-items: center;
+  gap: 10px !important;
+}
+
+.consent-row input {
+  width: 18px;
+  min-height: 18px;
+}
+
+.company-confirmation {
+  margin-top: 18px;
+}
+
+.company-confirmation.is-hidden {
+  display: none;
+}
+
 .plan-card {
   display: grid;
   gap: 18px;
@@ -1012,7 +1197,10 @@ h3 {
   .trust-strip,
   .category-grid,
   .cards-grid,
-  .plan-grid {
+  .plan-grid,
+  .company-form,
+  .company-form-grid,
+  .publish-summary {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1052,7 +1240,10 @@ h3 {
   .cards-grid,
   .steps,
   .plan-grid,
-  .review-grid {
+  .review-grid,
+  .company-form,
+  .company-form-grid,
+  .publish-summary {
     grid-template-columns: 1fr;
   }
 
