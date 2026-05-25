@@ -1,0 +1,50 @@
+[
+  {
+    "id": "boda-esencial",
+    "providerId": "casa-arboleda",
+    "title": "Boda esencial",
+    "price": "CRC 28,500 / pers.",
+    "details": "Salon, mobiliario, montaje base, cena buffet y saloneros.",
+    "eventType": "Boda"
+  },
+  {
+    "id": "catering-celebracion",
+    "providerId": "bocados-copas",
+    "title": "Catering celebracion",
+    "price": "US$42 / pers.",
+    "details": "Menu de tres tiempos, bebidas naturales, cristaleria y servicio.",
+    "eventType": "Boda"
+  },
+  {
+    "id": "recepcion-dj",
+    "providerId": "luz-viva",
+    "title": "Recepcion con DJ",
+    "price": "CRC 235,000",
+    "details": "DJ, audio, luces, microfonos y animacion de recepcion.",
+    "eventType": "Boda"
+  },
+  {
+    "id": "flores-ceremonia",
+    "providerId": "flor-abril",
+    "title": "Flores para ceremonia",
+    "price": "CRC 145,000",
+    "details": "Bouquet, botonier, arco floral y centros de mesa base.",
+    "eventType": "Boda"
+  },
+  {
+    "id": "foto-boda-base",
+    "providerId": "captura-dorada",
+    "title": "Foto boda base",
+    "price": "CRC 320,000",
+    "details": "Cobertura de 6 horas, galeria digital editada y sesion corta de pareja.",
+    "eventType": "Boda"
+  },
+  {
+    "id": "corporativo-media-dia",
+    "providerId": "nexo-corporativo",
+    "title": "Evento corporativo medio dia",
+    "price": "Desde US$38 / pers.",
+    "details": "Salon, coffee break, audio basico, pantalla y apoyo de coordinacion.",
+    "eventType": "Corporativo"
+  }
+]

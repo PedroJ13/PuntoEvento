@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Punto Evento CR | Demo propuesta</title>
+    <meta
+      name="description"
+      content="Demo local de una propuesta para Punto Evento Costa Rica."
+    />
+    <link rel="preconnect" href="https://images.unsplash.com" />
+    <link rel="stylesheet" href="styles.css?v=5" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#inicio" aria-label="Punto Evento demo">
+        <span class="brand-mark">PE</span>
+        <span>
+          <strong>Punto Evento</strong>
+          <small>Costa Rica</small>
+        </span>
+      </a>
+      <nav class="nav" aria-label="Principal">
+        <a class="home-link" href="#inicio" aria-label="Ir al inicio">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M3 10.5 12 3l9 7.5" />
+            <path d="M5 9.5V21h5v-6h4v6h5V9.5" />
+          </svg>
+          <span>Inicio</span>
+        </a>
+        <a href="#inicio">Buscar</a>
+        <a href="#bodas">Bodas</a>
+        <a href="#proveedor">Proveedor</a>
+        <a href="#empresas">Empresas</a>
+      </nav>
+      <a class="nav-cta" href="#empresas">Publicar empresa</a>
+    </header>
+
+    <main id="app"></main>
+
+    <div class="quote-drawer" id="quoteDrawer" aria-hidden="true">
+      <button class="drawer-backdrop" type="button" data-close-quote aria-label="Cerrar"></button>
+      <section class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="quoteTitle" tabindex="-1">
+        <button class="icon-button drawer-close" type="button" data-close-quote aria-label="Cerrar">
+          <span aria-hidden="true">x</span>
+        </button>
+        <p class="eyebrow">Solicitud de presupuesto</p>
+        <h2 id="quoteTitle">Cotizar proveedores seleccionados</h2>
+        <form class="quote-form" id="quoteForm">
+          <label>
+            Tipo de evento
+            <select name="eventType">
+              <option>Boda</option>
+              <option>Evento corporativo</option>
+              <option>Fiesta infantil</option>
+              <option>Graduacion</option>
+            </select>
+          </label>
+          <label>
+            Fecha tentativa
+            <input type="date" name="date" />
+          </label>
+          <label>
+            Invitados
+            <input type="number" name="guests" min="10" max="1000" value="80" />
+          </label>
+          <label>
+            Nombre
+            <input type="text" name="name" placeholder="Tu nombre" autocomplete="name" required />
+          </label>
+          <label>
+            WhatsApp
+            <input type="tel" name="phone" placeholder="8888-8888" autocomplete="tel" inputmode="tel" required />
+          </label>
+          <label class="full">
+            Detalles
+            <textarea name="details" rows="4" placeholder="Lugar, estilo, presupuesto o servicios que necesitas" required></textarea>
+          </label>
+          <button class="primary-button full" type="submit">Enviar solicitud demo</button>
+        </form>
+        <div class="quote-confirmation is-hidden" id="quoteConfirmation" tabindex="-1">
+          <p class="eyebrow">Demo registrada</p>
+          <h3>Solicitud lista para revisar</h3>
+          <p>En el MVP este paso podria enviar el lead a un formulario externo, correo o Azure Function. Por ahora no se envia informacion real.</p>
+          <button class="primary-button" type="button" data-close-quote>Cerrar</button>
+        </div>
+      </section>
+    </div>
+
+    <script src="app.js?v=4"></script>
+  </body>
+</html>

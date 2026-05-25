@@ -1,0 +1,143 @@
+[
+  {
+    "id": "casa-arboleda",
+    "name": "Casa Arboleda Eventos",
+    "category": "Salon y jardin",
+    "location": "Santa Ana, San Jose",
+    "description": "Espacio versatil para bodas y eventos privados con jardin, salon climatizado, montaje completo y catering aliado.",
+    "price": "Desde CRC 28,500 / pers.",
+    "rating": "4.9",
+    "reviews": 38,
+    "tags": ["Verificado", "Responde rapido", "Precio publicado"],
+    "coverImage": "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      {
+        "src": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Salon principal decorado"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Mesa de boda decorada"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Recepcion al aire libre"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Celebracion con invitados"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Decoracion floral para evento"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1546032996-6dfacbacbf3f?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Mesa elegante para recepcion"
+      }
+    ],
+    "whatsapp": "50688888888",
+    "status": "published"
+  },
+  {
+    "id": "bocados-copas",
+    "name": "Bocados y Copas",
+    "category": "Catering",
+    "location": "San Pedro, San Jose",
+    "description": "Catering para bodas, graduaciones y celebraciones privadas con estaciones, cocteleria y servicio completo.",
+    "price": "Desde US$42 / pers.",
+    "rating": "4.8",
+    "reviews": 52,
+    "tags": ["Verificado", "Menu flexible", "WhatsApp"],
+    "coverImage": "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [],
+    "whatsapp": "50688888888",
+    "status": "published"
+  },
+  {
+    "id": "luz-viva",
+    "name": "Luz Viva Producciones",
+    "category": "Musica y luces",
+    "location": "Heredia",
+    "description": "DJ, sonido, iluminacion y maestro de ceremonias para eventos sociales y corporativos.",
+    "price": "Desde CRC 175,000",
+    "rating": "4.7",
+    "reviews": 29,
+    "tags": ["Responde rapido", "Equipo premium", "Precio publicado"],
+    "coverImage": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [],
+    "whatsapp": "50688888888",
+    "status": "published"
+  },
+  {
+    "id": "flor-abril",
+    "name": "Flor de Abril",
+    "category": "Decoracion floral",
+    "location": "Escazu, San Jose",
+    "description": "Decoracion floral, centros de mesa, bouquets y ambientacion para bodas elegantes y eventos especiales.",
+    "price": "Desde CRC 120,000",
+    "rating": "4.9",
+    "reviews": 45,
+    "tags": ["Verificado", "Diseno a medida", "Agenda abierta"],
+    "coverImage": "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [],
+    "whatsapp": "50688888888",
+    "status": "published"
+  },
+  {
+    "id": "captura-dorada",
+    "name": "Captura Dorada",
+    "category": "Fotografia",
+    "location": "Cartago",
+    "description": "Fotografia documental para bodas y eventos privados con entrega digital, direccion ligera y cobertura flexible.",
+    "price": "Desde CRC 320,000",
+    "rating": "4.8",
+    "reviews": 31,
+    "tags": ["Verificado", "Galeria completa", "Agenda 2026"],
+    "coverImage": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      {
+        "src": "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Fotografo capturando boda"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1523438885200-e635ba2c371e?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Detalles decorativos de boda"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Recepcion elegante para fotografia"
+      }
+    ],
+    "whatsapp": "50688888888",
+    "status": "published"
+  },
+  {
+    "id": "nexo-corporativo",
+    "name": "Nexo Corporativo",
+    "category": "Eventos corporativos",
+    "location": "Escazu, San Jose",
+    "description": "Produccion de reuniones, lanzamientos y capacitaciones con salon, audiovisual, catering ejecutivo y coordinacion.",
+    "price": "Desde US$38 / pers.",
+    "rating": "4.7",
+    "reviews": 24,
+    "tags": ["Empresas", "Audio incluido", "Factura electronica"],
+    "coverImage": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+    "gallery": [
+      {
+        "src": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Evento corporativo con publico"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Equipo coordinando solicitudes"
+      },
+      {
+        "src": "https://images.unsplash.com/photo-1556761175-4b46a572b786?auto=format&fit=crop&w=1200&q=80",
+        "alt": "Reunion corporativa"
+      }
+    ],
+    "whatsapp": "50688888888",
+    "status": "published"
+  }
+]

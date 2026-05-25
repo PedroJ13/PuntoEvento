@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Bodas",
+    "href": "#bodas",
+    "image": "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "name": "Salones",
+    "href": "#bodas",
+    "image": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "name": "Catering",
+    "href": "#bodas",
+    "image": "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "name": "Corporativos",
+    "href": "#inicio",
+    "image": "https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "name": "Fiestas infantiles",
+    "href": "#inicio",
+    "image": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "name": "Decoracion",
+    "href": "#bodas",
+    "image": "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=80"
+  }
+]
