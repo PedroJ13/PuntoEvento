@@ -11,6 +11,7 @@ function escapeText(value) {
 function postSendGridEmail(apiKey, payload) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify(payload);
+    let settled = false;
     const request = https.request(
       {
         hostname: "api.sendgrid.com",
@@ -26,6 +27,8 @@ function postSendGridEmail(apiKey, payload) {
         const chunks = [];
         response.on("data", (chunk) => chunks.push(chunk));
         response.on("end", () => {
+          if (settled) return;
+          settled = true;
           if (response.statusCode >= 200 && response.statusCode < 300) {
             resolve();
             return;
@@ -39,15 +42,34 @@ function postSendGridEmail(apiKey, payload) {
       },
     );
 
-    request.on("error", reject);
+    request.setTimeout(5000, () => {
+      if (settled) return;
+      const timeoutError = new Error("SendGrid request timed out");
+      settled = true;
+      reject(timeoutError);
+      request.destroy(timeoutError);
+    });
+    request.on("error", (error) => {
+      if (settled && error.message === "SendGrid request timed out") {
+        return;
+      }
+      if (!settled) {
+        settled = true;
+        reject(error);
+      }
+    });
     request.write(body);
     request.end();
   });
 }
 
 async function notifyProviderRegistration(context, provider, config) {
-  if (!config.sendGridApiKey || !config.notificationEmailFrom || !config.notificationEmailTo) {
+  if (!config.sendGridApiKey) {
     context.log.warn("Provider notification email skipped: missing SendGrid configuration.");
+    return;
+  }
+  if (!config.notificationEmailFrom || !config.notificationEmailTo) {
+    context.log.warn("Provider notification email skipped: missing sender or recipient.");
     return;
   }
 

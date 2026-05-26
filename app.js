@@ -643,7 +643,7 @@ function companiesPage() {
 
         <div class="form-panel">
           <h3>Fotos del perfil</h3>
-          <p class="form-help">Sube logo, portada y fotos de galeria. En esta demo se previsualizan localmente; en produccion se guardarian en Azure Blob Storage.</p>
+          <p class="form-help">Sube logo, portada y fotos de galeria. En Azure se cargan para revision; en local solo se previsualizan si la API no esta disponible.</p>
           <label class="upload-box">
             <input id="companyPhotos" name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
             <span>Agregar fotos</span>

@@ -14,17 +14,18 @@ const { enforceAllowedOrigin } = require("../shared/guard");
 const { badRequest, json, serverError } = require("../shared/http");
 const { cleanText, isSafeId } = require("../shared/validation");
 
-async function pendingImages(providerId, config) {
+async function activeImages(providerId, config) {
   const table = getTableClient(config.providerImagesTable, config);
   const images = [];
   const entities = table.listEntities({
-    queryOptions: {
-      filter: odata`PartitionKey eq ${providerId} and status eq ${"pending"}`,
-    },
+    queryOptions: { filter: odata`PartitionKey eq ${providerId}` },
   });
 
   for await (const image of entities) {
-    images.push(image);
+    if (String(image.rowKey || "").startsWith("slot-")) continue;
+    if (image.status === "pending" || image.status === "published") {
+      images.push(image);
+    }
   }
 
   return images;
@@ -69,13 +70,27 @@ module.exports = async function approveProvider(context, req) {
 
     const now = new Date().toISOString();
     const imageTable = getTableClient(config.providerImagesTable, config);
-    const images = await pendingImages(providerId, config);
+    const images = await activeImages(providerId, config);
+    const imagesToApprove = images.filter(
+      (image) => approvedImageIds.has(image.rowKey) || image.status === "published",
+    );
+    if (!imagesToApprove.length) {
+      context.res = badRequest("At least one image must be approved before publishing");
+      return;
+    }
+
     let coverImage = provider.coverImage || "";
     let approvedCount = 0;
     let rejectedCount = 0;
 
     for (const image of images) {
-      if (approvedImageIds.has(image.rowKey)) {
+      if (image.status === "published") {
+        if (!coverImage || image.type === "cover") {
+          coverImage = image.publicBlobUrl || coverImage;
+        }
+        await markImageSlotOccupied(image.partitionKey, image.slotNumber, image.rowKey, config);
+        approvedCount += 1;
+      } else if (approvedImageIds.has(image.rowKey)) {
         const publicBlob = await copyPendingBlobToPublic(image, config);
         if (!coverImage || image.type === "cover") {
           coverImage = publicBlob.publicBlobUrl;
@@ -92,6 +107,9 @@ module.exports = async function approveProvider(context, req) {
           "Merge",
         );
         await markImageSlotOccupied(providerId, image.slotNumber, image.rowKey, config);
+        await deletePendingBlob(image.blobName, config).catch((error) => {
+          context.log.warn("Could not delete approved pending blob.", error);
+        });
         approvedCount += 1;
       } else {
         await deletePendingBlob(image.blobName, config);

@@ -184,6 +184,10 @@ document.addEventListener("click", async (event) => {
     const approvedImageIds = [...card.querySelectorAll("[data-image-id]:checked")].map(
       (input) => input.dataset.imageId,
     );
+    if (!approvedImageIds.length) {
+      setStatus("Selecciona al menos una imagen antes de publicar.");
+      return;
+    }
     approveButton.disabled = true;
     setStatus("Publicando proveedor...");
     try {

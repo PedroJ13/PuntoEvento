@@ -430,6 +430,7 @@ Para MVP:
 - Las reservas de imagen vencidas se limpian junto con sus blobs pendientes cuando corre el cleanup, sin liberar slots que ya tengan imagen activa asociada.
 - Los endpoints admin de rechazar/eliminar imagenes deben liberar su slot de forma explicita.
 - Pendiente operativo: agregar Timer Function o lifecycle rule del container `uploads-pending` para limpieza periodica global.
+- Pendiente seguridad: reemplazar Basic Auth del admin por Azure Static Web Apps Auth/roles o agregar rate limit/lockout antes de produccion.
 - No aceptar `data:` como imagen dinamica proveniente de proveedores, API o CSP.
 
 Extensiones permitidas:

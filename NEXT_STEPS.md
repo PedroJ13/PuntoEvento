@@ -318,7 +318,8 @@ Para el proximo bloque de trabajo, el orden mas conveniente es:
 2. Probar registro real con `uploads-pending`, `Providers` y `ProviderImages`.
 3. Configurar `ALLOWED_ORIGINS` antes de produccion y definir CAPTCHA/rate limit antes de abrir el registro al publico.
 4. Agregar limpieza programada de `uploads-pending`: Timer Function usando `cleanupExpiredReservations(null, config)` o lifecycle rule del container para borrar blobs abandonados.
-4. Revisar la URL publica en produccion.
-5. Probar responsive en 375px, 768px y desktop.
+5. Endurecer seguridad admin con Azure Static Web Apps Auth/roles, rate limit o gateway antes de produccion.
+6. Revisar la URL publica en produccion.
+7. Probar responsive en 375px, 768px y desktop.
 
 Este sprint mantiene el proyecto barato y estatico, pero ya lo acerca a una validacion comercial real.

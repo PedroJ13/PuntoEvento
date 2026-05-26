@@ -63,6 +63,18 @@ module.exports = async function registerUpload(context, req) {
       throw error;
     }
 
+    if (reservedImage.status === "pending") {
+      if (reservedImage.pendingBlobUrl !== pendingBlobUrl || reservedImage.type !== imageType) {
+        context.res = badRequest("Upload is not in a registerable state");
+        return;
+      }
+      await markImageSlotOccupied(providerId, reservedImage.slotNumber, imageId, config);
+      context.res = json(201, {
+        imageId,
+        status: "pending",
+      });
+      return;
+    }
     if (reservedImage.status !== "reserved") {
       context.res = badRequest("Upload is not in a registerable state");
       return;
@@ -114,6 +126,7 @@ module.exports = async function registerUpload(context, req) {
       return;
     }
 
+    await markImageSlotOccupied(providerId, reservedImage.slotNumber, imageId, config);
     await imageTable.updateEntity(
       {
         partitionKey: providerId,
@@ -132,12 +145,6 @@ module.exports = async function registerUpload(context, req) {
         updatedAt: now,
       },
       "Replace",
-    );
-    await markImageSlotOccupied(
-      providerId,
-      reservedImage.slotNumber,
-      imageId,
-      config,
     );
 
     context.res = json(201, {

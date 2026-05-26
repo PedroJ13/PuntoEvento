@@ -43,6 +43,8 @@ La primera version del panel esta disponible en:
 /admin.html
 ```
 
+En Azure se usa `/admin`. En servidor local simple se debe usar `/admin.html`, porque el rewrite de `/admin` vive en `staticwebapp.config.json`.
+
 Usa Basic Auth contra la API. Las credenciales se configuran con:
 
 ```text
@@ -58,6 +60,8 @@ Desde el panel se puede:
 - Seleccionar imagenes aprobadas.
 - Aprobar y publicar proveedor.
 - Rechazar proveedor.
+
+No se permite publicar un proveedor sin al menos una imagen aprobada.
 
 ## Flujo admin propuesto
 
@@ -96,6 +100,7 @@ POST /api/admin/delete-image
 ## Reglas importantes
 
 - No publicar datos ni imagenes hasta que el estado sea `published`.
+- No publicar proveedores sin imagen aprobada, salvo que exista una opcion explicita de negocio para hacerlo.
 - Al rechazar o eliminar imagenes, liberar el `slotNumber` asociado.
 - No liberar slots vencidos si ya existe una imagen activa asociada.
 - Mantener `uploads-pending` con limpieza periodica por Timer Function o lifecycle rule.

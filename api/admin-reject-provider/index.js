@@ -40,6 +40,10 @@ module.exports = async function rejectProvider(context, req) {
       context.res = badRequest("Provider not found");
       return;
     }
+    if (provider.status !== "pending") {
+      context.res = badRequest("Provider is not pending");
+      return;
+    }
 
     const now = new Date().toISOString();
     const imageTable = getTableClient(config.providerImagesTable, config);
