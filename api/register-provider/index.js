@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { ensureTables, getConfig, getTableClient } = require("../shared/azure");
+const { enforceAllowedOrigin } = require("../shared/guard");
 const { badRequest, json, serverError } = require("../shared/http");
 const { slugify, validateProviderPayload } = require("../shared/validation");
 
@@ -12,6 +13,11 @@ module.exports = async function registerProvider(context, req) {
     }
 
     const config = getConfig();
+    const forbidden = enforceAllowedOrigin(req, config);
+    if (forbidden) {
+      context.res = forbidden;
+      return;
+    }
     await ensureTables(config);
 
     const provider = validation.provider;

@@ -2,7 +2,7 @@
 
 ## Estado actual
 
-La demo local ya funciona como prototipo navegable:
+La app ya funciona como prototipo navegable con una primera API serverless para registro de empresas:
 
 - Home comercial con buscador.
 - Landing de bodas con filtros demo.
@@ -16,6 +16,8 @@ La demo local ya funciona como prototipo navegable:
 - Fallback de imagen en `assets/images/fallback-provider.svg`.
 - Configuracion base para Azure Static Web Apps.
 - Carpeta `api/` creada con endpoints minimos de registro, subida de imagenes y lectura de proveedores publicados.
+- Workflow de Azure Static Web Apps configurado con `api_location: "api"`.
+- CSP preparada para llamadas a `/api` y subida con SAS a Azure Blob Storage, sin `data:` en imagenes.
 
 Validacion actual:
 
@@ -26,6 +28,16 @@ Validacion actual:
 - Al enviar una cotizacion demo se muestra una confirmacion dentro del drawer.
 - El boton de WhatsApp muestra una accion demo; no abre conversaciones reales todavia.
 - El registro de empresas intenta usar Azure Functions; en local cae a confirmacion demo si la API no esta disponible.
+- El formulario de empresas pide nombre, categoria, zona, WhatsApp, email, descripcion, consentimiento y fotos.
+- Las imagenes del registro se validan como JPG/PNG/WEBP, maximo 6 y maximo 5 MB cada una.
+- Los datos dinamicos de proveedores, paquetes y categorias se escapan antes de pintarse en HTML.
+- En produccion, si la API de registro falla, se muestra error real en vez de confirmacion demo.
+- La API reserva uploads antes de emitir SAS con slots atomicos por proveedor y valida reserva, `contentType`, tamano real y blob antes de registrar una imagen.
+- El SAS de subida vence en 10 minutos; la reserva vence en 15 minutos para dar margen al registro posterior.
+- El limite de 6 imagenes se protege con filas `slot-1` a `slot-6`; las imagenes legacy sin `slotNumber` se tratan como cupos ocupados antes de reservar nuevos slots.
+- El cleanup no libera un slot vencido si ya existe una imagen activa asociada; los flujos admin futuros deben liberar slots al rechazar o eliminar imagenes.
+- Las reservas de imagen vencidas se pueden limpiar por proveedor o de forma global; el cleanup borra metadata y blob pendiente para no bloquear cupo ni acumular archivos huerfanos.
+- Las imagenes dinamicas ya no aceptan URLs `data:`.
 
 Nota de alcance:
 
@@ -33,6 +45,38 @@ Nota de alcance:
 - No hay envio de correos, integracion con WhatsApp ni publicacion automatica de empresas.
 - La API de registro ya esta en el repo, pero requiere variables de entorno en Azure para operar.
 - Los leads reales deben definirse en una fase posterior o enviarse primero a un formulario externo.
+- No existe panel admin todavia; la aprobacion sigue pendiente.
+
+## API actual
+
+Implementada en `api/`:
+
+```text
+POST /api/register-provider
+POST /api/create-upload-url
+POST /api/register-upload
+GET /api/providers
+```
+
+Uso esperado:
+
+- `register-provider`: guarda empresa en `Providers` con `status: pending`.
+- `create-upload-url`: genera SAS temporal para subir a `uploads-pending`.
+- `register-upload`: registra imagen en `ProviderImages` con `status: pending`.
+- `providers`: devuelve solo proveedores publicados y solo imagenes del container `public`.
+
+Variables pendientes de configurar en Azure Static Web Apps:
+
+```text
+AZURE_STORAGE_CONNECTION_STRING
+AZURE_STORAGE_ACCOUNT_NAME
+AZURE_STORAGE_PENDING_CONTAINER=uploads-pending
+AZURE_STORAGE_PUBLIC_CONTAINER=public
+AZURE_TABLE_CONNECTION_STRING
+AZURE_TABLE_PROVIDERS=Providers
+AZURE_TABLE_PROVIDER_IMAGES=ProviderImages
+ALLOWED_ORIGINS=https://<tu-static-web-app>.azurestaticapps.net,https://puntoevento.cr
+```
 
 ## Prioridad 1: Pulir la demo comercial
 
@@ -123,8 +167,8 @@ Objetivo: publicar una version barata, rapida y mantenible.
 
 Tareas:
 
-- Crear repositorio GitHub.
-- Publicar en Azure Static Web Apps.
+- Configurar variables de entorno de la API en Azure Static Web Apps.
+- Probar registro real con Table Storage y Blob Storage.
 - Subir imagenes definitivas a Azure Blob Storage.
 - Cambiar URLs de Unsplash por URLs propias.
 - Definir dominio, por ejemplo `puntoevento.cr`.
@@ -152,13 +196,14 @@ Entregable:
 
 - Roadmap de plataforma completa.
 
-## Estado actualizado: ya publicada en Azure
+## Estado actualizado: publicada en Azure con API en repo
 
-Como la pagina ya esta en Azure, el foco deja de ser publicar y pasa a ser validar, medir y convertir.
+Como la pagina ya esta en Azure y el repo ya incluye API, el foco deja de ser construir la base y pasa a configurar, validar, medir y convertir.
 
 Objetivos inmediatos:
 
 - Validar que la version publica funcione bien.
+- Validar que `/api/register-provider`, `/api/create-upload-url`, `/api/register-upload` y `/api/providers` respondan en Azure.
 - Medir visitas e interes real.
 - Capturar solicitudes de cotizacion.
 - Preparar contenido mas creible.
@@ -262,8 +307,9 @@ Para el proximo bloque de trabajo, el orden mas conveniente es:
 
 1. Configurar variables de entorno de la API en Azure Static Web Apps.
 2. Probar registro real con `uploads-pending`, `Providers` y `ProviderImages`.
-3. Revisar la URL publica en produccion.
-4. Probar responsive en 375px, 768px y desktop.
-5. Agregar analitica y eventos de conversion.
+3. Configurar `ALLOWED_ORIGINS` antes de produccion y definir CAPTCHA/rate limit antes de abrir el registro al publico.
+4. Agregar limpieza programada de `uploads-pending`: Timer Function usando `cleanupExpiredReservations(null, config)` o lifecycle rule del container para borrar blobs abandonados.
+4. Revisar la URL publica en produccion.
+5. Probar responsive en 375px, 768px y desktop.
 
 Este sprint mantiene el proyecto barato y estatico, pero ya lo acerca a una validacion comercial real.

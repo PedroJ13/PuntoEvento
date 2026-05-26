@@ -12,10 +12,9 @@ function badRequest(message, details = undefined) {
   return json(400, { error: message, details });
 }
 
-function serverError(error) {
+function serverError(_error) {
   return json(500, {
     error: "Unexpected server error",
-    message: error?.message || String(error),
   });
 }
 

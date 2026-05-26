@@ -19,6 +19,7 @@ Modelo comercial inicial:
    - categoria,
    - ubicacion,
    - WhatsApp,
+   - email,
    - precio desde,
    - sitio web o Instagram,
    - descripcion.
@@ -39,11 +40,32 @@ La pagina ya tiene un formulario visual en `#empresas`:
 - Carga de fotos con vista previa local.
 - Plan gratis por defecto.
 - Envio real preparado contra `/api/register-provider`, `/api/create-upload-url` y `/api/register-upload`.
+- Lectura publica preparada con `/api/providers`.
 - Fallback demo si la API no esta disponible en local.
 
 Importante:
 
 En local sin Azure Functions, las fotos solo se previsualizan en el navegador. En Azure, si las variables de entorno estan configuradas, la API registra el proveedor como `pending`, genera SAS temporal y sube las fotos a `uploads-pending`.
+
+## API implementada en el repo
+
+La carpeta `api/` ya incluye:
+
+```text
+POST /api/register-provider
+POST /api/create-upload-url
+POST /api/register-upload
+GET /api/providers
+```
+
+Uso actual:
+
+- `register-provider`: guarda la empresa en `Providers` con `status: pending`.
+- `create-upload-url`: genera SAS temporal para un blob especifico en `uploads-pending`.
+- `register-upload`: guarda referencia de imagen en `ProviderImages` con `status: pending`.
+- `providers`: devuelve solo proveedores `published` y solo URLs publicas.
+
+El frontend intenta usar la API real. Si esta no existe localmente o falla, muestra una confirmacion demo sin perder la experiencia.
 
 ## Implementacion real recomendada en Azure
 
@@ -71,6 +93,7 @@ Campos minimos:
 - `status`: pending, published, rejected
 - `plan`: free, featured, premium
 - `name`
+- `email`
 - `category`
 - `location`
 - `description`
@@ -148,3 +171,11 @@ Despues de eso, probar que la API:
 3. Guarde metadata del proveedor.
 4. Responda al usuario con confirmacion.
 5. Deje proveedor e imagenes como `pending`.
+
+## Pendiente
+
+- Configurar variables de entorno en Azure Static Web Apps.
+- Probar registro real publicado.
+- Crear revision/aprobacion admin.
+- Copiar o mover imagenes aprobadas de `uploads-pending` a `public`.
+- Decidir si la pagina publica seguira usando `data/providers.json` o cambiara a `/api/providers`.

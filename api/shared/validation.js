@@ -33,6 +33,10 @@ function safeExtension(fileName, contentType) {
   return "";
 }
 
+function isSafeId(value) {
+  return /^[a-z0-9][a-z0-9-]{0,119}$/i.test(String(value || ""));
+}
+
 function validateProviderPayload(body) {
   const provider = {
     name: cleanText(body.name || body.companyName, 120),
@@ -67,6 +71,9 @@ function validateUploadPayload(body) {
   if (!providerId || !fileName || !contentType) {
     return { error: "providerId, fileName and contentType are required" };
   }
+  if (!isSafeId(providerId)) {
+    return { error: "Invalid providerId" };
+  }
   if (!ALLOWED_IMAGE_TYPES.has(imageType)) {
     return { error: "Invalid imageType" };
   }
@@ -86,8 +93,11 @@ function validateUploadPayload(body) {
 }
 
 module.exports = {
+  ALLOWED_CONTENT_TYPES,
+  MAX_IMAGE_SIZE_BYTES,
   MAX_IMAGES_PER_PROVIDER,
   cleanText,
+  isSafeId,
   slugify,
   validateProviderPayload,
   validateUploadPayload,

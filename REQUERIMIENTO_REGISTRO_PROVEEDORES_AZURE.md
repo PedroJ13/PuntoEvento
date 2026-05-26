@@ -194,8 +194,8 @@ rejected
 Estado en repo:
 
 - `POST /api/register-provider`: implementado.
-- `POST /api/create-upload-url`: implementado.
-- `POST /api/register-upload`: implementado.
+- `POST /api/create-upload-url`: implementado; reserva un slot atomico y el `imageId` en `ProviderImages` antes de devolver SAS, y limpia reservas vencidas junto con sus blobs pendientes.
+- `POST /api/register-upload`: implementado; verifica reserva vigente, URL esperada, existencia del blob, tipo MIME real y tamano real antes de marcar la imagen como `pending`.
 - `GET /api/providers`: implementado para devolver solo proveedores publicados e imagenes publicas.
 
 Nota:
@@ -263,6 +263,10 @@ Response sugerido:
 Reglas:
 
 - El SAS debe expirar rapido, idealmente entre 5 y 15 minutos.
+- La reserva de imagen debe expirar poco despues del SAS; hoy el SAS vence en 10 minutos y la reserva en 15 minutos para dar margen a `register-upload`.
+- El limite de 6 imagenes se protege con filas `slot-1` a `slot-6` por proveedor para evitar sobrecupo por concurrencia. Las imagenes legacy sin `slotNumber` se cuentan como cupos ocupados antes de reservar slots nuevos.
+- El cleanup no debe liberar un slot vencido si ya hay una imagen activa asociada. Los endpoints admin futuros de rechazar/eliminar imagenes deben liberar el slot explicitamente.
+- La limpieza oportunista ya borra metadata y blobs pendientes vencidos; para produccion debe agregarse Timer Function o lifecycle rule sobre `uploads-pending`.
 - El SAS debe permitir solo escritura sobre el blob especifico.
 - No permitir acceso de listado al container.
 - No exponer la key del Storage Account en el frontend.
@@ -315,6 +319,11 @@ Reglas:
 
 - Verificar que el proveedor exista.
 - Verificar que el proveedor este en estado `pending` o editable.
+- Verificar que exista una reserva previa generada por `/api/create-upload-url`.
+- Verificar que la reserva no este vencida.
+- Verificar que `pendingBlobUrl`, `imageType` y blob pertenezcan a esa reserva.
+- Verificar `contentType` y `contentLength` reales del blob contra la reserva y limites permitidos.
+- Verificar que el blob exista en `uploads-pending`.
 - Guardar imagen con `status: pending`.
 
 ## GET /api/providers
@@ -404,6 +413,8 @@ Reglas obligatorias:
 - Validar tamano maximo.
 - Evitar nombres originales como nombre final de blob.
 - Generar IDs internos para archivos.
+- No devolver detalles internos de excepciones al cliente.
+- Escapar datos dinamicos de proveedores/paquetes antes de renderizarlos en HTML.
 
 ## Validaciones sugeridas
 
@@ -437,13 +448,18 @@ AZURE_STORAGE_PUBLIC_CONTAINER=public
 AZURE_TABLE_CONNECTION_STRING
 AZURE_TABLE_PROVIDERS=Providers
 AZURE_TABLE_PROVIDER_IMAGES=ProviderImages
+ALLOWED_ORIGINS=https://<tu-static-web-app>.azurestaticapps.net,https://puntoevento.cr
 ```
 
 Estas variables se configuran en Azure, no en el frontend.
 
+`ALLOWED_ORIGINS` es requerido cuando la API corre en produccion y se normaliza al leerlo para tolerar slash final. Para abrir el registro al publico tambien conviene agregar CAPTCHA o rate limiting dedicado.
+
 ## Workflow de despliegue
 
-Cuando se agregue carpeta de API, el workflow de Azure Static Web Apps debe indicar:
+Estado: implementado en `.github/workflows/azure-static-web-apps-zealous-field-08fdd720f.yml`.
+
+El workflow de Azure Static Web Apps indica:
 
 ```yaml
 app_location: "/"
@@ -452,7 +468,7 @@ output_location: "/"
 skip_app_build: true
 ```
 
-Si la API requiere dependencias Node, la carpeta `api` debe tener su propio `package.json`.
+La carpeta `api` ya tiene su propio `package.json` con dependencias de Azure Storage y Azure Tables.
 
 ## Lectura publica de proveedores
 
@@ -492,12 +508,19 @@ Pasar a providers-public.json si se busca reducir lecturas y costos.
 
 ## Resultado esperado
 
-Al finalizar esta fase:
+Estado actual:
 
-- Las empresas pueden registrarse desde la web.
-- Los datos quedan guardados en Azure Table Storage.
-- Las imagenes suben desde la web a Azure Blob Storage.
-- Las imagenes quedan en `uploads-pending`.
-- Nada se publica sin revision.
-- La pagina publica solo muestra proveedores con `status: published`.
-- La arquitectura sigue optimizada para MVP de bajo costo.
+- El formulario de empresas ya intenta registrar desde la web.
+- El backend serverless para guardar datos en Azure Table Storage ya existe.
+- La generacion de SAS temporal para subir imagenes ya existe.
+- El registro de imagenes pendientes en `ProviderImages` ya existe.
+- `GET /api/providers` ya filtra proveedores `published`.
+- La pagina publica todavia usa `data/providers.json` por defecto como fallback barato.
+
+Pendiente para completar la fase:
+
+- Configurar variables de entorno en Azure Static Web Apps.
+- Probar el flujo real publicado.
+- Crear flujo/admin de aprobacion.
+- Mover/copiar imagenes aprobadas de `uploads-pending` a `public`.
+- Decidir si el frontend publico cambia de `data/providers.json` a `/api/providers`.

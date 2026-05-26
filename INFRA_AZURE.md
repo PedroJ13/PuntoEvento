@@ -14,7 +14,7 @@ La prioridad es:
 
 ## Estado actual del proyecto
 
-El proyecto actual es una pagina estatica:
+El proyecto actual es una pagina estatica con API serverless minima:
 
 - `index.html`
 - `styles.css`
@@ -24,8 +24,9 @@ El proyecto actual es una pagina estatica:
 - `data/categories.json`
 - `api/`
 - `staticwebapp.config.json`
-- Sin backend.
-- Sin base de datos.
+- API bajo Azure Functions integrada a Azure Static Web Apps.
+- Azure Table Storage para registros pendientes/publicados de proveedores.
+- Azure Blob Storage para imagenes pendientes y publicas.
 - Sin proceso de build.
 - Sin login de proveedores.
 - Datos de proveedores cargados desde JSON estatico.
@@ -33,7 +34,7 @@ El proyecto actual es una pagina estatica:
 - API minima en Azure Functions para registro de proveedores e imagenes pendientes.
 - Imagenes demo cargadas desde Unsplash, con camino preparado para Azure Blob Storage.
 
-Esto es ideal para una demo y para un primer despliegue barato.
+Esto mantiene el frontend simple y barato, pero ya deja listo el primer flujo real de registro de empresas.
 
 ## Arquitectura recomendada para MVP barato
 
@@ -44,7 +45,7 @@ Azure Static Web Apps Free
         ->
 Frontend HTML/CSS/JS
         ->
-providers.json o endpoint simple
+data/*.json o /api/providers
         ->
 Imagenes servidas desde Azure Blob Storage
 ```
@@ -82,7 +83,7 @@ Configuracion:
 
 ```text
 App location: /
-Api location: vacio
+Api location: api
 Output location: vacio
 Build command: vacio
 ```
@@ -99,9 +100,18 @@ Ese archivo define:
 - Headers basicos de seguridad.
 - Cache para CSS, JS y assets.
 - Cache corto para `data/*`, porque los datos del MVP pueden cambiar sin tocar codigo.
-- `connect-src 'self'` para permitir cargar `data/providers.json`.
+- `connect-src 'self' https://*.blob.core.windows.net` para permitir cargar datos/API y subir imagenes con SAS a Blob Storage.
 - Permiso temporal para imagenes desde Unsplash.
 - Permiso preparado para imagenes desde Azure Blob Storage.
+
+El workflow de GitHub Actions ya usa:
+
+```yaml
+app_location: "/"
+api_location: "api"
+output_location: "/"
+skip_app_build: true
+```
 
 ## 2. Imagenes de proveedores
 
@@ -257,9 +267,9 @@ Este enfoque evita construir desde el inicio:
 - Antivirus.
 - Procesamiento complejo de imagenes.
 
-## Fase posterior: subida automatizada
+## Fase actual: subida automatizada base
 
-Cuando haya suficientes proveedores, agregar:
+Ya existe una primera API serverless:
 
 ```text
 Azure Functions Consumption
@@ -287,6 +297,22 @@ Admin aprueba
         ->
 Imagen aparece en la pagina
 ```
+
+Endpoints implementados:
+
+```text
+POST /api/register-provider
+POST /api/create-upload-url
+POST /api/register-upload
+GET /api/providers
+```
+
+Pendiente:
+
+- Configurar variables de entorno en Azure Static Web Apps.
+- Probar flujo real en produccion.
+- Configurar `ALLOWED_ORIGINS`; en produccion la API lo exige y normaliza slash final. Agregar CAPTCHA/rate limit antes de abrir el registro al publico.
+- Crear endpoints/admin manuales para aprobar o rechazar proveedores e imagenes.
 
 ## Reglas para imagenes
 
@@ -397,6 +423,12 @@ Para MVP:
 - Convertir imagenes a `.webp` antes de usarlas.
 - No permitir que proveedores escriban directamente sin SAS temporal.
 - Si se usa SAS, debe expirar rapido.
+- El SAS de subida vence en 10 minutos y la reserva vence en 15 minutos para dar margen al registro.
+- El cupo de 6 imagenes se controla con filas atomicas `slot-1` a `slot-6` por proveedor en `ProviderImages`; imagenes legacy sin `slotNumber` consumen cupo antes de reservar slots nuevos.
+- Las reservas de imagen vencidas se limpian junto con sus blobs pendientes cuando corre el cleanup, sin liberar slots que ya tengan imagen activa asociada.
+- Los endpoints admin de rechazar/eliminar imagenes deben liberar su slot de forma explicita.
+- Pendiente operativo: agregar Timer Function o lifecycle rule del container `uploads-pending` para limpieza periodica global.
+- No aceptar `data:` como imagen dinamica proveniente de proveedores, API o CSP.
 
 Extensiones permitidas:
 
@@ -456,7 +488,8 @@ Servicios:
 
 - Azure Static Web Apps Free.
 - Imagenes actuales o imagenes locales.
-- Sin backend.
+- Sin backend obligatorio para navegar la demo.
+- API serverless disponible para registro de empresas cuando Azure tenga variables configuradas.
 
 Resultado:
 
@@ -506,17 +539,18 @@ Esta fase debe hacerse solo si el MVP valida demanda.
 
 ## Decision recomendada ahora
 
-Implementar el desarrollo web pensando en esta primera version:
+La version actual queda pensada asi:
 
 ```text
 Frontend: Azure Static Web Apps Free
-Datos: data/providers.json
-Imagenes: Azure Blob Storage LRS Hot
-Subida: manual por el equipo
-Formulario: externo
-Backend: ninguno al inicio
+Datos publicos actuales: data/providers.json
+Datos de registro: Azure Table Storage
+Imagenes de registro: Azure Blob Storage LRS Hot, container uploads-pending
+Imagenes publicas: Azure Blob Storage LRS Hot, container public
+Subida: navegador -> SAS temporal -> uploads-pending
+API: Azure Functions bajo /api
 CDN: no al inicio
-Base de datos: no al inicio
+Base de datos relacional: no al inicio
 ```
 
 Esta es la forma mas barata y razonable para validar el producto sin bloquear el crecimiento futuro.

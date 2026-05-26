@@ -81,6 +81,42 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function safeText(value, fallback = "") {
+  return escapeHtml(value ?? fallback);
+}
+
+function safeUrl(value, fallback = "#") {
+  try {
+    const url = new URL(String(value || ""), window.location.href);
+    if (["http:", "https:"].includes(url.protocol)) return escapeHtml(url.href);
+    if (url.hash && url.origin === window.location.origin && url.pathname === window.location.pathname) {
+      return escapeHtml(`${url.hash}`);
+    }
+  } catch {
+    // Fall through to fallback.
+  }
+  return escapeHtml(fallback);
+}
+
+function safeImageUrl(value) {
+  if (String(value || "").startsWith("assets/")) return escapeHtml(value);
+
+  try {
+    const url = new URL(String(value || ""), window.location.href);
+    if (url.protocol === "https:") return escapeHtml(url.href);
+    if (url.origin === window.location.origin && url.pathname.startsWith("/assets/")) {
+      return escapeHtml(`${url.pathname}${url.search}`);
+    }
+  } catch {
+    // Fall through to fallback.
+  }
+  return escapeHtml(CONFIG.fallbackProviderImage);
+}
+
+function isLocalDemoEnvironment() {
+  return ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
+}
+
 function isAllowedProviderImage(file) {
   return ["image/jpeg", "image/png", "image/webp"].includes(file.type);
 }
@@ -99,7 +135,7 @@ function setButtonLoading(button, isLoading, loadingText = "Procesando...") {
 }
 
 function providerHref(provider) {
-  return `#proveedor/${provider.id}`;
+  return `#proveedor/${encodeURIComponent(provider.id || "")}`;
 }
 
 function packagesForProvider(providerId) {
@@ -107,21 +143,22 @@ function packagesForProvider(providerId) {
 }
 
 function providerCard(provider) {
+  const tags = Array.isArray(provider.tags) ? provider.tags : [];
   return `
     <article class="provider-card">
-      <img src="${provider.image}" alt="${provider.category} ${provider.name}" loading="lazy" ${imageFallbackAttribute()}>
+      <img src="${safeImageUrl(provider.image)}" alt="${safeText(`${provider.category || ""} ${provider.name || ""}`)}" loading="lazy" ${imageFallbackAttribute()}>
       <div class="card-body">
         <div class="tag-row">
-          ${provider.tags.map((tag, index) => `<span class="tag ${index === 0 ? "verified" : ""}">${tag}</span>`).join("")}
+          ${tags.map((tag, index) => `<span class="tag ${index === 0 ? "verified" : ""}">${safeText(tag)}</span>`).join("")}
         </div>
         <div>
-          <h3>${provider.name}</h3>
-          <p class="card-meta">${provider.category} · ${provider.location}</p>
+          <h3>${safeText(provider.name)}</h3>
+          <p class="card-meta">${safeText(provider.category)} · ${safeText(provider.location)}</p>
         </div>
-        <p>${provider.description}</p>
-        <strong>${provider.price}</strong>
+        <p>${safeText(provider.description)}</p>
+        <strong>${safeText(provider.price)}</strong>
         <div class="card-actions">
-          <a class="ghost-button" href="${providerHref(provider)}">Ver ficha</a>
+          <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
           <button class="secondary-button" data-open-quote>Cotizar</button>
         </div>
       </div>
@@ -130,22 +167,23 @@ function providerCard(provider) {
 }
 
 function wideProviderCard(provider) {
+  const tags = Array.isArray(provider.tags) ? provider.tags : [];
   return `
-    <article class="wide-card" data-category="${provider.category}">
-      <img src="${provider.image}" alt="${provider.name}" loading="lazy" ${imageFallbackAttribute()}>
+    <article class="wide-card" data-category="${safeText(provider.category)}">
+      <img src="${safeImageUrl(provider.image)}" alt="${safeText(provider.name)}" loading="lazy" ${imageFallbackAttribute()}>
       <div class="card-body">
         <div class="tag-row">
-          ${provider.tags.map((tag, index) => `<span class="tag ${index === 0 ? "verified" : ""}">${tag}</span>`).join("")}
+          ${tags.map((tag, index) => `<span class="tag ${index === 0 ? "verified" : ""}">${safeText(tag)}</span>`).join("")}
         </div>
         <div>
-          <h3>${provider.name}</h3>
-          <p class="card-meta">${provider.category} · ${provider.location}</p>
+          <h3>${safeText(provider.name)}</h3>
+          <p class="card-meta">${safeText(provider.category)} · ${safeText(provider.location)}</p>
           ${ratingStars(provider.rating, provider.reviews)}
         </div>
-        <p>${provider.description}</p>
-        <strong>${provider.price}</strong>
+        <p>${safeText(provider.description)}</p>
+        <strong>${safeText(provider.price)}</strong>
         <div class="card-actions">
-          <a class="ghost-button" href="${providerHref(provider)}">Ver ficha</a>
+          <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
           <button class="primary-button" data-open-quote>Pedir presupuesto</button>
         </div>
       </div>
@@ -155,11 +193,11 @@ function wideProviderCard(provider) {
 
 function ratingStars(rating, reviews) {
   return `
-    <div class="rating-row" aria-label="${rating} de 5 estrellas, ${reviews} opiniones">
+    <div class="rating-row" aria-label="${safeText(rating)} de 5 estrellas, ${safeText(reviews)} opiniones">
       <span class="stars" aria-hidden="true">★★★★★</span>
-      <span>${rating}</span>
+      <span>${safeText(rating)}</span>
       <span class="dot" aria-hidden="true">·</span>
-      <span>${reviews} opiniones</span>
+      <span>${safeText(reviews)} opiniones</span>
     </div>
   `;
 }
@@ -167,10 +205,10 @@ function ratingStars(rating, reviews) {
 function packageCard(pack) {
   return `
     <article class="package-card">
-      <p class="package-meta">${pack.vendor}</p>
-      <h3>${pack.title}</h3>
-      <p>${pack.details}</p>
-      <div class="package-price">${pack.price}</div>
+      <p class="package-meta">${safeText(pack.vendor)}</p>
+      <h3>${safeText(pack.title)}</h3>
+      <p>${safeText(pack.details)}</p>
+      <div class="package-price">${safeText(pack.price)}</div>
       <button class="secondary-button" data-open-quote>Cotizar paquete</button>
     </article>
   `;
@@ -232,9 +270,9 @@ function homePage() {
         ${categories
           .map(
             (category) => `
-              <a class="category-tile" href="${category.href}">
-                <img src="${category.image}" alt="${category.name}" loading="lazy" ${imageFallbackAttribute()}>
-                <span>${category.name}</span>
+              <a class="category-tile" href="${safeUrl(category.href, "#inicio")}">
+                <img src="${safeImageUrl(category.image)}" alt="${safeText(category.name)}" loading="lazy" ${imageFallbackAttribute()}>
+                <span>${safeText(category.name)}</span>
               </a>
             `,
           )
@@ -420,7 +458,10 @@ function providerPage(providerId) {
   }
 
   const providerPackages = packagesForProvider(provider.id);
-  providerGallery = provider.gallery;
+  providerGallery = Array.isArray(provider.gallery) && provider.gallery.length
+    ? provider.gallery
+    : [{ src: provider.image || CONFIG.fallbackProviderImage, alt: provider.name || "Proveedor" }];
+  const tags = Array.isArray(provider.tags) ? provider.tags : [];
 
   return `
     <section class="provider-hero">
@@ -428,7 +469,7 @@ function providerPage(providerId) {
         <div class="provider-carousel" aria-label="Galeria de fotos del proveedor">
           <div class="carousel-stage">
             <button class="carousel-nav prev" type="button" data-carousel-prev aria-label="Foto anterior">‹</button>
-            <img class="carousel-image" src="${providerGallery[0].src}" alt="${providerGallery[0].alt}" data-carousel-image ${imageFallbackAttribute()}>
+            <img class="carousel-image" src="${safeImageUrl(providerGallery[0].src)}" alt="${safeText(providerGallery[0].alt)}" data-carousel-image ${imageFallbackAttribute()}>
             <button class="carousel-nav next" type="button" data-carousel-next aria-label="Foto siguiente">›</button>
             <div class="carousel-count" data-carousel-count>1 / ${providerGallery.length}</div>
           </div>
@@ -437,7 +478,7 @@ function providerPage(providerId) {
               .map(
                 (item, index) => `
                   <button class="thumb ${index === 0 ? "is-active" : ""}" type="button" data-carousel-thumb="${index}" aria-label="Ver foto ${index + 1}">
-                    <img src="${item.src}" alt="${item.alt}" loading="lazy" ${imageFallbackAttribute()}>
+                    <img src="${safeImageUrl(item.src)}" alt="${safeText(item.alt)}" loading="lazy" ${imageFallbackAttribute()}>
                   </button>
                 `,
               )
@@ -447,14 +488,14 @@ function providerPage(providerId) {
       </div>
       <aside class="provider-summary">
         <div class="tag-row">
-          ${provider.tags.map((tag, index) => `<span class="tag ${index === 0 ? "verified" : ""}">${tag}</span>`).join("")}
+          ${tags.map((tag, index) => `<span class="tag ${index === 0 ? "verified" : ""}">${safeText(tag)}</span>`).join("")}
         </div>
-        <h1 class="provider-title">${provider.name}</h1>
-        <p class="card-meta">${provider.category} · ${provider.location}</p>
+        <h1 class="provider-title">${safeText(provider.name)}</h1>
+        <p class="card-meta">${safeText(provider.category)} · ${safeText(provider.location)}</p>
         ${ratingStars(provider.rating, provider.reviews)}
         <div class="summary-price">
           <span>Paquetes</span>
-          <strong>${provider.price}</strong>
+          <strong>${safeText(provider.price)}</strong>
         </div>
         <div class="card-actions">
           <button class="primary-button" data-open-quote>Pedir presupuesto</button>
@@ -468,8 +509,8 @@ function providerPage(providerId) {
         <div>
           <article class="content-block">
             <p class="eyebrow">Servicios</p>
-            <h2>${provider.category} para eventos</h2>
-            <p>${provider.description}</p>
+            <h2>${safeText(provider.category)} para eventos</h2>
+            <p>${safeText(provider.description)}</p>
             <ul class="feature-list">
               <li><span class="check">✓</span><span>Perfil demo con informacion comercial lista para validar.</span></li>
               <li><span class="check">✓</span><span>Precio, ubicacion, fotos y paquetes visibles antes del contacto.</span></li>
@@ -502,8 +543,8 @@ function providerPage(providerId) {
         <aside class="side-panel">
           <h3>Datos clave</h3>
           <ul class="feature-list">
-            <li><span class="check">✓</span><span>${provider.location}.</span></li>
-            <li><span class="check">✓</span><span>${provider.price}.</span></li>
+            <li><span class="check">✓</span><span>${safeText(provider.location)}.</span></li>
+            <li><span class="check">✓</span><span>${safeText(provider.price)}.</span></li>
             <li><span class="check">✓</span><span>${providerPackages.length} paquete(s) demo disponible(s).</span></li>
             <li><span class="check">✓</span><span>Cotizacion por formulario demo.</span></li>
           </ul>
@@ -816,6 +857,25 @@ function bindCompanyRegistration() {
     });
   };
 
+  const renderCompanyError = (message) => {
+    confirmation.innerHTML = `
+      <div class="form-panel">
+        <p class="eyebrow">Registro no enviado</p>
+        <h3>No pudimos completar el registro</h3>
+        <p class="form-help">${safeText(message)}</p>
+        <div class="card-actions">
+          <button class="primary-button" type="button" data-edit-company>Volver al formulario</button>
+        </div>
+      </div>
+    `;
+    confirmation.classList.remove("is-hidden");
+    confirmation.focus();
+    confirmation.querySelector("[data-edit-company]").addEventListener("click", () => {
+      document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   const registerProviderInAzure = async (formData, files) => {
     const providerResponse = await fetch(`${CONFIG.apiBaseUrl}/register-provider`, {
       method: "POST",
@@ -954,14 +1014,19 @@ function bindCompanyRegistration() {
       showToast("Registro recibido. Queda pendiente de revision.");
     } catch (error) {
       console.warn(error);
-      renderCompanyConfirmation({
-        companyName,
-        category,
-        location,
-        photosCount: files.length,
-        mode: "demo",
-      });
-      showToast("API no disponible: mostrando confirmacion demo.");
+      if (isLocalDemoEnvironment()) {
+        renderCompanyConfirmation({
+          companyName,
+          category,
+          location,
+          photosCount: files.length,
+          mode: "demo",
+        });
+        showToast("API no disponible: mostrando confirmacion demo.");
+      } else {
+        renderCompanyError("El registro no pudo guardarse en Azure. Intentalo de nuevo en unos minutos.");
+        showToast("No se pudo enviar el registro.");
+      }
     } finally {
       setButtonLoading(submitButton, false);
     }
