@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { ensureTables, getConfig, getTableClient } = require("../shared/azure");
+const { notifyProviderRegistration } = require("../shared/email");
 const { enforceAllowedOrigin } = require("../shared/guard");
 const { badRequest, json, serverError } = require("../shared/http");
 const { slugify, validateProviderPayload } = require("../shared/validation");
@@ -41,6 +42,9 @@ module.exports = async function registerProvider(context, req) {
     };
 
     await getTableClient(config.providersTable, config).createEntity(entity);
+    await notifyProviderRegistration(context, entity, config).catch((error) => {
+      context.log.warn("Provider notification email failed.", error);
+    });
 
     context.res = json(201, {
       providerId,

@@ -42,10 +42,11 @@ Validacion actual:
 Nota de alcance:
 
 - Esta version sigue siendo una demo estatica.
-- No hay envio de correos, integracion con WhatsApp ni publicacion automatica de empresas.
+- Hay aviso por correo para nuevos registros si SendGrid esta configurado.
+- No hay integracion real con WhatsApp ni publicacion automatica de empresas.
 - La API de registro ya esta en el repo, pero requiere variables de entorno en Azure para operar.
 - Los leads reales deben definirse en una fase posterior o enviarse primero a un formulario externo.
-- No existe panel admin todavia; la aprobacion sigue pendiente.
+- Existe una primera version de panel admin en `/admin`; falta endurecer roles, auditoria e historial.
 
 ## API actual
 
@@ -61,6 +62,7 @@ GET /api/providers
 Uso esperado:
 
 - `register-provider`: guarda empresa en `Providers` con `status: pending`.
+- `register-provider`: intenta enviar aviso por correo al administrador si SendGrid esta configurado.
 - `create-upload-url`: genera SAS temporal para subir a `uploads-pending`.
 - `register-upload`: registra imagen en `ProviderImages` con `status: pending`.
 - `providers`: devuelve solo proveedores publicados y solo imagenes del container `public`.
@@ -76,6 +78,13 @@ AZURE_TABLE_CONNECTION_STRING
 AZURE_TABLE_PROVIDERS=Providers
 AZURE_TABLE_PROVIDER_IMAGES=ProviderImages
 ALLOWED_ORIGINS=https://<tu-static-web-app>.azurestaticapps.net,https://puntoevento.cr
+SENDGRID_API_KEY=<api-key>
+NOTIFICATION_EMAIL_TO=pj13eros_business@outlook.com
+NOTIFICATION_EMAIL_FROM=<sender-verificado-en-sendgrid>
+NOTIFICATION_EMAIL_FROM_NAME=Punto Evento
+APP_PUBLIC_URL=https://<tu-static-web-app>.azurestaticapps.net
+ADMIN_USERNAME=<usuario-admin>
+ADMIN_PASSWORD=<password-admin-largo>
 ```
 
 ## Prioridad 1: Pulir la demo comercial

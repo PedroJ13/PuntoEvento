@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Admin | Punto Evento</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="stylesheet" href="styles.css?v=14" />
+    <link rel="stylesheet" href="admin.css?v=1" />
+  </head>
+  <body class="admin-body">
+    <main class="admin-shell">
+      <header class="admin-header">
+        <div>
+          <p class="eyebrow">Administracion</p>
+          <h1>Revision de proveedores</h1>
+          <p>Revisa registros pendientes, aprueba imagenes y publica perfiles.</p>
+        </div>
+        <button class="ghost-button" type="button" data-refresh>Actualizar</button>
+      </header>
+
+      <section class="admin-login" data-login-panel>
+        <form class="form-panel" data-login-form>
+          <h2>Acceso admin</h2>
+          <label>
+            Usuario
+            <input name="username" autocomplete="username" required />
+          </label>
+          <label>
+            Password
+            <input name="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="primary-button" type="submit">Entrar</button>
+          <p class="form-help">Las credenciales se validan contra la API de Azure.</p>
+        </form>
+      </section>
+
+      <section class="admin-panel is-hidden" data-admin-panel>
+        <div class="admin-toolbar">
+          <div>
+            <strong data-count>0 pendientes</strong>
+            <span data-status>Esperando credenciales.</span>
+          </div>
+          <button class="secondary-button" type="button" data-logout>Cerrar sesion</button>
+        </div>
+        <div class="admin-list" data-provider-list></div>
+      </section>
+    </main>
+    <script src="admin.js?v=1"></script>
+  </body>
+</html>

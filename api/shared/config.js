@@ -49,6 +49,15 @@ function getConfig() {
     providerImagesTable:
       process.env.AZURE_TABLE_PROVIDER_IMAGES || DEFAULT_PROVIDER_IMAGES_TABLE,
     allowedOrigins,
+    sendGridApiKey: process.env.SENDGRID_API_KEY || "",
+    notificationEmailTo:
+      process.env.NOTIFICATION_EMAIL_TO || "pj13eros_business@outlook.com",
+    notificationEmailFrom: process.env.NOTIFICATION_EMAIL_FROM || "",
+    notificationEmailFromName:
+      process.env.NOTIFICATION_EMAIL_FROM_NAME || "Punto Evento",
+    appPublicUrl: process.env.APP_PUBLIC_URL || "",
+    adminUsername: process.env.ADMIN_USERNAME || "",
+    adminPassword: process.env.ADMIN_PASSWORD || "",
   };
 }
 

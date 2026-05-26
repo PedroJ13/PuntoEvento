@@ -312,7 +312,9 @@ Pendiente:
 - Configurar variables de entorno en Azure Static Web Apps.
 - Probar flujo real en produccion.
 - Configurar `ALLOWED_ORIGINS`; en produccion la API lo exige y normaliza slash final. Agregar CAPTCHA/rate limit antes de abrir el registro al publico.
-- Crear endpoints/admin manuales para aprobar o rechazar proveedores e imagenes.
+- Configurar SendGrid para enviar aviso a `pj13eros_business@outlook.com` cuando entre un proveedor nuevo.
+- Configurar `ADMIN_USERNAME` y `ADMIN_PASSWORD` para el panel `/admin`.
+- Endpoints/admin iniciales creados para listar pendientes, aprobar/publicar y rechazar proveedores.
 
 ## Reglas para imagenes
 
@@ -529,7 +531,7 @@ Resultado:
 Servicios posibles:
 
 - Login de proveedores.
-- Panel admin.
+- Panel admin inicial en `/admin`; falta endurecer roles, auditoria e historial.
 - Notificaciones.
 - Analitica.
 - CDN o Azure Front Door.

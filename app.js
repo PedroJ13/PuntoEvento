@@ -810,33 +810,22 @@ function bindCompanyRegistration() {
     mode = "demo",
   }) => {
     const isAzure = mode === "azure";
+    const title = isAzure
+      ? "Sus datos fueron recibidos y cargados"
+      : "Registro demo recibido";
+    const message = isAzure
+      ? "Estaremos validando la informacion y, si todo esta bien, procederemos con la publicacion."
+      : "Esta demo no guarda datos ni sube fotos. Puedes editar el formulario o limpiar la simulacion.";
     confirmation.innerHTML = `
       <div class="form-panel">
         <p class="eyebrow">${isAzure ? "Registro recibido" : "Registro demo recibido"}</p>
-        <h3>${escapeHtml(companyName)}</h3>
-        <div class="publish-summary">
-          <div>
-            <strong>Categoria</strong>
-            <span>${escapeHtml(category)}</span>
-          </div>
-          <div>
-            <strong>Zona</strong>
-            <span>${escapeHtml(location)}</span>
-          </div>
-          <div>
-            <strong>Fotos ${isAzure ? "subidas" : "seleccionadas"}</strong>
-            <span>${photosCount} archivo(s)</span>
-          </div>
-          <div>
-            <strong>Siguiente paso</strong>
-            <span>${isAzure ? "El perfil queda pendiente de revision." : "En produccion pasaria a revision antes de publicarse."}</span>
-          </div>
-        </div>
-        ${providerId ? `<p class="form-help">ID interno: ${escapeHtml(providerId)}</p>` : ""}
-        <p class="form-help">${isAzure ? "Solicitud recibida. Revisaremos la informacion y las imagenes antes de publicar el perfil." : "Esta demo no guarda datos ni sube fotos. Puedes editar el formulario o limpiar la simulacion."}</p>
+        <h3>${escapeHtml(title)}</h3>
+        <p class="form-help">${escapeHtml(message)}</p>
+        ${isAzure ? `<p class="form-help">Te contactaremos si necesitamos confirmar algun dato de ${escapeHtml(companyName)}.</p>` : ""}
+        ${!isAzure ? `<p class="form-help">${escapeHtml(category)} · ${escapeHtml(location)} · ${photosCount} archivo(s)</p>` : ""}
         <div class="card-actions">
-          <button class="secondary-button" type="button" data-edit-company>Editar datos</button>
-          <button class="primary-button" type="button" data-reset-company>Limpiar demo</button>
+          <button class="${isAzure ? "primary-button" : "secondary-button"}" type="button" data-edit-company>${isAzure ? "Registrar otra empresa" : "Editar datos"}</button>
+          ${!isAzure ? `<button class="primary-button" type="button" data-reset-company>Limpiar demo</button>` : ""}
         </div>
       </div>
     `;
@@ -844,17 +833,23 @@ function bindCompanyRegistration() {
     confirmation.focus();
 
     confirmation.querySelector("[data-edit-company]").addEventListener("click", () => {
+      if (isAzure) {
+        form.reset();
+        resetPreview();
+        confirmation.classList.add("is-hidden");
+        confirmation.innerHTML = "";
+      }
       document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
       form.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
-    confirmation.querySelector("[data-reset-company]").addEventListener("click", () => {
-      form.reset();
-      resetPreview();
-      confirmation.classList.add("is-hidden");
-      confirmation.innerHTML = "";
-      document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
-    });
+    confirmation.querySelector("[data-reset-company]")?.addEventListener("click", () => {
+        form.reset();
+        resetPreview();
+        confirmation.classList.add("is-hidden");
+        confirmation.innerHTML = "";
+        document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
+      });
   };
 
   const renderCompanyError = (message) => {
@@ -1011,7 +1006,7 @@ function bindCompanyRegistration() {
         providerId: result.providerId,
         mode: "azure",
       });
-      showToast("Registro recibido. Queda pendiente de revision.");
+      showToast("Datos recibidos. Validaremos la informacion.");
     } catch (error) {
       console.warn(error);
       if (isLocalDemoEnvironment()) {

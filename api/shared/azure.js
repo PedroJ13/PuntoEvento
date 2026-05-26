@@ -260,6 +260,73 @@ function getPendingBlobClient(blobName, config = getConfig()) {
     .getBlockBlobClient(blobName);
 }
 
+function getPublicBlobClient(blobName, config = getConfig()) {
+  return getBlobServiceClient(config)
+    .getContainerClient(config.publicContainer)
+    .getBlockBlobClient(blobName);
+}
+
+async function ensurePublicContainer(config = getConfig()) {
+  await getBlobServiceClient(config)
+    .getContainerClient(config.publicContainer)
+    .createIfNotExists();
+}
+
+function extensionFromBlobName(blobName, contentType) {
+  const extension = String(blobName || "").toLowerCase().match(/\.([a-z0-9]+)$/)?.[1];
+  if (["jpg", "jpeg", "png", "webp"].includes(extension)) {
+    return extension === "jpeg" ? "jpg" : extension;
+  }
+  if (contentType === "image/png") return "png";
+  if (contentType === "image/webp") return "webp";
+  return "jpg";
+}
+
+async function copyPendingBlobToPublic(image, config = getConfig()) {
+  await ensurePublicContainer(config);
+
+  const extension = extensionFromBlobName(image.blobName, image.contentType);
+  const publicBlobName = `providers/${image.partitionKey}/${image.rowKey}.${extension}`;
+  const sourceBlob = getPendingBlobClient(image.blobName, config);
+  const destinationBlob = getPublicBlobClient(publicBlobName, config);
+  const download = await sourceBlob.downloadToBuffer();
+  await destinationBlob.uploadData(download, {
+    blobHTTPHeaders: {
+      blobContentType: image.contentType || "image/jpeg",
+    },
+  });
+
+  return {
+    publicBlobName,
+    publicBlobUrl: destinationBlob.url,
+  };
+}
+
+async function deletePendingBlob(blobName, config = getConfig()) {
+  if (!blobName) return;
+  await getPendingBlobClient(blobName, config).deleteIfExists();
+}
+
+function createReadSasUrl({ blobName, expiresInMinutes = 30 }, config = getConfig()) {
+  const credential = getStorageCredential(config);
+  const startsOn = new Date(Date.now() - 60 * 1000);
+  const expiresOn = new Date(Date.now() + expiresInMinutes * 60 * 1000);
+  const sas = generateBlobSASQueryParameters(
+    {
+      containerName: config.pendingContainer,
+      blobName,
+      permissions: BlobSASPermissions.parse("r"),
+      protocol: SASProtocol.Https,
+      startsOn,
+      expiresOn,
+    },
+    credential,
+  ).toString();
+
+  const blobClient = getPendingBlobClient(blobName, config);
+  return `${blobClient.url}?${sas}`;
+}
+
 function createWriteSasUrl({ blobName, contentType, expiresInMinutes = 10 }, config = getConfig()) {
   const credential = getStorageCredential(config);
   const startsOn = new Date(Date.now() - 60 * 1000);
@@ -290,11 +357,16 @@ module.exports = {
   countProviderImages,
   countProviderImagesWithoutSlots,
   cleanupExpiredReservations,
+  copyPendingBlobToPublic,
+  createReadSasUrl,
   createWriteSasUrl,
+  deletePendingBlob,
   ensurePendingContainer,
+  ensurePublicContainer,
   ensureTables,
   getConfig,
   getPendingBlobClient,
+  getPublicBlobClient,
   getProvider,
   getTableClient,
   markImageSlotOccupied,

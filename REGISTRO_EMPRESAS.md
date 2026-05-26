@@ -64,6 +64,7 @@ Uso actual:
 - `create-upload-url`: genera SAS temporal para un blob especifico en `uploads-pending`.
 - `register-upload`: guarda referencia de imagen en `ProviderImages` con `status: pending`.
 - `providers`: devuelve solo proveedores `published` y solo URLs publicas.
+- `register-provider`: tambien intenta enviar correo de aviso al administrador si SendGrid esta configurado.
 
 El frontend intenta usar la API real. Si esta no existe localmente o falla, muestra una confirmacion demo sin perder la experiencia.
 
@@ -162,6 +163,13 @@ AZURE_STORAGE_PUBLIC_CONTAINER=public
 AZURE_TABLE_CONNECTION_STRING
 AZURE_TABLE_PROVIDERS=Providers
 AZURE_TABLE_PROVIDER_IMAGES=ProviderImages
+SENDGRID_API_KEY
+NOTIFICATION_EMAIL_TO=pj13eros_business@outlook.com
+NOTIFICATION_EMAIL_FROM=<sender-verificado-en-sendgrid>
+NOTIFICATION_EMAIL_FROM_NAME=Punto Evento
+APP_PUBLIC_URL=https://<tu-static-web-app>.azurestaticapps.net
+ADMIN_USERNAME=<usuario-admin>
+ADMIN_PASSWORD=<password-admin-largo>
 ```
 
 Despues de eso, probar que la API:

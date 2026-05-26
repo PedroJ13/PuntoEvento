@@ -521,6 +521,6 @@ Pendiente para completar la fase:
 
 - Configurar variables de entorno en Azure Static Web Apps.
 - Probar el flujo real publicado.
-- Crear flujo/admin de aprobacion.
+- Panel admin inicial creado en `/admin`; falta endurecer roles, auditoria e historial.
 - Mover/copiar imagenes aprobadas de `uploads-pending` a `public`.
 - Decidir si el frontend publico cambia de `data/providers.json` a `/api/providers`.
