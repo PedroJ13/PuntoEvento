@@ -1,6 +1,9 @@
 const { odata } = require("@azure/data-tables");
 const { ensureTables, getConfig, getTableClient } = require("../shared/azure");
 const { json, serverError } = require("../shared/http");
+const adminApproveProvider = require("../admin-approve-provider");
+const adminPendingProviders = require("../admin-pending-providers");
+const adminRejectProvider = require("../admin-reject-provider");
 
 async function publicImagesForProvider(providerId, config) {
   const table = getTableClient(config.providerImagesTable, config);
@@ -23,8 +26,21 @@ async function publicImagesForProvider(providerId, config) {
   return images;
 }
 
-module.exports = async function providers(context) {
+module.exports = async function providers(context, req) {
   try {
+    if (req?.query?.admin === "pending-providers") {
+      await adminPendingProviders(context, req);
+      return;
+    }
+    if (req?.query?.admin === "approve-provider") {
+      await adminApproveProvider(context, req);
+      return;
+    }
+    if (req?.query?.admin === "reject-provider") {
+      await adminRejectProvider(context, req);
+      return;
+    }
+
     const config = getConfig();
     await ensureTables(config);
 

@@ -161,7 +161,7 @@ async function loadProviders() {
   setStatus("Cargando pendientes...");
   const providers = await adminFetchWithFallback(
     "/admin/pending-providers",
-    "/admin-pending-providers",
+    "/providers?admin=pending-providers",
   );
   state.providers = providers;
   showAdmin();
@@ -226,7 +226,7 @@ document.addEventListener("click", async (event) => {
     try {
       await adminFetchWithFallback(
         "/admin/approve-provider",
-        "/admin-approve-provider",
+        "/providers?admin=approve-provider",
         {
           method: "POST",
           body: JSON.stringify({ providerId, approvedImageIds }),
@@ -248,7 +248,7 @@ document.addEventListener("click", async (event) => {
     try {
       await adminFetchWithFallback(
         "/admin/reject-provider",
-        "/admin-reject-provider",
+        "/providers?admin=reject-provider",
         {
           method: "POST",
           body: JSON.stringify({ providerId, reason }),
