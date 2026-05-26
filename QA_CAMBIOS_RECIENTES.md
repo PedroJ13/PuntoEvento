@@ -41,7 +41,7 @@ ADMIN_PASSWORD
 - Se actualizo cache-buster:
 
 ```text
-admin.js?v=2
+admin.js?v=3
 ```
 
 Validar:
@@ -125,7 +125,7 @@ Validar:
 
 ```text
 index.html -> app.js?v=15
-admin.html -> admin.js?v=2
+admin.html -> admin.js?v=3
 ```
 
 Validar:

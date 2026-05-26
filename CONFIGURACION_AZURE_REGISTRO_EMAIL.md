@@ -270,7 +270,7 @@ Despues de cada push a `main`, esperar a que termine el workflow antes de probar
 
 - `/admin` muestra home: el deploy aun no tiene `admin.html` o el workflow no termino.
 - `/admin` falla en servidor local simple: usar `/admin.html` o un emulador/servidor que respete `staticwebapp.config.json`.
-- `/admin` muestra login pero no entra: revisar `ADMIN_USERNAME` y `ADMIN_PASSWORD`.
+- `/admin` muestra login pero no entra: revisar el mensaje dentro del formulario, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ALLOWED_ORIGINS` y logs de Azure Functions.
 - Formulario muestra error: revisar Network y logs de Azure Functions.
 - `register-provider` falla: revisar variables de Storage/Table y `ALLOWED_ORIGINS`.
 - Suben datos pero no imagenes: revisar CORS de Blob Storage y container `uploads-pending`.

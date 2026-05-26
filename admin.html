@@ -6,7 +6,7 @@
     <title>Admin | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=14" />
-    <link rel="stylesheet" href="admin.css?v=1" />
+    <link rel="stylesheet" href="admin.css?v=2" />
   </head>
   <body class="admin-body">
     <main class="admin-shell">
@@ -20,18 +20,22 @@
       </header>
 
       <section class="admin-login" data-login-panel>
-        <form class="form-panel" data-login-form>
-          <h2>Acceso admin</h2>
+        <form class="admin-login-card" data-login-form>
+          <div>
+            <p class="eyebrow">Acceso seguro</p>
+            <h2>Ingresar al panel</h2>
+            <p>Usa las credenciales configuradas en Azure Static Web Apps.</p>
+          </div>
           <label>
-            Usuario
+            <span>Usuario</span>
             <input name="username" autocomplete="username" required />
           </label>
           <label>
-            Password
+            <span>Password</span>
             <input name="password" type="password" autocomplete="current-password" required />
           </label>
           <button class="primary-button" type="submit">Entrar</button>
-          <p class="form-help">Las credenciales se validan contra la API de Azure.</p>
+          <p class="admin-message" data-login-message>Las credenciales se validan contra la API de Azure.</p>
         </form>
       </section>
 
@@ -46,6 +50,6 @@
         <div class="admin-list" data-provider-list></div>
       </section>
     </main>
-    <script src="admin.js?v=2"></script>
+    <script src="admin.js?v=3"></script>
   </body>
 </html>

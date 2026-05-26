@@ -22,7 +22,15 @@ function escapeHtml(value) {
 }
 
 function setStatus(message) {
-  $("[data-status]").textContent = message;
+  const status = $("[data-status]");
+  if (status) status.textContent = message;
+}
+
+function setLoginMessage(message, isError = false) {
+  const messageNode = $("[data-login-message]");
+  if (!messageNode) return;
+  messageNode.textContent = message;
+  messageNode.classList.toggle("is-error", isError);
 }
 
 function authHeaders() {
@@ -48,7 +56,8 @@ async function adminFetch(path, options = {}) {
   }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
-    throw new Error(body.error || "No se pudo completar la accion.");
+    const message = body.error || `No se pudo completar la accion. HTTP ${response.status}`;
+    throw new Error(message);
   }
   return response.json();
 }
@@ -56,11 +65,13 @@ async function adminFetch(path, options = {}) {
 function showLogin() {
   $("[data-login-panel]").classList.remove("is-hidden");
   $("[data-admin-panel]").classList.add("is-hidden");
+  $("[data-refresh]").disabled = true;
 }
 
 function showAdmin() {
   $("[data-login-panel]").classList.add("is-hidden");
   $("[data-admin-panel]").classList.remove("is-hidden");
+  $("[data-refresh]").disabled = false;
 }
 
 function imageMarkup(provider) {
@@ -133,9 +144,10 @@ function renderProviders() {
 }
 
 async function loadProviders() {
-  showAdmin();
   setStatus("Cargando pendientes...");
-  state.providers = await adminFetch("/admin/pending-providers");
+  const providers = await adminFetch("/admin/pending-providers");
+  state.providers = providers;
+  showAdmin();
   renderProviders();
   setStatus("Lista actualizada.");
 }
@@ -154,10 +166,13 @@ document.addEventListener("submit", async (event) => {
   const form = new FormData(event.target);
   state.auth = btoa(`${form.get("username")}:${form.get("password")}`);
   sessionStorage.setItem(AUTH_KEY, state.auth);
+  setLoginMessage("Validando credenciales...");
   try {
     await loadProviders();
+    setLoginMessage("Las credenciales se validan contra la API de Azure.");
   } catch (error) {
-    setStatus(error.message);
+    showLogin();
+    setLoginMessage(error.message, true);
   }
 });
 
@@ -168,6 +183,7 @@ document.addEventListener("click", async (event) => {
   if (event.target.matches("[data-refresh]")) {
     if (!state.auth) {
       showLogin();
+      setLoginMessage("Ingresa credenciales para actualizar.", true);
       return;
     }
     await loadProviders().catch((error) => setStatus(error.message));
@@ -223,8 +239,8 @@ document.addEventListener("click", async (event) => {
 
 if (state.auth) {
   loadProviders().catch((error) => {
-    setStatus(error.message);
     showLogin();
+    setLoginMessage(error.message, true);
   });
 } else {
   showLogin();
