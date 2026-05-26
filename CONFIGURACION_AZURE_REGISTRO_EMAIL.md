@@ -212,6 +212,14 @@ POST /api/admin/approve-provider
 POST /api/admin/reject-provider
 ```
 
+Tambien existen rutas planas de respaldo para diagnostico/despliegues que no resuelvan rutas anidadas:
+
+```text
+GET  /api/admin-pending-providers
+POST /api/admin-approve-provider
+POST /api/admin-reject-provider
+```
+
 Al aprobar:
 
 1. Copia imagenes aprobadas desde `uploads-pending` hacia `public`.
@@ -271,6 +279,7 @@ Despues de cada push a `main`, esperar a que termine el workflow antes de probar
 - `/admin` muestra home: el deploy aun no tiene `admin.html` o el workflow no termino.
 - `/admin` falla en servidor local simple: usar `/admin.html` o un emulador/servidor que respete `staticwebapp.config.json`.
 - `/admin` muestra login pero no entra: revisar el mensaje dentro del formulario, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ALLOWED_ORIGINS` y logs de Azure Functions.
+- Si el mensaje dice API admin no encontrada: esperar a que termine GitHub Actions y probar `/api/admin-pending-providers`; si tambien da 404, la API no se desplego.
 - Formulario muestra error: revisar Network y logs de Azure Functions.
 - `register-provider` falla: revisar variables de Storage/Table y `ALLOWED_ORIGINS`.
 - Suben datos pero no imagenes: revisar CORS de Blob Storage y container `uploads-pending`.

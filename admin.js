@@ -56,10 +56,24 @@ async function adminFetch(path, options = {}) {
   }
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
+    if (response.status === 404) {
+      throw new Error("API admin no encontrada. Revisa que el workflow haya desplegado api_location: api.");
+    }
     const message = body.error || `No se pudo completar la accion. HTTP ${response.status}`;
     throw new Error(message);
   }
   return response.json();
+}
+
+async function adminFetchWithFallback(primaryPath, fallbackPath, options = {}) {
+  try {
+    return await adminFetch(primaryPath, options);
+  } catch (error) {
+    if (!String(error.message || "").includes("API admin no encontrada") || !fallbackPath) {
+      throw error;
+    }
+    return adminFetch(fallbackPath, options);
+  }
 }
 
 function showLogin() {
@@ -145,7 +159,10 @@ function renderProviders() {
 
 async function loadProviders() {
   setStatus("Cargando pendientes...");
-  const providers = await adminFetch("/admin/pending-providers");
+  const providers = await adminFetchWithFallback(
+    "/admin/pending-providers",
+    "/admin-pending-providers",
+  );
   state.providers = providers;
   showAdmin();
   renderProviders();
@@ -207,10 +224,14 @@ document.addEventListener("click", async (event) => {
     approveButton.disabled = true;
     setStatus("Publicando proveedor...");
     try {
-      await adminFetch("/admin/approve-provider", {
-        method: "POST",
-        body: JSON.stringify({ providerId, approvedImageIds }),
-      });
+      await adminFetchWithFallback(
+        "/admin/approve-provider",
+        "/admin-approve-provider",
+        {
+          method: "POST",
+          body: JSON.stringify({ providerId, approvedImageIds }),
+        },
+      );
       await loadProviders();
     } catch (error) {
       approveButton.disabled = false;
@@ -225,10 +246,14 @@ document.addEventListener("click", async (event) => {
     rejectButton.disabled = true;
     setStatus("Rechazando proveedor...");
     try {
-      await adminFetch("/admin/reject-provider", {
-        method: "POST",
-        body: JSON.stringify({ providerId, reason }),
-      });
+      await adminFetchWithFallback(
+        "/admin/reject-provider",
+        "/admin-reject-provider",
+        {
+          method: "POST",
+          body: JSON.stringify({ providerId, reason }),
+        },
+      );
       await loadProviders();
     } catch (error) {
       rejectButton.disabled = false;
