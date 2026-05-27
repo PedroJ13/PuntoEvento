@@ -158,6 +158,49 @@ Reglas:
 - Limpiar cookie con expiracion inmediata.
 - Si no hay sesion, puede responder `200` idempotente.
 
+### POST `/api/admin/company-invites`
+
+Genera una invitacion para que una empresa acceda al panel.
+
+Uso:
+
+```text
+Admin interno / QA controlado
+```
+
+Request:
+
+```json
+{
+  "companyId": "company_123",
+  "email": "empresa@email.com"
+}
+```
+
+Response `201`:
+
+```json
+{
+  "inviteId": "invite_123",
+  "companyId": "company_123",
+  "email": "empresa@email.com",
+  "role": "company_owner",
+  "expiresAt": "2026-05-28T00:00:00Z",
+  "inviteUrl": "https://.../panel.html?invite=..."
+}
+```
+
+Validaciones:
+
+- Requiere Basic Auth admin mientras no exista admin auth formal.
+- `companyId` requerido.
+- La empresa debe existir.
+- Email requerido; si no se envia, puede usar email de la empresa.
+- Guardar solo `tokenHash` en `CompanyInvites`.
+- Devolver el token solo una vez dentro de `inviteUrl`.
+- No devolver `tokenHash`, storage keys, connection strings ni secretos.
+- Registrar `status: active`, `expiresAt`, `createdAt`, `updatedAt`.
+
 ### PATCH `/api/companies/me`
 
 Actualiza datos editables de la empresa autenticada.

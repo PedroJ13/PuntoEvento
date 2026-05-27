@@ -84,7 +84,11 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Implementar endpoint aceptar invitacion de empresa.
 - [x] Implementar endpoint logout empresa.
 - [x] QA local/estructural de auth por invitacion.
-- [ ] Deploy y QA Azure de auth por invitacion.
+- [x] Infra deploy/settings Azure de auth por invitacion.
+- [x] Implementar mecanismo admin para generar invitaciones controladas.
+- [x] QA local/estructural de mecanismo admin para invitaciones.
+- [ ] Infra deploy/smoke de mecanismo admin para invitaciones.
+- [ ] QA Azure de auth por invitacion con token real controlado.
 - [ ] Endpoint obtener empresa propia.
 - [ ] Endpoint CRUD servicios.
 - [ ] Endpoint upload firmado para imagenes.
@@ -129,7 +133,8 @@ Prioridad inmediata para los equipos:
 
 1. Product/Architect/User: revisar visualmente `panel.html` y `admin.html?demo=local`.
 2. Product/Architect: decidir si este bloque visual se commitea antes de pasar a backend.
-3. Product/Architect: commitear/pushear bloque auth.
-4. Infra Azure: preparar app settings de tablas/sesion y opcionalmente `AZURE_TABLE_COMPANIES=Companies`.
-5. QA: validar en Azure `accept-invite`, cookie, logout y errores.
+3. Product/Architect: commitear/pushear endpoint de invitaciones.
+4. Infra Azure: confirmar deploy del endpoint admin de invitaciones.
+5. QA: validar en Azure `accept-invite`, cookie, logout y errores con invitacion controlada.
 6. Backend API: despues de auth verificada, implementar `GET /api/companies/me`.
+7. QA: validar `GET /api/companies/me` con y sin sesion.
