@@ -75,7 +75,9 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 
 - [x] Definir contrato API en `docs/API_CONTRACTS_MVP.md`.
 - [x] Elegir persistencia MVP: Table Storage.
-- [ ] Endpoint registro empresa.
+- [x] Endpoint registro empresa.
+- [x] QA local/estructural de `POST /api/companies/register`.
+- [ ] QA post-deploy de `POST /api/companies/register` contra Azure.
 - [ ] Endpoint login/auth o integracion con auth elegida.
 - [ ] Endpoint obtener empresa propia.
 - [ ] Endpoint CRUD servicios.
@@ -121,6 +123,8 @@ Prioridad inmediata para los equipos:
 
 1. Product/Architect/User: revisar visualmente `panel.html` y `admin.html?demo=local`.
 2. Product/Architect: decidir si este bloque visual se commitea antes de pasar a backend.
-3. Backend API: preparar implementacion de `POST /api/companies/register` sin romper `/api/register-provider`.
-4. Infra Azure: crear o confirmar tablas `Companies`, `Services`, `Uploads`, `Leads`, y resolver acceso publico a imagenes publicadas.
-5. Product/Architect: decidir si catalogos JSON seran fuente oficial MVP o si se moveran a tabla `Catalogs`.
+3. Product/Architect: commitear y pushear endpoint `companies/register` para desplegarlo.
+4. Infra Azure: confirmar tabla `Companies` y variable `AZURE_TABLE_COMPANIES`.
+5. QA: repetir prueba post-deploy de `POST /api/companies/register` contra Azure.
+6. Product/Architect: decidir estrategia de autenticacion de empresa para `GET /api/companies/me`.
+7. Backend API: despues de auth, implementar `GET /api/companies/me`.

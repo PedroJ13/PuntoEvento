@@ -61,6 +61,29 @@ function validateProviderPayload(body) {
   return { provider };
 }
 
+function validateCompanyRegistrationPayload(body) {
+  const company = {
+    name: cleanText(body.companyName || body.name, 120),
+    email: cleanText(body.email, 160).toLowerCase(),
+    whatsapp: cleanText(body.whatsapp || body.phone, 40),
+    province: cleanText(body.province, 80),
+    canton: cleanText(body.canton, 120),
+    description: cleanText(body.description, 900),
+  };
+
+  const missing = ["name", "email", "whatsapp", "province", "description"].filter(
+    (field) => !company[field],
+  );
+  if (missing.length) {
+    return { error: "Missing required fields", details: { missing } };
+  }
+  if (!isEmail(company.email)) {
+    return { error: "Invalid email" };
+  }
+
+  return { company };
+}
+
 function validateUploadPayload(body) {
   const providerId = cleanText(body.providerId, 120);
   const fileName = cleanText(body.fileName, 240);
@@ -99,6 +122,7 @@ module.exports = {
   cleanText,
   isSafeId,
   slugify,
+  validateCompanyRegistrationPayload,
   validateProviderPayload,
   validateUploadPayload,
 };

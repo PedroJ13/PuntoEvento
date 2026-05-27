@@ -2,6 +2,7 @@ const DEFAULT_PENDING_CONTAINER = "uploads-pending";
 const DEFAULT_PUBLIC_CONTAINER = "public";
 const DEFAULT_PROVIDERS_TABLE = "Providers";
 const DEFAULT_PROVIDER_IMAGES_TABLE = "ProviderImages";
+const DEFAULT_COMPANIES_TABLE = "Companies";
 
 function normalizeOrigin(value) {
   const origin = String(value || "").trim();
@@ -48,6 +49,8 @@ function getConfig() {
       process.env.AZURE_TABLE_PROVIDERS || DEFAULT_PROVIDERS_TABLE,
     providerImagesTable:
       process.env.AZURE_TABLE_PROVIDER_IMAGES || DEFAULT_PROVIDER_IMAGES_TABLE,
+    companiesTable:
+      process.env.AZURE_TABLE_COMPANIES || DEFAULT_COMPANIES_TABLE,
     allowedOrigins,
     sendGridApiKey: process.env.SENDGRID_API_KEY || "",
     notificationEmailTo: process.env.NOTIFICATION_EMAIL_TO || "",

@@ -182,3 +182,17 @@ Son simples, baratos, faciles de revisar en Git y suficientes mientras las categ
 Condicion futura:
 
 Mover a una tabla `Catalogs` cuando se requiera que administradores gestionen categorias/tipos de evento desde el panel.
+
+## 2026-05-27: Registro nuevo crea solo Company
+
+Decision:
+
+El endpoint nuevo `POST /api/companies/register` crea solo una entidad `Company` en estado `pending` y plan `free`.
+
+Motivo:
+
+Separar registro de empresa de creacion de servicios mantiene el modelo claro y evita mezclar datos de empresa con ofertas especificas.
+
+Pendiente:
+
+Definir autenticacion de empresa para endpoints `companies/me` y CRUD de servicios.

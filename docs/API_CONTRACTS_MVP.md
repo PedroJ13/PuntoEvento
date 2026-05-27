@@ -64,7 +64,8 @@ Response `201`:
 {
   "companyId": "company_123",
   "slug": "aurisbel",
-  "status": "pending"
+  "status": "pending",
+  "plan": "free"
 }
 ```
 
@@ -395,4 +396,3 @@ Azure Table Storage:
 - Admin no lista ni aprueba sin credenciales.
 - Servicio no puede editarse desde otra empresa.
 - Cambios de contrato actualizan `DATA_MODEL.md`, este documento y backlog.
-
