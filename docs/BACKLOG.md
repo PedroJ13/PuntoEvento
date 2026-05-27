@@ -91,10 +91,14 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Renombrar endpoint admin de invitaciones para evitar prefijo reservado `admin`.
 - [x] QA local/estructural de endpoint interno de invitaciones.
 - [x] Infra deploy/smoke de mecanismo admin para invitaciones.
-- [ ] Provisionar ejecucion segura de QA Azure con credenciales admin.
-- [ ] Corregir/rotar credenciales admin para endpoint interno de invitaciones.
-- [ ] QA Azure de auth por invitacion con token real controlado.
-- [ ] Endpoint obtener empresa propia.
+- [x] Provisionar ejecucion segura de QA Azure con credenciales admin.
+- [x] Corregir/rotar credenciales admin para endpoint interno de invitaciones.
+- [x] QA Azure de auth por invitacion con token real controlado.
+- [ ] Remover endpoint temporal `internal/auth-diagnostics`.
+- [ ] Rotar `ADMIN_PASSWORD` despues de prueba controlada.
+- [x] Implementar endpoint obtener empresa propia.
+- [x] QA local/estructural de `GET /api/companies/me`.
+- [ ] Deploy y QA Azure de `GET /api/companies/me`.
 - [ ] Endpoint CRUD servicios.
 - [ ] Endpoint upload firmado para imagenes.
 - [ ] Endpoint aprobar/rechazar empresa o servicio.
@@ -138,8 +142,7 @@ Prioridad inmediata para los equipos:
 
 1. Product/Architect/User: revisar visualmente `panel.html` y `admin.html?demo=local`.
 2. Product/Architect: decidir si este bloque visual se commitea antes de pasar a backend.
-3. Product/Owner + Infra Azure: confirmar o rotar `ADMIN_USERNAME` / `ADMIN_PASSWORD` en Azure.
-4. Infra Azure: repetir llamada autenticada a `/api/internal/company-invites` sin exponer secretos.
-5. QA/Infra: validar en Azure `internal/company-invites -> accept-invite -> cookie -> logout`.
-6. Backend API: despues de auth verificada, implementar `GET /api/companies/me`.
-7. QA: validar `GET /api/companies/me` con y sin sesion.
+3. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
+4. Product/Architect: commitear/pushear `GET /api/companies/me`.
+5. QA: validar `GET /api/companies/me` con y sin sesion real en Azure.
+6. Backend API: remover endpoint temporal `internal/auth-diagnostics`.
