@@ -36,12 +36,20 @@ function unauthorized() {
   };
 }
 
+function headerValue(headers, name) {
+  const expected = String(name || "").toLowerCase();
+  for (const [key, value] of Object.entries(headers || {})) {
+    if (String(key).toLowerCase() === expected) return value;
+  }
+  return "";
+}
+
 function requireAdminAuth(req, config = getConfig()) {
   if (!config.adminUsername || !config.adminPassword) {
     return json(503, { error: "Admin credentials are not configured" });
   }
 
-  const credentials = parseBasicAuth(req.headers?.authorization);
+  const credentials = parseBasicAuth(headerValue(req.headers, "authorization"));
   if (!credentials) return unauthorized();
 
   const validUsername = safeCompare(credentials.username, config.adminUsername);
