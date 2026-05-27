@@ -49,7 +49,11 @@ function requireAdminAuth(req, config = getConfig()) {
     return json(503, { error: "Admin credentials are not configured" });
   }
 
-  const credentials = parseBasicAuth(headerValue(req.headers, "authorization"));
+  const credentials = parseBasicAuth(
+    headerValue(req.headers, "authorization") ||
+      headerValue(req.headers, "x-punto-admin-authorization") ||
+      headerValue(req.headers, "x-admin-authorization"),
+  );
   if (!credentials) return unauthorized();
 
   const validUsername = safeCompare(credentials.username, config.adminUsername);
