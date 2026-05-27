@@ -50,10 +50,10 @@ function requireAdminAuth(req, config = getConfig()) {
   }
 
   const credentials = parseBasicAuth(
-    headerValue(req.headers, "authorization") ||
+    headerValue(req.headers, "x-punto-admin-credential") ||
       headerValue(req.headers, "x-punto-admin-authorization") ||
-      headerValue(req.headers, "x-punto-admin-credential") ||
-      headerValue(req.headers, "x-admin-authorization"),
+      headerValue(req.headers, "x-admin-authorization") ||
+      headerValue(req.headers, "authorization"),
   );
   if (!credentials) return unauthorized();
 

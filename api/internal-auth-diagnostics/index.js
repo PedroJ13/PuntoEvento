@@ -36,10 +36,10 @@ module.exports = async function authDiagnostics(context, req) {
     const config = getConfig();
     const headerNames = Object.keys(req.headers || {}).sort();
     const rawHeader =
-      headerValue(req.headers, "authorization") ||
-      headerValue(req.headers, "x-punto-admin-authorization") ||
       headerValue(req.headers, "x-punto-admin-credential") ||
-      headerValue(req.headers, "x-admin-authorization");
+      headerValue(req.headers, "x-punto-admin-authorization") ||
+      headerValue(req.headers, "x-admin-authorization") ||
+      headerValue(req.headers, "authorization");
     const credentials = parseBasicAuth(rawHeader);
 
     context.res = json(200, {
