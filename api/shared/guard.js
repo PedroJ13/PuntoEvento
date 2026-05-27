@@ -16,6 +16,7 @@ function enforceAllowedOrigin(req, config = getConfig()) {
   if (!config.allowedOrigins.length) return null;
 
   const origin = requestOrigin(req);
+  if (!origin) return null;
   if (origin && config.allowedOrigins.includes(origin)) return null;
 
   return json(403, { error: "Forbidden" });
