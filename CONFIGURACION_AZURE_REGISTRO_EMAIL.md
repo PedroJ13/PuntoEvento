@@ -28,7 +28,7 @@ AZURE_STORAGE_PENDING_CONTAINER=uploads-pending
 AZURE_STORAGE_PUBLIC_CONTAINER=public
 AZURE_TABLE_CONNECTION_STRING=<connection-string-del-storage-o-tablas>
 AZURE_TABLE_PROVIDERS=Providers
-AZURE_TABLE_PROVIDER_IMAGES=ProviderImages
+AZURE_TABLE_PROVIDER_IMAGES=ProvidersImages
 ALLOWED_ORIGINS=https://<tu-static-web-app>.azurestaticapps.net
 SENDGRID_API_KEY=<api-key-de-sendgrid>
 NOTIFICATION_EMAIL_TO=pj13eros_business@outlook.com
@@ -50,6 +50,7 @@ Notas:
 
 - `ALLOWED_ORIGINS` es obligatorio en produccion.
 - `ADMIN_PASSWORD` debe ser largo y no reutilizado.
+- SendGrid es opcional para MVP. Si no se configura, el registro se guarda pero no se envia correo.
 - Si se configura `SENDGRID_API_KEY`, tambien se debe configurar `NOTIFICATION_EMAIL_TO` y `NOTIFICATION_EMAIL_FROM`.
 - Cambiar variables puede requerir esperar unos minutos o redeploy.
 
@@ -111,19 +112,19 @@ Crear:
 
 ```text
 Providers
-ProviderImages
+ProvidersImages
 ```
 
 Uso:
 
 - `Providers`: datos de empresas.
-- `ProviderImages`: reservas, slots, metadata de imagenes y URLs publicas.
+- `ProvidersImages`: reservas, slots, metadata de imagenes y URLs publicas.
 
 Estados relevantes:
 
 ```text
 Providers.status: pending, published, rejected, archived
-ProviderImages.status: reserved, pending, published, rejected, deleted
+ProvidersImages.status: reserved, pending, published, rejected, deleted
 ```
 
 ## 5. CORS de Storage
@@ -277,7 +278,7 @@ Despues de cada push a `main`, esperar a que termine el workflow antes de probar
 7. Aprobar una imagen y publicar.
 8. Confirmar en Azure:
    - `Providers.status = published`.
-   - Imagen aprobada en `ProviderImages.status = published`.
+   - Imagen aprobada en `ProvidersImages.status = published`.
    - `publicBlobUrl` lleno.
    - Blob existe en `public/providers/<providerId>/`.
 9. Revisar que el proveedor aparezca en la web publica si `/api/providers` ya esta respondiendo datos publicados.
