@@ -73,7 +73,7 @@ if (-not $env:ADMIN_USERNAME -or -not $env:ADMIN_PASSWORD) {
 $authPlain = "$($env:ADMIN_USERNAME):$($env:ADMIN_PASSWORD)"
 $authBytes = [Text.Encoding]::UTF8.GetBytes($authPlain)
 $authHeader = "Basic " + [Convert]::ToBase64String($authBytes)
-$headers = @{ "X-Punto-Admin-Authorization" = $authHeader }
+$headers = @{ "X-Punto-Admin-Credential" = $authHeader }
 
 Write-Host "Punto Evento invite auth flow test"
 Write-Host "BaseUrl: $BaseUrl"
