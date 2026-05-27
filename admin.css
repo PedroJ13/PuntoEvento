@@ -102,6 +102,89 @@
   color: var(--muted);
 }
 
+.demo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(0, 127, 122, 0.28);
+  border-radius: 8px;
+  background: #e4f4f0;
+  color: #104d47;
+}
+
+.demo-banner strong {
+  font-size: 0.92rem;
+  text-transform: uppercase;
+}
+
+.demo-banner span {
+  color: #31514d;
+  font-weight: 650;
+}
+
+.admin-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.admin-tab {
+  min-height: 42px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #526171;
+  padding: 10px 14px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-tab.is-active {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 8px 22px rgba(24, 33, 43, 0.08);
+}
+
+.admin-section {
+  display: grid;
+  gap: 18px;
+}
+
+.section-heading,
+.service-card-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.section-heading {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+}
+
+.section-heading > p {
+  max-width: 520px;
+  margin: 0;
+  color: var(--muted);
+}
+
 .admin-list {
   display: grid;
   gap: 18px;
@@ -191,15 +274,290 @@
   text-align: center;
 }
 
+.company-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.company-grid article,
+.service-meta div {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--soft);
+}
+
+.company-grid strong,
+.service-meta strong {
+  font-size: 0.82rem;
+}
+
+.company-grid span,
+.service-meta span,
+.service-card p {
+  color: var(--muted);
+}
+
+.admin-note {
+  margin: 0;
+  padding: 16px;
+  border-left: 4px solid var(--teal);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+}
+
+.services-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+  gap: 18px;
+  align-items: start;
+}
+
+.services-list {
+  display: grid;
+  gap: 14px;
+}
+
+.service-card,
+.service-form {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.service-card h3,
+.service-form h3 {
+  margin: 8px 0 0;
+  font-size: 1.3rem;
+}
+
+.service-card p {
+  margin: 0;
+}
+
+.service-meta {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  background: #eaf1f0;
+  color: #31514d;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.status-draft {
+  background: #edf1f5;
+  color: #465668;
+}
+
+.status-pending {
+  background: #fff2d7;
+  color: #7a5412;
+}
+
+.status-published {
+  background: #ddf4ea;
+  color: #176347;
+}
+
+.status-rejected {
+  background: #ffe4df;
+  color: #9c3c2d;
+}
+
+.status-inactive {
+  background: #ece7df;
+  color: #5f5243;
+}
+
+.compact-button {
+  width: auto;
+  min-height: 42px;
+  padding: 10px 14px;
+}
+
+.admin-review-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  border-radius: 999px;
+  background: var(--soft);
+  color: #526171;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.service-form {
+  position: sticky;
+  top: 18px;
+}
+
+.service-form label,
+.choice-field {
+  display: grid;
+  gap: 7px;
+  color: #2c3a46;
+  font-weight: 750;
+}
+
+.choice-field {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
+
+.choice-field legend {
+  margin-bottom: 8px;
+  padding: 0;
+}
+
+.service-form input,
+.service-form select,
+.service-form textarea {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid #cfd9df;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  padding: 11px 12px;
+  font: inherit;
+}
+
+.service-form textarea {
+  resize: vertical;
+}
+
+.service-form input:focus,
+.service-form select:focus,
+.service-form textarea:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(0, 127, 122, 0.12);
+  outline: 0;
+}
+
+.choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  min-height: 38px;
+  border: 1px solid #cfd9df;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.choice-pill:has(input:checked) {
+  border-color: rgba(0, 127, 122, 0.55);
+  background: #e4f4f0;
+  color: #104d47;
+}
+
+.file-field small {
+  color: var(--muted);
+  font-weight: 650;
+}
+
+.photo-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.photo-preview-item {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.photo-preview-item img,
+.photo-file-placeholder {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--soft);
+}
+
+.photo-file-placeholder {
+  display: grid;
+  place-items: center;
+  color: #607284;
+  font-weight: 850;
+}
+
+.photo-preview-item span {
+  display: block;
+  overflow: hidden;
+  padding: 8px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.photo-preview-empty {
+  padding: 12px;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: #fff;
+}
+
+.full-field {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 @media (max-width: 760px) {
   .admin-header,
   .admin-toolbar,
-  .admin-provider-header {
+  .demo-banner,
+  .admin-provider-header,
+  .section-heading,
+  .service-card-header {
     display: grid;
   }
 
   .admin-meta,
-  .admin-actions {
+  .admin-actions,
+  .company-grid,
+  .services-layout,
+  .service-meta,
+  .form-actions {
     grid-template-columns: 1fr;
+  }
+
+  .service-form {
+    position: static;
   }
 }

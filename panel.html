@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel empresa demo | Punto Evento</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <link rel="stylesheet" href="styles.css?v=14" />
+    <link rel="stylesheet" href="panel.css?v=2" />
+  </head>
+  <body class="panel-body">
+    <main class="panel-shell">
+      <header class="panel-header">
+        <div>
+          <p class="eyebrow">Panel empresa demo</p>
+          <h1>Gestiona tus servicios</h1>
+          <p>Demo local para crear, editar y enviar servicios a revision. Esta demo no guarda en Azure todavia.</p>
+        </div>
+        <a class="ghost-button" href="admin.html?demo=local">Ver revision interna</a>
+      </header>
+
+      <section class="company-summary">
+        <div>
+          <p class="eyebrow">Empresa demo</p>
+          <h2>Aurisbel Eventos</h2>
+          <p>Reposteria, coordinacion y mesas dulces para eventos en Costa Rica.</p>
+        </div>
+        <div class="summary-grid">
+          <article>
+            <strong data-service-count>0</strong>
+            <span>servicios</span>
+          </article>
+          <article>
+            <strong>Free</strong>
+            <span>plan actual</span>
+          </article>
+          <article>
+            <strong>Pendiente</strong>
+            <span>perfil empresa</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Servicios</p>
+            <h2>Catalogo de la empresa</h2>
+          </div>
+          <div class="panel-actions">
+            <button class="secondary-button compact-button" type="button" data-reset-demo>Restaurar demo</button>
+            <button class="primary-button compact-button" type="button" data-add-service>Agregar servicio</button>
+          </div>
+        </div>
+        <p class="panel-message" data-panel-message></p>
+
+        <div class="services-layout">
+          <div class="services-list" data-services-list></div>
+          <form class="service-form is-hidden" data-service-form>
+            <div>
+              <p class="eyebrow" data-service-form-mode>Nuevo servicio</p>
+              <h3>Datos del servicio</h3>
+              <p>Esta demo no guarda en Azure todavia.</p>
+            </div>
+            <input name="id" type="hidden" />
+            <label>
+              <span>Nombre</span>
+              <input name="name" required maxlength="80" />
+            </label>
+            <label>
+              <span>Categoria</span>
+              <select name="category" required data-category-select></select>
+            </label>
+            <fieldset class="choice-field full-field">
+              <legend>Tipos de evento</legend>
+              <div class="choice-grid" data-event-type-options></div>
+            </fieldset>
+            <label>
+              <span>Precio desde</span>
+              <input name="priceFrom" required placeholder="CRC 120000" />
+            </label>
+            <label>
+              <span>Estado</span>
+              <select name="status" required>
+                <option value="draft">draft</option>
+                <option value="pending">pending</option>
+                <option value="published">published</option>
+                <option value="rejected">rejected</option>
+                <option value="inactive">inactive</option>
+              </select>
+            </label>
+            <label>
+              <span>Cantidad de fotos</span>
+              <input name="photoCount" type="number" min="0" max="20" readonly required />
+            </label>
+            <label class="file-field full-field">
+              <span>Fotos del servicio</span>
+              <input name="photos" type="file" accept="image/*" multiple data-service-photos />
+              <small>Preview local para demo. Las fotos no se suben a Azure todavia.</small>
+            </label>
+            <div class="photo-preview-grid full-field" data-photo-preview></div>
+            <label class="full-field">
+              <span>Descripcion</span>
+              <textarea name="description" rows="4" required maxlength="320"></textarea>
+            </label>
+            <div class="form-actions">
+              <button class="primary-button" type="submit">Guardar servicio</button>
+              <button class="secondary-button" type="button" data-send-review>Enviar a revision</button>
+              <button class="ghost-button" type="button" data-cancel-service>Cancelar</button>
+            </div>
+            <p class="panel-message" data-form-message></p>
+          </form>
+        </div>
+      </section>
+    </main>
+    <script src="panel.js?v=2"></script>
+  </body>
+</html>

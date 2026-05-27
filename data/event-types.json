@@ -1,0 +1,38 @@
+[
+  {
+    "id": "bodas",
+    "label": "Bodas",
+    "status": "active",
+    "sortOrder": 10
+  },
+  {
+    "id": "cumpleanos",
+    "label": "Cumpleanos",
+    "status": "active",
+    "sortOrder": 20
+  },
+  {
+    "id": "eventos-corporativos",
+    "label": "Eventos corporativos",
+    "status": "active",
+    "sortOrder": 30
+  },
+  {
+    "id": "baby-shower",
+    "label": "Baby Shower",
+    "status": "active",
+    "sortOrder": 40
+  },
+  {
+    "id": "graduaciones",
+    "label": "Graduaciones",
+    "status": "active",
+    "sortOrder": 50
+  },
+  {
+    "id": "fiestas-infantiles",
+    "label": "Fiestas infantiles",
+    "status": "active",
+    "sortOrder": 60
+  }
+]

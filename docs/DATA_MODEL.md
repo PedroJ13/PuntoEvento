@@ -70,6 +70,63 @@ Servicios:
 }
 ```
 
+## Catalogos
+
+Las categorias y tipos de evento deben manejarse como catalogos compartidos.
+
+No deben ser texto libre en el panel empresa, porque:
+
+- La busqueda publica depende de categorias consistentes.
+- El ranking/posicionamiento futuro se hara por categoria.
+- QA necesita datos repetibles.
+- Backend debe validar valores permitidos.
+- Infra puede cachear catalogos sin consultar empresas.
+
+Catalogos recomendados:
+
+```text
+Category
+EventType
+```
+
+En demo local pueden vivir en:
+
+```text
+data/categories.json
+data/event-types.json
+```
+
+En MVP con Azure pueden vivir en Table Storage o como JSON estatico versionado si se editan poco.
+
+Recomendacion MVP:
+
+- Mantener catalogos en JSON estatico versionado al inicio.
+- Backend valida contra la misma lista o una copia sincronizada.
+- Migrar a tabla `Catalogs` solo cuando el admin necesite editar categorias desde UI.
+
+## Category
+
+```json
+{
+  "id": "catering",
+  "label": "Catering",
+  "group": "Alimentacion",
+  "status": "active",
+  "sortOrder": 10
+}
+```
+
+## EventType
+
+```json
+{
+  "id": "bodas",
+  "label": "Bodas",
+  "status": "active",
+  "sortOrder": 10
+}
+```
+
 ## User
 
 ```json
@@ -136,4 +193,3 @@ Mostrar link para ver otros servicios de Aurisbel.
 ```
 
 El perfil de empresa muestra todos los servicios.
-

@@ -72,11 +72,41 @@ En la app estatica actual se puede simular con hash routes:
 ```text
 /admin/login
 /admin/dashboard
-/admin/empresa
-/admin/servicios
-/admin/servicios/nuevo
-/admin/servicios/:id
-/admin/fotos
-/admin/planes
+/admin/revision
+/admin/empresas-pendientes
+/admin/servicios-pendientes
 ```
 
+## Rutas panel empresa objetivo
+
+```text
+/panel/login
+/panel/dashboard
+/panel/empresa
+/panel/servicios
+/panel/servicios/nuevo
+/panel/servicios/:id
+/panel/fotos
+/panel/planes
+```
+
+Durante la demo estatica, el panel empresa puede convivir dentro de `admin.html` como pestanas separadas, pero la arquitectura objetivo separa:
+
+- `Admin interno`: revision, aprobacion y moderacion.
+- `Panel empresa`: gestion de perfil, servicios, fotos y planes.
+
+Decision actualizada:
+
+`admin.html` no debe evolucionar como lugar donde la empresa crea servicios. Debe quedar orientado a revision interna.
+
+La creacion/edicion de servicios por empresa debe moverse a una pantalla/ruta separada de panel empresa, por ejemplo:
+
+```text
+panel.html
+```
+
+o, en arquitectura final:
+
+```text
+/panel/*
+```

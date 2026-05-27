@@ -38,12 +38,16 @@ Company.plan = free
 
 ## 2. Primer ingreso admin
 
-La empresa entra a su panel y ve:
+La empresa entra a su panel empresa y ve:
 
 - Estado del perfil.
 - Datos faltantes.
 - Boton para crear primer servicio.
 - Mensaje: "Tu perfil se publicara despues de revision."
+
+Nota de arquitectura:
+
+El panel empresa debe separarse del admin interno. En demo puede convivir dentro de `admin.html`, pero en producto la ruta objetivo es `/panel/*`.
 
 ## 3. Perfil empresa
 
@@ -77,6 +81,10 @@ draft -> pending -> published
 draft -> pending -> rejected
 published -> pending_changes -> published
 ```
+
+La creacion y edicion de servicios ocurre en el panel empresa, no en el admin interno.
+
+El admin interno solo revisa servicios enviados a revision.
 
 ## 5. Revision interna
 

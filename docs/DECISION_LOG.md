@@ -71,3 +71,114 @@ El MVP no incluye pagos reales.
 Motivo:
 
 Primero se valida registro, contenido, busqueda por servicio y recepcion de leads. Los pagos entran despues como planes de posicionamiento destacado.
+
+## 2026-05-27: Persistencia MVP en Azure Table Storage
+
+Decision:
+
+Mantener Azure Table Storage como persistencia MVP.
+
+Motivo:
+
+La infraestructura ya tiene Storage Account, tablas y Azure Functions funcionando. Table Storage cubre el MVP con menor costo y menor complejidad que Cosmos DB serverless.
+
+Condicion futura:
+
+Evaluar Cosmos DB serverless si la busqueda por categoria, provincia, plan, estado y servicios requiere consultas mas flexibles o ranking mas avanzado.
+
+## 2026-05-27: Imagenes publicadas en container publico para MVP cerrado
+
+Decision:
+
+Para MVP cerrado, usar `uploads-pending` privado y permitir lectura publica solo para imagenes aprobadas en el container `public`.
+
+Motivo:
+
+Es la opcion mas simple y barata para que las imagenes aprobadas rendericen en la pagina publica sin proxy ni SAS por imagen.
+
+Riesgo:
+
+Debe mantenerse `uploads-pending` privado y solo publicar imagenes revisadas/aprobadas.
+
+## 2026-05-27: Separar Admin interno y Panel empresa
+
+Decision:
+
+Separar conceptualmente el admin interno de Punto Evento del panel de empresa.
+
+Definicion:
+
+- Admin interno: revision, aprobacion, rechazo, moderacion y control de calidad.
+- Panel empresa: gestion de perfil, servicios, fotos y planes.
+
+Implementacion temporal:
+
+La implementacion temporal en `admin.html` sirvio para validar el modelo visual, pero no debe seguir creciendo como flujo de empresa.
+
+Arquitectura objetivo:
+
+Usar rutas separadas:
+
+- `/admin/*` para administradores internos.
+- `/panel/*` para empresas proveedoras.
+
+Actualizacion:
+
+La opcion `Agregar servicio` pertenece al panel empresa, no al admin interno. El admin interno debe revisar/aprobar/rechazar datos enviados por empresas.
+
+## 2026-05-27: Modo demo local para panel empresa
+
+Decision:
+
+Agregar un modo demo local para que Product/QA puedan revisar `Empresa demo` y `Servicios` sin depender de API Azure ni credenciales reales.
+
+Condicion:
+
+Este modo demo no debe desbloquear acciones de revision interna ni simular permisos productivos.
+
+Motivo:
+
+TASK-007 aprobo la demo de servicios con observaciones, pero QA no pudo completar login real en local porque el flujo actual depende de API/credenciales Azure.
+
+## 2026-05-27: Categorias y tipos de evento como catalogos
+
+Decision:
+
+Categorias y tipos de evento deben ser listas controladas compartidas por pagina publica, panel empresa, API y QA.
+
+Motivo:
+
+Evita texto libre inconsistente y permite busqueda, filtros, validacion, ranking y planes destacados por categoria.
+
+Implementacion MVP:
+
+Usar JSON estatico versionado para catalogos al inicio. Evaluar tabla `Catalogs` en Azure cuando se necesite editar categorias desde un panel admin.
+
+## 2026-05-27: Fotos pertenecen a empresa y servicio
+
+Decision:
+
+Habra fotos a nivel empresa y fotos a nivel servicio.
+
+Definicion:
+
+- Empresa: logo, portada general.
+- Servicio: portada del servicio y galeria del servicio.
+
+Motivo:
+
+Un proveedor puede ofrecer servicios distintos que necesitan imagenes especificas. Ejemplo: queques, wedding planner y mesa dulce no deberian compartir necesariamente la misma galeria.
+
+## 2026-05-27: Catalogos JSON como fuente MVP inicial
+
+Decision:
+
+Usar `data/categories.json` y `data/event-types.json` como fuente versionada inicial de catalogos para la demo y el MVP temprano.
+
+Motivo:
+
+Son simples, baratos, faciles de revisar en Git y suficientes mientras las categorias no sean editables desde UI.
+
+Condicion futura:
+
+Mover a una tabla `Catalogs` cuando se requiera que administradores gestionen categorias/tipos de evento desde el panel.

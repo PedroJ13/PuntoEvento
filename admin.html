@@ -6,7 +6,7 @@
     <title>Admin | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=14" />
-    <link rel="stylesheet" href="admin.css?v=2" />
+    <link rel="stylesheet" href="admin.css?v=5" />
   </head>
   <body class="admin-body">
     <main class="admin-shell">
@@ -35,6 +35,7 @@
             <input name="password" type="password" autocomplete="current-password" required />
           </label>
           <button class="primary-button" type="submit">Entrar</button>
+          <button class="secondary-button" type="button" data-demo-login>Ver modo demo local</button>
           <p class="admin-message" data-login-message>Las credenciales se validan contra la API de Azure.</p>
         </form>
       </section>
@@ -47,9 +48,78 @@
           </div>
           <button class="secondary-button" type="button" data-logout>Cerrar sesion</button>
         </div>
-        <div class="admin-list" data-provider-list></div>
+
+        <div class="demo-banner is-hidden" data-demo-banner>
+          <strong>Modo demo local</strong>
+          <span>Admin muestra revision interna. La creacion de servicios vive en el panel empresa demo.</span>
+        </div>
+
+        <nav class="admin-tabs" aria-label="Secciones admin">
+          <button class="admin-tab is-active" type="button" data-tab-target="revision">Revision</button>
+          <button class="admin-tab" type="button" data-tab-target="empresa">Empresa demo</button>
+          <button class="admin-tab" type="button" data-tab-target="servicios">Servicios</button>
+        </nav>
+
+        <section class="admin-section" data-tab-panel="revision">
+          <div class="admin-empty is-hidden" data-demo-review-lock>
+            La revision interna requiere login admin real.
+          </div>
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Revision interna</p>
+              <h2>Proveedores pendientes</h2>
+            </div>
+            <p>Flujo actual de aprobacion manual. Se mantiene separado del panel empresa demo.</p>
+          </div>
+          <div class="admin-list" data-provider-list></div>
+        </section>
+
+        <section class="admin-section is-hidden" data-tab-panel="empresa">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Empresa demo</p>
+              <h2 data-company-name>Aurisbel Eventos</h2>
+            </div>
+            <span class="status-pill status-pending">Perfil pendiente</span>
+          </div>
+          <div class="company-grid">
+            <article>
+              <strong>Categoria principal</strong>
+              <span>Reposteria y coordinacion</span>
+            </article>
+            <article>
+              <strong>Zona</strong>
+              <span>Heredia, Costa Rica</span>
+            </article>
+            <article>
+              <strong>Contacto</strong>
+              <span>empresa@demo.com</span>
+            </article>
+            <article>
+              <strong>Plan</strong>
+              <span>Gratis</span>
+            </article>
+          </div>
+          <p class="admin-note">
+            Esta vista representa el futuro panel empresa. Por ahora usa datos demo y no cambia informacion real en Azure.
+          </p>
+        </section>
+
+        <section class="admin-section is-hidden" data-tab-panel="servicios">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Revision interna</p>
+              <h2>Servicios enviados por empresas</h2>
+            </div>
+            <a class="ghost-button compact-button" href="panel.html">Abrir panel empresa demo</a>
+          </div>
+          <p class="admin-note">
+            Esta vista es solo de revision. Las empresas crean y editan servicios desde `panel.html`.
+          </p>
+          <div class="services-list" data-services-list></div>
+        </section>
       </section>
     </main>
-    <script src="admin.js?v=5"></script>
+    <script src="admin.js?v=8"></script>
   </body>
 </html>

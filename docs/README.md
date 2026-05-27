@@ -11,6 +11,7 @@ La idea es reiniciar la forma de trabajar sin perder el codigo actual.
 - `ARCHITECTURE.md`: arquitectura actual y objetivo.
 - `DATA_MODEL.md`: modelo Empresa -> Servicios.
 - `API_CONTRACTS_MVP.md`: inventario API actual y contratos objetivo MVP.
+- `QA_TEST_PLAN.md`: matriz de pruebas MVP y checklist de release.
 - `BACKLOG.md`: tareas priorizadas.
 - `DECISION_LOG.md`: decisiones importantes del proyecto.
 

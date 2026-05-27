@@ -4,12 +4,15 @@
 
 Objetivo: congelar lo que ya funciona y dejar reglas claras antes de seguir construyendo.
 
-- [ ] Revisar cambios sin commit.
-- [ ] Decidir que entra en el commit baseline.
-- [ ] Confirmar que la pagina publica actual funciona en Azure.
-- [ ] Documentar rutas actuales de pagina publica, admin y API.
-- [ ] Crear commit baseline antes de cambios grandes.
-- [ ] Confirmar que todos los chats/equipos usaran `AGENTS.md`, `docs/` y `chat-start/`.
+- [x] Revisar cambios sin commit.
+- [x] Decidir que entra en el commit baseline.
+- [x] Crear commit baseline antes de cambios grandes.
+- [x] Confirmar que todos los chats/equipos usaran `AGENTS.md`, `docs/` y `chat-start/`.
+- [x] Inventariar infraestructura Azure actual.
+- [x] Inventariar API actual y compararla contra `Company -> Services`.
+- [x] Crear matriz QA MVP.
+- [ ] Confirmar que la pagina publica actual funciona en Azure despues del ultimo deploy.
+- [ ] Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
 
 Entregable:
 
@@ -20,6 +23,8 @@ Entregable:
 
 Objetivo: adaptar el concepto del producto al nuevo modelo sin tocar backend real todavia.
 
+- [x] Revisar admin actual y proponer UI para multiples servicios por empresa.
+- [x] Definir que Admin interno y Panel empresa son responsabilidades separadas.
 - [ ] Crear `data/companies.json` demo.
 - [ ] Crear `data/services.json` demo.
 - [ ] Mantener `data/providers.json` temporalmente para compatibilidad.
@@ -27,10 +32,23 @@ Objetivo: adaptar el concepto del producto al nuevo modelo sin tocar backend rea
   - Queques.
   - Wedding Planner.
   - Mesa dulce.
-- [ ] Ajustar admin demo para listar varios servicios por empresa.
-- [ ] Agregar formulario demo para crear/editar servicio.
-- [ ] Agregar estado visual: draft, pending, published, rejected.
-- [ ] Crear checklist QA para multiples servicios.
+- [x] Ajustar admin demo para listar varios servicios por empresa.
+- [x] Agregar formulario demo para crear/editar servicio.
+- [x] Agregar estado visual: draft, pending, published, rejected.
+- [x] Crear checklist QA para multiples servicios.
+- [x] QA valido demo de servicios en admin con observaciones.
+- [x] Agregar modo demo local para ver panel empresa/servicios sin depender de API Azure.
+- [x] QA valido modo demo local en admin.
+- [ ] Agregar control para restaurar datos demo de servicios.
+- [ ] Convertir categoria y tipos de evento del formulario de servicio demo a listas controladas.
+- [ ] Agregar carga/preview de fotos en formulario de servicio demo.
+- [x] Separar creacion/edicion de servicios hacia panel empresa demo fuera de `admin.html`.
+- [x] Ajustar `admin.html` para enfocarse en revision/aprobacion de datos creados por empresas.
+- [x] Crear `panel.html`, `panel.js`, `panel.css` para panel empresa demo.
+- [x] Crear catalogo `data/event-types.json`.
+- [x] QA manual del panel empresa demo.
+- [x] Agregar boton visible para restaurar datos demo en `panel.html`.
+- [x] QA del boton `Restaurar demo`.
 
 Entregable:
 
@@ -55,8 +73,8 @@ Entregable:
 
 Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 
-- [ ] Definir contrato API en `docs/API_CONTRACT.md`.
-- [ ] Elegir persistencia MVP: Table Storage o Cosmos DB serverless.
+- [x] Definir contrato API en `docs/API_CONTRACTS_MVP.md`.
+- [x] Elegir persistencia MVP: Table Storage.
 - [ ] Endpoint registro empresa.
 - [ ] Endpoint login/auth o integracion con auth elegida.
 - [ ] Endpoint obtener empresa propia.
@@ -73,14 +91,15 @@ Entregable:
 
 Objetivo: validar que el flujo puede usarse por empresas reales.
 
-- [ ] Matriz de pruebas registro.
-- [ ] Matriz de pruebas login.
-- [ ] Matriz de pruebas admin servicios.
-- [ ] Matriz de pruebas upload fotos.
-- [ ] Regresion pagina publica.
-- [ ] Pruebas de permisos Empresa A vs Empresa B.
-- [ ] Pruebas responsive.
-- [ ] Checklist de release.
+- [x] Matriz de pruebas registro.
+- [x] Matriz de pruebas login.
+- [x] Matriz de pruebas admin servicios.
+- [x] Matriz de pruebas upload fotos.
+- [x] Regresion pagina publica documentada.
+- [x] Pruebas de permisos Empresa A vs Empresa B documentadas.
+- [x] Pruebas responsive documentadas.
+- [x] Checklist de release documentado.
+- [ ] Ejecutar matriz QA contra ambiente Azure.
 
 Entregable:
 
@@ -95,3 +114,13 @@ Entregable:
 - Moderacion avanzada.
 - Busqueda avanzada con ranking.
 - Dashboard interno para administradores.
+
+## Siguiente bloque recomendado
+
+Prioridad inmediata para los equipos:
+
+1. Product/Architect/User: revisar visualmente `panel.html` y `admin.html?demo=local`.
+2. Product/Architect: decidir si este bloque visual se commitea antes de pasar a backend.
+3. Backend API: preparar implementacion de `POST /api/companies/register` sin romper `/api/register-provider`.
+4. Infra Azure: crear o confirmar tablas `Companies`, `Services`, `Uploads`, `Leads`, y resolver acceso publico a imagenes publicadas.
+5. Product/Architect: decidir si catalogos JSON seran fuente oficial MVP o si se moveran a tabla `Catalogs`.
