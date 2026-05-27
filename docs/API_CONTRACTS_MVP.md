@@ -158,7 +158,7 @@ Reglas:
 - Limpiar cookie con expiracion inmediata.
 - Si no hay sesion, puede responder `200` idempotente.
 
-### POST `/api/admin/company-invites`
+### POST `/api/internal/company-invites`
 
 Genera una invitacion para que una empresa acceda al panel.
 
@@ -167,6 +167,10 @@ Uso:
 ```text
 Admin interno / QA controlado
 ```
+
+Nota:
+
+Se evita el prefijo `/api/admin/...` porque `admin` puede conflictuar con rutas reservadas del runtime de Azure Functions.
 
 Request:
 

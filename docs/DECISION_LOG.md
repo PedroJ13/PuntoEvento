@@ -240,3 +240,33 @@ Azure Static Web Apps Auth, usando `x-ms-client-principal` y tabla `Users` para 
 Regla de seguridad:
 
 El frontend nunca decide `companyId` para operaciones privadas. El backend siempre lo obtiene desde la sesion.
+
+## 2026-05-27: Evitar prefijo admin en Azure Functions
+
+Decision:
+
+No usar `admin` como primer segmento en nombres de carpetas Function ni rutas HTTP de Azure Functions.
+
+Motivo:
+
+Infra confirmo que Azure despliega y lista las Functions con prefijo `admin`, pero las invocaciones HTTP devuelven `404`. La causa probable es conflicto con rutas administrativas reservadas del runtime de Azure Functions.
+
+Regla:
+
+Usar prefijos internos alternativos para endpoints operativos:
+
+```text
+/api/internal/...
+/api/backoffice/...
+/api/ops/...
+```
+
+Para MVP se usara:
+
+```text
+/api/internal/company-invites
+```
+
+Pendiente:
+
+Renombrar gradualmente endpoints admin legacy que hoy tambien devuelven `404` en Azure.

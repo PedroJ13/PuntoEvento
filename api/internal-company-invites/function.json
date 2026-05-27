@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "admin/company-invites"
+      "route": "internal/company-invites"
     },
     {
       "type": "http",
