@@ -104,6 +104,60 @@ Validaciones:
 - Requiere usuario autenticado con rol `company_owner` o permiso equivalente.
 - Solo devuelve la empresa asociada al usuario.
 
+### POST `/api/company-auth/accept-invite`
+
+Acepta una invitacion de empresa y crea sesion server-side.
+
+Request:
+
+```json
+{
+  "token": "token-largo-de-invitacion"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "companyId": "company_123",
+  "email": "empresa@email.com",
+  "role": "company_owner"
+}
+```
+
+Headers:
+
+```text
+Set-Cookie: pe_company_session=<session>; HttpOnly; Secure; SameSite=Lax; Path=/api
+```
+
+Validaciones:
+
+- Token requerido.
+- Token debe existir como hash en `CompanyInvites`.
+- Token no debe estar vencido, usado ni revocado.
+- Al aceptar, marcar invitacion como usada y crear `CompanySessions`.
+- No devolver token, hash ni datos internos.
+
+### POST `/api/company-auth/logout`
+
+Cierra la sesion de empresa.
+
+Response `200`:
+
+```json
+{
+  "ok": true
+}
+```
+
+Reglas:
+
+- Si hay cookie de sesion valida, marcar sesion como `revoked`.
+- Limpiar cookie con expiracion inmediata.
+- Si no hay sesion, puede responder `200` idempotente.
+
 ### PATCH `/api/companies/me`
 
 Actualiza datos editables de la empresa autenticada.
@@ -370,6 +424,8 @@ Azure Table Storage:
 | --- | --- | --- | --- |
 | `Companies` | `company` | `companyId` | Perfil de empresa. |
 | `CompanySlugs` | `slug` | `slug` | Unicidad de slug y lookup rapido. |
+| `CompanyInvites` | `companyId` | `inviteId` | Invitaciones para activar acceso al panel. |
+| `CompanySessions` | `companyId` | `sessionId` | Sesiones server-side de empresas. |
 | `Users` | `companyId` | `userId` | Usuarios asociados a empresa. |
 | `Services` | `companyId` | `serviceId` | Servicios por empresa. |
 | `ServiceIndex` | `published` o categoria | `serviceId` | Lectura publica mas barata si Table Storage no alcanza por filtros. |
@@ -379,7 +435,7 @@ Azure Table Storage:
 
 ## Riesgos y decisiones pendientes
 
-- Autenticacion de empresa no esta definida. Elegir Static Web Apps Auth, Entra External ID/B2C o flujo propio antes de implementar `/companies/me`.
+- Autenticacion MVP de empresa sera por invitacion/token con sesion server-side. Azure Static Web Apps Auth queda como alternativa futura.
 - Basic Auth admin sirve para demo interna, pero debe endurecerse antes de uso amplio.
 - `Provider` y `Company` conviven durante la migracion. Se necesita mapa de compatibilidad para no romper el formulario actual.
 - Table Storage puede limitar busqueda publica avanzada. Para MVP sirve; si crece, evaluar Cosmos DB serverless o Azure AI Search.

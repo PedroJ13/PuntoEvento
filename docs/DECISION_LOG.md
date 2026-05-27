@@ -196,3 +196,47 @@ Separar registro de empresa de creacion de servicios mantiene el modelo claro y 
 Pendiente:
 
 Definir autenticacion de empresa para endpoints `companies/me` y CRUD de servicios.
+
+## 2026-05-27: Registro de empresa verificado en Azure
+
+Decision:
+
+Marcar `POST /api/companies/register` como funcional en Azure.
+
+Motivo:
+
+QA confirmo que el endpoint responde `400` para validaciones y `201` para un registro valido. Infra confirmo que la tabla `Companies` fue creada y que la entidad QA quedo persistida sin secretos.
+
+Notas:
+
+- El `GET` a la misma ruta puede devolver `404` porque la Function esta configurada solo para `POST`.
+- `AZURE_TABLE_COMPANIES=Companies` no es obligatorio porque el codigo tiene default, pero conviene configurarlo para claridad operativa.
+- Queda pendiente decidir autenticacion de empresa antes de exponer endpoints privados como `/api/companies/me`.
+
+## 2026-05-27: Autenticacion MVP de empresas por invitacion
+
+Decision:
+
+Para el MVP cerrado, usar invitacion/token con sesion propia server-side para empresas.
+
+Flujo:
+
+1. Empresa se registra con `POST /api/companies/register`.
+2. Empresa queda `pending`.
+3. Punto Evento revisa o decide invitar.
+4. Backend genera una invitacion asociada a `companyId`.
+5. Empresa abre el link de invitacion.
+6. Backend valida token hasheado y crea sesion.
+7. Endpoints privados derivan `companyId` desde cookie de sesion, no desde el cliente.
+
+Motivo:
+
+Desbloquea rapido el panel empresa sin implementar passwords ni obligar a proveedores a usar una cuenta externa. Es adecuado para primeras empresas controladas.
+
+Alternativa futura:
+
+Azure Static Web Apps Auth, usando `x-ms-client-principal` y tabla `Users` para mapear identidad externa a `companyId`.
+
+Regla de seguridad:
+
+El frontend nunca decide `companyId` para operaciones privadas. El backend siempre lo obtiene desde la sesion.

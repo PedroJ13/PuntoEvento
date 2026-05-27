@@ -140,6 +140,52 @@ Recomendacion MVP:
 }
 ```
 
+## CompanyInvite
+
+```json
+{
+  "id": "invite_123",
+  "companyId": "company_123",
+  "email": "empresa@email.com",
+  "role": "company_owner",
+  "tokenHash": "...",
+  "status": "active",
+  "expiresAt": "2026-05-28T00:00:00Z",
+  "usedAt": null,
+  "createdAt": "2026-05-27T00:00:00Z"
+}
+```
+
+Reglas:
+
+- Guardar solo hash del token.
+- Token de un solo uso.
+- Expiracion obligatoria.
+- Puede revocarse manualmente.
+
+## CompanySession
+
+```json
+{
+  "id": "session_123",
+  "companyId": "company_123",
+  "email": "empresa@email.com",
+  "role": "company_owner",
+  "sessionHash": "...",
+  "status": "active",
+  "expiresAt": "2026-06-10T00:00:00Z",
+  "createdAt": "2026-05-27T00:00:00Z",
+  "lastSeenAt": "2026-05-27T00:00:00Z"
+}
+```
+
+Reglas:
+
+- Guardar solo hash de la sesion.
+- Cookie debe ser `HttpOnly`, `Secure` y `SameSite=Lax`.
+- Endpoints privados derivan `companyId` desde la sesion.
+- El cliente no puede escoger `companyId`.
+
 ## Lead
 
 ```json

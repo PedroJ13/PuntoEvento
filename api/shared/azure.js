@@ -55,6 +55,15 @@ async function ensureCompaniesTable(config = getConfig()) {
   });
 }
 
+async function ensureCompanyAuthTables(config = getConfig()) {
+  await getTableClient(config.companyInvitesTable, config).createTable().catch((error) => {
+    if (error.statusCode !== 409) throw error;
+  });
+  await getTableClient(config.companySessionsTable, config).createTable().catch((error) => {
+    if (error.statusCode !== 409) throw error;
+  });
+}
+
 async function ensurePendingContainer(config = getConfig()) {
   await getBlobServiceClient(config)
     .getContainerClient(config.pendingContainer)
@@ -366,6 +375,7 @@ module.exports = {
   copyPendingBlobToPublic,
   createReadSasUrl,
   createWriteSasUrl,
+  ensureCompanyAuthTables,
   ensureCompaniesTable,
   deletePendingBlob,
   ensurePendingContainer,
