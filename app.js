@@ -1160,13 +1160,174 @@ function companiesPage() {
   `;
 }
 
+function companiesPageNew() {
+  return `
+    <section class="subhero">
+      <div class="subhero-inner">
+        <div>
+          <p class="eyebrow">Proveedores</p>
+          <h1>Recibi clientes interesados en tus servicios de eventos</h1>
+          <p>Registra tu empresa gratis. Luego recibes acceso al panel para crear servicios, subir fotos y enviarlos a revision.</p>
+          <div class="card-actions">
+            <a class="primary-button" href="#registro-empresa" data-scroll-register>Crear perfil gratis</a>
+            <a class="secondary-button" href="panel.html">Ya tengo acceso</a>
+          </div>
+        </div>
+        <img src="${image("photo-1556761175-b413da4baf72")}" alt="Equipo revisando solicitudes">
+      </div>
+    </section>
+
+    <section class="section split">
+      <div>
+        <p class="eyebrow">Valor para empresas</p>
+        <h2>Una pagina que vende antes del formulario</h2>
+        <ul class="feature-list">
+          <li><span class="check">&#10003;</span><span>Registro gratis para iniciar la revision de la empresa.</span></li>
+          <li><span class="check">&#10003;</span><span>Acceso posterior al panel para crear servicios y subir fotos.</span></li>
+          <li><span class="check">&#10003;</span><span>Publicacion despues de moderacion interna de Punto Evento.</span></li>
+          <li><span class="check">&#10003;</span><span>Opciones destacadas para aparecer en categorias clave.</span></li>
+        </ul>
+      </div>
+      <div class="image-stack">
+        <img src="${image("photo-1551836022-d5d88e9218df")}" alt="Proveedor administrando perfil" loading="lazy">
+        <img src="${image("photo-1556761175-4b46a572b786")}" alt="Dashboard de trabajo" loading="lazy">
+      </div>
+    </section>
+
+    <section class="section" id="registro-empresa">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Alta gratuita</p>
+          <h2 id="registroEmpresaTitle" tabindex="-1">Registra tu empresa</h2>
+        </div>
+        <p>Luego de recibir tus datos, Punto Evento revisara la empresa y enviara acceso al panel para crear servicios, subir fotos y enviarlos a revision.</p>
+      </div>
+      <form class="company-form" id="companyForm">
+        <div class="form-panel">
+          <h3>Datos de la empresa</h3>
+          <div class="company-form-grid">
+            <label>
+              Nombre comercial
+              <input name="companyName" type="text" placeholder="Ej. Casa Arboleda Eventos" required>
+            </label>
+            <label>
+              Provincia
+              <input name="province" type="text" placeholder="Ej. San Jose" autocomplete="address-level1" required>
+            </label>
+            <label>
+              Canton
+              <input name="canton" type="text" placeholder="Ej. Santa Ana" autocomplete="address-level2">
+            </label>
+            <label>
+              WhatsApp comercial
+              <input name="whatsapp" type="tel" placeholder="50688888888" inputmode="tel" required>
+            </label>
+            <label>
+              Email de contacto
+              <input name="email" type="email" placeholder="contacto@empresa.com" autocomplete="email" required>
+            </label>
+            <label class="full">
+              Descripcion de la empresa
+              <textarea name="description" rows="4" placeholder="Describe que ofrece la empresa, en que zonas trabaja y que la hace diferente." required></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-panel">
+          <h3>Siguiente paso</h3>
+          <p class="form-help">Cuando la empresa quede registrada, el equipo revisara la informacion y enviara acceso al panel.</p>
+          <div class="publish-summary">
+            <div>
+              <strong>1. Registro</strong>
+              <span>Envias los datos basicos de la empresa.</span>
+            </div>
+            <div>
+              <strong>2. Panel empresa</strong>
+              <span>Creas servicios, subes fotos y envias a revision.</span>
+            </div>
+            <div>
+              <strong>3. Publicacion</strong>
+              <span>Punto Evento modera y publica lo aprobado.</span>
+            </div>
+          </div>
+          <a class="secondary-button" href="panel.html">Ya tengo acceso</a>
+        </div>
+
+        <div class="form-panel">
+          <h3>Publicacion</h3>
+          <div class="publish-summary">
+            <div>
+              <strong>Plan gratis</strong>
+              <span>Registro revisado por Punto Evento antes de activar el panel.</span>
+            </div>
+            <div>
+              <strong>Destacado despues</strong>
+              <span>Pago unico o plan para aparecer arriba, en portada o en el top de resultados.</span>
+            </div>
+          </div>
+          <label class="consent-row">
+            <input name="terms" type="checkbox" required>
+            Confirmo que tengo permiso para registrar esta empresa y compartir esta informacion.
+          </label>
+          <button class="primary-button" type="submit">Enviar registro gratis</button>
+        </div>
+      </form>
+      <div class="company-confirmation is-hidden" id="companyConfirmation" tabindex="-1" aria-live="polite"></div>
+    </section>
+
+    <section class="band">
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Planes demo</p>
+            <h2>De registro gratis a visibilidad premium</h2>
+          </div>
+        </div>
+        <div class="plan-grid">
+          <article class="plan-card">
+            <h3>Gratis</h3>
+            <div class="plan-price">CRC 0</div>
+            <ul>
+              <li>Perfil basico</li>
+              <li>Servicios desde panel empresa</li>
+              <li>Revision antes de publicar</li>
+            </ul>
+            <a class="ghost-button" href="#registro-empresa" data-scroll-register>Empezar</a>
+          </article>
+          <article class="plan-card featured">
+            <span class="tag verified">Recomendado</span>
+            <h3>Destacado</h3>
+            <div class="plan-price">CRC 29k</div>
+            <ul>
+              <li>Mayor posicion en listados</li>
+              <li>Paquetes y promociones</li>
+              <li>Solicitudes priorizadas</li>
+            </ul>
+            <button class="primary-button" data-toast="Plan destacado seleccionado.">Destacar empresa</button>
+          </article>
+          <article class="plan-card">
+            <h3>Premium</h3>
+            <div class="plan-price">CRC 59k</div>
+            <ul>
+              <li>Portada en categorias</li>
+              <li>Campanas por temporada</li>
+              <li>Reportes y optimizacion</li>
+            </ul>
+            <button class="secondary-button" data-toast="Plan premium seleccionado.">Solicitar llamada</button>
+          </article>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 async function render() {
   const [route = "inicio", providerId, serviceSlug] = window.location.hash.replace("#", "").split("/");
   const pages = {
     inicio: homePage,
     bodas: weddingsPage,
     proveedor: () => providerPage(providerId, serviceSlug),
-    empresas: companiesPage,
+    empresas: companiesPageNew,
   };
   const page = pages[route] || homePage;
   app.innerHTML = `<div class="page">${await page()}</div>`;
@@ -1250,6 +1411,7 @@ function bindCompanyRegistration() {
 
   const resetPreview = () => {
     clearPreviewUrls();
+    if (!preview) return;
     preview.innerHTML = '<div class="preview-empty">Las fotos cargadas apareceran aqui.</div>';
   };
 
@@ -1260,19 +1422,19 @@ function bindCompanyRegistration() {
 
   const renderCompanyConfirmation = ({
     companyName,
-    category,
-    location,
-    photosCount,
+    category = "Registro",
+    location = "Demo local",
+    photosCount = 0,
     providerId = "",
     mode = "demo",
   }) => {
     const isAzure = mode === "azure";
     const title = isAzure
-      ? "Sus datos fueron recibidos y cargados"
+      ? "Registro recibido"
       : "Registro demo recibido";
     const message = isAzure
-      ? "Estaremos validando la informacion y, si todo esta bien, procederemos con la publicacion."
-      : "Esta demo no guarda datos ni sube fotos. Puedes editar el formulario o limpiar la simulacion.";
+      ? "Registro recibido. Punto Evento revisara la empresa y enviara acceso al panel para crear servicios, subir fotos y enviarlos a revision."
+      : "Esta demo no guarda datos en Azure. Puedes editar el formulario o limpiar la simulacion.";
     confirmation.innerHTML = `
       <div class="form-panel">
         <p class="eyebrow">${isAzure ? "Registro recibido" : "Registro demo recibido"}</p>
@@ -1328,79 +1490,25 @@ function bindCompanyRegistration() {
     });
   };
 
-  const registerProviderInAzure = async (formData, files) => {
-    const providerResponse = await fetch(`${CONFIG.apiBaseUrl}/register-provider`, {
+  const registerCompanyInAzure = async (formData) => {
+    const response = await fetch(`${CONFIG.apiBaseUrl}/companies/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         companyName: formData.get("companyName"),
-        name: formData.get("companyName"),
         email: formData.get("email"),
         whatsapp: formData.get("whatsapp"),
-        phone: formData.get("whatsapp"),
-        category: formData.get("category"),
-        location: formData.get("location"),
+        province: formData.get("province"),
+        canton: formData.get("canton"),
         description: formData.get("description"),
-        price: formData.get("price"),
-        website: formData.get("website"),
       }),
     });
 
-    if (!providerResponse.ok) {
-      throw new Error("No se pudo registrar la empresa en Azure.");
+    if (!response.ok) {
+      throw new Error("No se pudo registrar la empresa.");
     }
 
-    const providerResult = await providerResponse.json();
-
-    for (const [index, file] of files.entries()) {
-      const imageType = index === 0 ? "cover" : "gallery";
-      const uploadResponse = await fetch(`${CONFIG.apiBaseUrl}/create-upload-url`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          providerId: providerResult.providerId,
-          fileName: file.name,
-          contentType: file.type,
-          size: file.size,
-          imageType,
-        }),
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("No se pudo crear el permiso temporal de subida.");
-      }
-
-      const upload = await uploadResponse.json();
-      const blobResponse = await fetch(upload.uploadUrl, {
-        method: "PUT",
-        headers: {
-          "x-ms-blob-type": "BlockBlob",
-          "Content-Type": file.type,
-        },
-        body: file,
-      });
-
-      if (!blobResponse.ok) {
-        throw new Error("No se pudo subir una imagen a Azure Blob Storage.");
-      }
-
-      const registerUploadResponse = await fetch(`${CONFIG.apiBaseUrl}/register-upload`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          providerId: providerResult.providerId,
-          imageId: upload.imageId,
-          imageType,
-          pendingBlobUrl: upload.pendingBlobUrl,
-        }),
-      });
-
-      if (!registerUploadResponse.ok) {
-        throw new Error("No se pudo registrar una imagen subida.");
-      }
-    }
-
-    return providerResult;
+    return response.json();
   };
 
   photoInput?.addEventListener("change", () => {
@@ -1450,35 +1558,23 @@ function bindCompanyRegistration() {
 
     setButtonLoading(submitButton, true, "Enviando registro...");
     const companyName = formData.get("companyName") || "Empresa demo";
-    const category = formData.get("category") || "Categoria pendiente";
-    const location = formData.get("location") || "Zona pendiente";
+    const province = formData.get("province") || "Provincia pendiente";
+    const canton = formData.get("canton") || "";
 
     try {
-      const result = await registerProviderInAzure(formData, files);
+      const result = await registerCompanyInAzure(formData);
       renderCompanyConfirmation({
         companyName,
-        category,
-        location,
-        photosCount: files.length,
-        providerId: result.providerId,
+        category: "Registro empresa",
+        location: [canton, province].filter(Boolean).join(", "),
+        providerId: result.companyId,
         mode: "azure",
       });
       showToast("Datos recibidos. Validaremos la informacion.");
     } catch (error) {
       console.warn(error);
-      if (isLocalDemoEnvironment()) {
-        renderCompanyConfirmation({
-          companyName,
-          category,
-          location,
-          photosCount: files.length,
-          mode: "demo",
-        });
-        showToast("API no disponible: mostrando confirmacion demo.");
-      } else {
-        renderCompanyError("El registro no pudo guardarse en Azure. Intentalo de nuevo en unos minutos.");
-        showToast("No se pudo enviar el registro.");
-      }
+      renderCompanyError("El registro no pudo completarse. Revisa los datos e intentalo de nuevo en unos minutos.");
+      showToast("No se pudo enviar el registro.");
     } finally {
       setButtonLoading(submitButton, false);
     }

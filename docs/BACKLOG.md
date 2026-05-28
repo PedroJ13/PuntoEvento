@@ -11,7 +11,7 @@ Objetivo: congelar lo que ya funciona y dejar reglas claras antes de seguir cons
 - [x] Inventariar infraestructura Azure actual.
 - [x] Inventariar API actual y compararla contra `Company -> Services`.
 - [x] Crear matriz QA MVP.
-- [ ] Confirmar que la pagina publica actual funciona en Azure despues del ultimo deploy.
+- [x] Confirmar que la pagina publica actual funciona en Azure despues del ultimo deploy.
 - [ ] Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
 
 Entregable:
@@ -72,7 +72,7 @@ Objetivo: que la pagina publica busque y muestre servicios especificos, sin perd
 - [x] Publicar imagen real de cover para servicio QA principal.
 - [x] Ajustar carrusel de perfil para priorizar cover real antes de galeria.
 - [x] QA local de carrusel de perfil con cover priorizado.
-- [ ] Deploy y QA Azure de carrusel de perfil con cover priorizado.
+- [x] Deploy y QA Azure de carrusel de perfil con cover priorizado.
 
 Entregable:
 
@@ -105,7 +105,8 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] QA Azure de auth por invitacion con token real controlado.
 - [x] Remover endpoint temporal `internal/auth-diagnostics`.
 - [x] QA Azure confirmo remocion de `internal/auth-diagnostics`.
-- [ ] Rotar `ADMIN_PASSWORD` despues de prueba controlada.
+- [x] Rotar `ADMIN_PASSWORD` despues de prueba controlada.
+- [x] QA post-rotacion de credenciales admin internas.
 - [x] Implementar endpoint obtener empresa propia.
 - [x] QA local/estructural de `GET /api/companies/me`.
 - [x] Deploy y QA Azure de `GET /api/companies/me`.
@@ -137,6 +138,15 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Endpoint publico perfil empresa `GET /api/public/companies/{slug}`.
 - [x] QA local/estructural de endpoints publicos por servicio.
 - [x] Deploy y QA Azure de endpoints publicos por servicio.
+- [x] Limpiar o reemplazar imagen vieja `1 x 1` de galeria QA antes de demo externa.
+- [x] Ejecutar matriz MVP enfocada contra Azure y clasificar flujo UI vs API.
+- [x] Alinear CTAs y navegacion de pagina principal con flujo nuevo Company -> Panel -> Admin.
+- [x] Conectar registro publico `#empresas` al modelo nuevo `Company`.
+- [x] Ajustar confirmacion y error local del registro publico `#empresas`.
+- [x] Reintento QA local de registro publico `#empresas` conectado a `companies/register`.
+- [ ] Deploy y QA Azure de registro publico `#empresas` conectado a `companies/register`.
+- [ ] Conectar `panel.html` a auth/API real de empresa.
+- [ ] Crear UI admin para moderar Companies, Services y Uploads del modelo nuevo.
 - [ ] Notificacion por email al registrarse o pasar a revision.
 
 Entregable:
@@ -156,6 +166,7 @@ Objetivo: validar que el flujo puede usarse por empresas reales.
 - [x] Pruebas responsive documentadas.
 - [x] Checklist de release documentado.
 - [ ] Ejecutar matriz QA contra ambiente Azure.
+- [ ] Crear guion de prueba para Product Owner del flujo completo MVP.
 
 Entregable:
 
@@ -175,7 +186,6 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-2. Product/Architect: commitear y pushear ajuste de carrusel.
-3. QA/Infra Azure: validar carrusel con cover priorizado post-deploy.
-4. Product/Owner: rotar `ADMIN_PASSWORD` al cerrar la ventana de pruebas con credenciales compartidas.
+1. Product/Architect: commitear y pushear registro publico `#empresas` conectado a `companies/register`.
+2. QA / Infra Azure: validar registro publico `#empresas` post-deploy en Azure.
+3. Web Dev: conectar `panel.html` a sesion real, servicios propios y uploads.

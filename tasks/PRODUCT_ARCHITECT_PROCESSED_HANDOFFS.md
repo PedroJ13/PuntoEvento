@@ -41,3 +41,11 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-076-HANDOFF.md` | Aprobado con observaciones | Se creo `TASK-077` para priorizar cover real en carrusel de perfil. |
 | `tasks/TASK-077-HANDOFF.md` | Completado Web Dev | Se creo `TASK-078` para QA local de carrusel con cover priorizado. |
 | `tasks/TASK-078-HANDOFF.md` | Aprobado QA local | Se creo `TASK-079` para QA Azure de carrusel con cover priorizado. |
+| `tasks/TASK-079-HANDOFF.md` | Aprobado Azure | Se creo `TASK-080` para rotar `ADMIN_PASSWORD` y validar credenciales internas. |
+| `tasks/TASK-080-HANDOFF.md` | Aprobado | Se creo `TASK-081` para limpiar o reemplazar la imagen vieja `1 x 1` de galeria QA. |
+| `tasks/TASK-081-HANDOFF.md` | Aprobado | Se creo `TASK-082` para ejecutar matriz MVP enfocada contra Azure y definir si el flujo completo es demostrable. |
+| `tasks/TASK-082-HANDOFF.md` | Parcial | Se crearon `TASK-083`, `TASK-084` y `TASK-085` para desbloquear prueba completa de Product Owner desde navegador. |
+| `tasks/TASK-083-HANDOFF.md` | Completado Web Dev | Se creo `TASK-086` para QA local del registro publico conectado al modelo nuevo. |
+| `tasks/TASK-086-HANDOFF.md` | Requiere cambios | Se creo `TASK-087` para ajustar confirmacion exacta y manejo de error local en `#empresas`. |
+| `tasks/TASK-087-HANDOFF.md` | Completado Web Dev | Se creo `TASK-088` para reintento QA local del registro publico `#empresas`. |
+| `tasks/TASK-088-HANDOFF.md` | Aprobado QA local | Se creo `TASK-089` para QA Azure de `#empresas` post-deploy. |
