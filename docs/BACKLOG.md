@@ -65,7 +65,9 @@ Objetivo: que la pagina publica busque y muestre servicios especificos, sin perd
 - [x] Mantener home actual sin reescritura.
 - [x] Validar mobile y desktop.
 - [x] QA local de pagina publica conectada a servicios publicados.
-- [ ] Deploy y QA Azure de pagina publica conectada a servicios publicados.
+- [x] Deploy y QA Azure de pagina publica conectada a servicios publicados.
+- [ ] Ajustar estado vacio cuando filtros de servicios no tienen resultados.
+- [ ] Publicar imagen real de demo para servicio QA principal.
 
 Entregable:
 
@@ -169,6 +171,6 @@ Entregable:
 Prioridad inmediata para los equipos:
 
 1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-2. Product/Architect: commitear y pushear conexion frontend de pagina publica.
-3. QA/Infra Azure: validar la pagina publica post-deploy con endpoints publicos reales.
-4. Frontend/Web Dev: ajustar cualquier hallazgo visual post-deploy antes de invitar empresas reales.
+2. Frontend/Web Dev: ajustar estado vacio de filtros sin resultados.
+3. Product/Owner o QA: publicar una imagen real de demo para el servicio QA principal.
+4. QA: validar el ajuste visual antes de usar el sitio como demo amplia.
