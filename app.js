@@ -122,6 +122,7 @@ function normalizePublicService(service) {
     description: service.description || "",
     priceFrom: service.priceFrom || service.price || "Consultar",
     coverUrl: service.coverUrl || company.coverUrl || CONFIG.fallbackProviderImage,
+    hasServiceCoverUrl: Boolean(service.coverUrl),
     gallery,
     company: {
       id: company.id || companySlug,
@@ -150,6 +151,7 @@ function buildDemoServices() {
         description: pack.details || provider.description,
         priceFrom: pack.price || provider.price || "Consultar",
         coverUrl: provider.image || CONFIG.fallbackProviderImage,
+        hasServiceCoverUrl: Boolean(provider.image),
         gallery: normalizeGallery(provider.gallery, provider.image, provider.name),
         company: {
           id: provider.id,
@@ -181,6 +183,41 @@ function normalizeGallery(gallery, fallbackImage, fallbackAlt) {
       alt: fallbackAlt || "Servicio",
     },
   ];
+}
+
+function galleryKey(src) {
+  try {
+    return new URL(String(src || ""), window.location.href).href;
+  } catch {
+    return String(src || "").trim();
+  }
+}
+
+function serviceVisualGallery(service, fallbackImage, fallbackAlt) {
+  const items = [];
+  const seen = new Set();
+  const addItem = (item, defaultAlt) => {
+    const src = typeof item === "string" ? item : item?.src;
+    if (!src) return;
+
+    const key = galleryKey(src);
+    if (seen.has(key)) return;
+
+    seen.add(key);
+    items.push({
+      src,
+      alt: typeof item === "string" ? defaultAlt : item.alt || defaultAlt,
+    });
+  };
+
+  if (service?.hasServiceCoverUrl !== false) {
+    addItem(service?.coverUrl, service?.name || fallbackAlt);
+  }
+  normalizeGallery(service?.gallery, "", fallbackAlt).forEach((item) => addItem(item, fallbackAlt));
+
+  return items.length
+    ? items
+    : normalizeGallery([], fallbackImage || CONFIG.fallbackProviderImage, fallbackAlt);
 }
 
 function imageFallbackAttribute() {
@@ -732,8 +769,8 @@ function companyProfilePage(company, selectedServiceSlug = "") {
     `;
   }
 
-  providerGallery = normalizeGallery(
-    selectedService.gallery,
+  providerGallery = serviceVisualGallery(
+    selectedService,
     selectedService.coverUrl || company.coverUrl || CONFIG.fallbackProviderImage,
     selectedService.name,
   );

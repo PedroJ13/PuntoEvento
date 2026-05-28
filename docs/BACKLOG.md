@@ -70,7 +70,9 @@ Objetivo: que la pagina publica busque y muestre servicios especificos, sin perd
 - [x] QA local de estado vacio en filtros de servicios.
 - [x] Deploy y QA Azure de estado vacio en filtros de servicios.
 - [x] Publicar imagen real de cover para servicio QA principal.
-- [ ] Ajustar carrusel de perfil para priorizar cover real antes de galeria.
+- [x] Ajustar carrusel de perfil para priorizar cover real antes de galeria.
+- [x] QA local de carrusel de perfil con cover priorizado.
+- [ ] Deploy y QA Azure de carrusel de perfil con cover priorizado.
 
 Entregable:
 
@@ -174,6 +176,6 @@ Entregable:
 Prioridad inmediata para los equipos:
 
 1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-2. Frontend/Web Dev: ajustar carrusel de perfil para mostrar cover real como primer slide.
-3. QA: validar localmente home, listado y perfil con cover priorizado.
+2. Product/Architect: commitear y pushear ajuste de carrusel.
+3. QA/Infra Azure: validar carrusel con cover priorizado post-deploy.
 4. Product/Owner: rotar `ADMIN_PASSWORD` al cerrar la ventana de pruebas con credenciales compartidas.
