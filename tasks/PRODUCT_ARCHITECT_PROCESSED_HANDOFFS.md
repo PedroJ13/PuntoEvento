@@ -2,6 +2,8 @@
 
 Registro manual inicial creado porque la automatizacion no dejo rastro local.
 
+Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron procesados antes de crear este registro. No deben reprocesarse salvo que el usuario lo pida explicitamente.
+
 | Handoff | Resultado | Accion |
 | --- | --- | --- |
 | `tasks/TASK-045-HANDOFF.md` | Bloqueado | Se creo `TASK-046` para reintento autenticado. |
@@ -10,3 +12,7 @@ Registro manual inicial creado porque la automatizacion no dejo rastro local.
 | `tasks/TASK-048-HANDOFF.md` | Aprobado | Se creo `TASK-049` para `PATCH`. |
 | `tasks/TASK-049-HANDOFF.md` | Completado Backend | Se creo `TASK-050` para QA local. |
 | `tasks/TASK-050-HANDOFF.md` | Aprobado QA local | Se creo `TASK-051` para smoke Azure de `PATCH`. |
+| `tasks/TASK-051-HANDOFF.md` | Aprobado Azure | Se creo `TASK-052` para borrado logico de servicios propios. |
+| `tasks/TASK-052-HANDOFF.md` | Completado Backend | Se creo `TASK-053` para QA local de `DELETE`. |
+| `tasks/TASK-053-HANDOFF.md` | Aprobado QA local | Se creo `TASK-054` para smoke Azure de `DELETE`. |
+| `tasks/TASK-054-HANDOFF.md` | Bloqueado | Se creo `TASK-055` para commit/push del bloque `DELETE`. |

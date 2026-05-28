@@ -108,8 +108,10 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Deploy y QA Azure de `POST /api/companies/me/services` con sesion real.
 - [x] Endpoint actualizar servicios propios `PATCH /api/companies/me/services/{id}`.
 - [x] QA local/estructural de `PATCH /api/companies/me/services/{id}`.
-- [ ] Deploy y QA Azure de `PATCH /api/companies/me/services/{id}` con sesion real.
-- [ ] Endpoint eliminar/desactivar servicios propios.
+- [x] Deploy y QA Azure de `PATCH /api/companies/me/services/{id}` con sesion real.
+- [x] Endpoint eliminar/desactivar servicios propios.
+- [x] QA local/estructural de `DELETE /api/companies/me/services/{id}`.
+- [ ] Deploy y QA Azure de `DELETE /api/companies/me/services/{id}` con sesion real.
 - [ ] Endpoint upload firmado para imagenes.
 - [ ] Endpoint aprobar/rechazar empresa o servicio.
 - [ ] Notificacion por email al registrarse o pasar a revision.
@@ -151,6 +153,6 @@ Entregable:
 Prioridad inmediata para los equipos:
 
 1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-2. Product/Architect: commitear y pushear `PATCH /api/companies/me/services/{id}`.
-3. QA/Infra Azure: validar `PATCH` post-deploy con cookie real.
-4. Backend API: implementar borrado logico de servicios propios despues del smoke Azure aprobado.
+2. Product/Architect/User: commitear y pushear `DELETE /api/companies/me/services/{id}`.
+3. QA/Infra Azure: validar `DELETE` post-deploy con cookie real.
+4. Backend API: implementar upload firmado para imagenes de empresa/servicio despues del smoke Azure aprobado.

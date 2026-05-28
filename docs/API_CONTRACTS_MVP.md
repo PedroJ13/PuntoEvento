@@ -355,14 +355,18 @@ Response `200`:
 
 ```json
 {
-  "serviceId": "service_123",
-  "status": "inactive"
+  "id": "service_123",
+  "companyId": "company_123",
+  "status": "inactive",
+  "updatedAt": "2026-05-28T00:00:00Z"
 }
 ```
 
 Regla MVP:
 
 - Preferir `status: inactive` sobre borrado fisico para no romper leads, auditoria o URLs publicas.
+- No borrar fisicamente la entidad en Table Storage.
+- Solo desactivar si `serviceId` pertenece a la empresa autenticada.
 
 ### POST `/api/uploads/sign`
 
