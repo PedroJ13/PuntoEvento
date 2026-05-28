@@ -232,6 +232,7 @@ Reglas:
 - `scope` puede ser company o service.
 - Si `scope` es service, `serviceId` debe pertenecer a la empresa.
 - Subidas empiezan como `reserved` en contenedor pendiente.
+- Al confirmar la subida, el estado pasa a `pending`, `size` se reemplaza por el tamano real del blob y `expiresAt` se limpia porque ya no aplica como vencimiento de reserva.
 - Publicar o asociar la imagen al perfil/servicio requiere validacion posterior.
 
 ## Estados

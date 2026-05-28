@@ -408,6 +408,45 @@ Validaciones:
 - Subida siempre a contenedor pendiente; publicar solo despues de revision.
 - Crea reserva en tabla `Uploads` con `status: reserved`.
 
+### POST `/api/uploads/confirm`
+
+Confirma que una imagen reservada fue subida al contenedor pendiente y deja el upload listo para revision.
+
+Request:
+
+```json
+{
+  "uploadId": "upload_123"
+}
+```
+
+Response `201`:
+
+```json
+{
+  "uploadId": "upload_123",
+  "status": "pending",
+  "scope": "service",
+  "serviceId": "service_123",
+  "imageType": "cover",
+  "pendingBlobUrl": "https://..."
+}
+```
+
+Reglas:
+
+- Requiere autenticacion de empresa.
+- `companyId` sale solo de la sesion; el cliente no puede confirmar uploads de otra empresa.
+- Busca en `Uploads` con `PartitionKey=companyId` y `RowKey=uploadId`.
+- Solo confirma reservas `reserved`; uploads `published`, `rejected` u otros estados no confirmables responden `409`.
+- Si el upload ya esta `pending`, responde idempotentemente `200` cuando el blob sigue coincidiendo con la reserva.
+- Rechaza reservas vencidas con `409`.
+- Valida que el blob pendiente exista en `pendingBlobName`.
+- Valida MIME real contra `contentType` reservado y contra la lista permitida.
+- Valida tamano real no vacio y maximo 5 MB.
+- Al confirmar actualiza `status: pending`, `size` real y `updatedAt`; limpia `expiresAt` porque deja de ser una reserva vencible.
+- No publica, no mueve blobs y no actualiza `coverUrl` ni `gallery`.
+
 ### GET `/api/public/services`
 
 Devuelve servicios publicados para busqueda/listado publico.
