@@ -5,6 +5,7 @@ const DEFAULT_PROVIDER_IMAGES_TABLE = "ProviderImages";
 const DEFAULT_COMPANIES_TABLE = "Companies";
 const DEFAULT_COMPANY_INVITES_TABLE = "CompanyInvites";
 const DEFAULT_COMPANY_SESSIONS_TABLE = "CompanySessions";
+const DEFAULT_SERVICES_TABLE = "Services";
 const DEFAULT_COMPANY_SESSION_COOKIE_NAME = "pe_company_session";
 const DEFAULT_COMPANY_INVITE_TOKEN_TTL_MINUTES = 1440;
 const DEFAULT_COMPANY_SESSION_TTL_DAYS = 14;
@@ -56,6 +57,8 @@ function getConfig() {
       process.env.AZURE_TABLE_PROVIDER_IMAGES || DEFAULT_PROVIDER_IMAGES_TABLE,
     companiesTable:
       process.env.AZURE_TABLE_COMPANIES || DEFAULT_COMPANIES_TABLE,
+    servicesTable:
+      process.env.AZURE_TABLE_SERVICES || DEFAULT_SERVICES_TABLE,
     companyInvitesTable:
       process.env.AZURE_TABLE_COMPANY_INVITES || DEFAULT_COMPANY_INVITES_TABLE,
     companySessionsTable:

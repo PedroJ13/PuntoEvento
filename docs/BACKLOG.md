@@ -95,11 +95,17 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Corregir/rotar credenciales admin para endpoint interno de invitaciones.
 - [x] QA Azure de auth por invitacion con token real controlado.
 - [x] Remover endpoint temporal `internal/auth-diagnostics`.
+- [x] QA Azure confirmo remocion de `internal/auth-diagnostics`.
 - [ ] Rotar `ADMIN_PASSWORD` despues de prueba controlada.
 - [x] Implementar endpoint obtener empresa propia.
 - [x] QA local/estructural de `GET /api/companies/me`.
 - [x] Deploy y QA Azure de `GET /api/companies/me`.
-- [ ] Endpoint CRUD servicios.
+- [x] Implementar endpoint listar servicios propios `GET /api/companies/me/services`.
+- [x] QA local/estructural de `GET /api/companies/me/services`.
+- [ ] Deploy y QA Azure de `GET /api/companies/me/services`.
+- [ ] Endpoint crear servicios propios `POST /api/companies/me/services`.
+- [ ] Endpoint actualizar servicios propios `PATCH /api/companies/me/services/{id}`.
+- [ ] Endpoint eliminar/desactivar servicios propios.
 - [ ] Endpoint upload firmado para imagenes.
 - [ ] Endpoint aprobar/rechazar empresa o servicio.
 - [ ] Notificacion por email al registrarse o pasar a revision.
@@ -140,8 +146,7 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product/Architect/User: revisar visualmente `panel.html` y `admin.html?demo=local`.
-2. Product/Architect: decidir si este bloque visual se commitea antes de pasar a backend.
-3. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-4. QA: validar que `/api/internal/auth-diagnostics` ya no esta disponible despues de deploy.
-5. Backend API: implementar primer endpoint de servicios de empresa.
+1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
+2. Product/Architect: commitear y pushear el endpoint de listado de servicios.
+3. Backend API: implementar `POST /api/companies/me/services` para crear servicios propios en estado `draft`.
+4. QA/Infra Azure: validar `GET /api/companies/me/services` post-deploy con cookie real y datos controlados.
