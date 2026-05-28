@@ -29,3 +29,5 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-064-HANDOFF.md` | Aprobado con observaciones | Se creo `TASK-065` para resolver acceso publico a imagenes publicadas. |
 | `tasks/TASK-065-HANDOFF.md` | Aprobado con cambios aplicados | Se creo `TASK-066` para QA Azure de render de imagen publica. |
 | `tasks/TASK-066-HANDOFF.md` | Aprobado parcialmente | Se creo `TASK-067` para endpoints publicos por servicio; queda QA visual complementaria no bloqueante. |
+| `tasks/TASK-067-HANDOFF.md` | Completado Backend | Se creo `TASK-068` para QA local/estructural de endpoints publicos por servicio. |
+| `tasks/TASK-068-HANDOFF.md` | Aprobado con observaciones | Se creo `TASK-069` para QA Azure de endpoints publicos por servicio post-deploy. |

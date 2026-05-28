@@ -124,8 +124,10 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Resolver acceso publico a imagenes publicadas en Blob Storage.
 - [x] QA Azure HTTP de imagen publica por `publicBlobUrl`.
 - [ ] QA visual complementaria de imagen publica en navegador normal.
-- [ ] Endpoint publico listar servicios publicados `GET /api/public/services`.
-- [ ] Endpoint publico perfil empresa `GET /api/public/companies/{slug}`.
+- [x] Endpoint publico listar servicios publicados `GET /api/public/services`.
+- [x] Endpoint publico perfil empresa `GET /api/public/companies/{slug}`.
+- [x] QA local/estructural de endpoints publicos por servicio.
+- [ ] Deploy y QA Azure de endpoints publicos por servicio.
 - [ ] Notificacion por email al registrarse o pasar a revision.
 
 Entregable:
@@ -165,6 +167,6 @@ Entregable:
 Prioridad inmediata para los equipos:
 
 1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-2. Backend API: implementar endpoints publicos por servicio.
-3. QA: validar local/estructuralmente endpoints publicos por servicio.
-4. Frontend/Web Dev: conectar pagina publica a servicios publicados cuando exista API publica.
+2. Product/Architect: commitear y pushear endpoints publicos por servicio.
+3. QA/Infra Azure: validar endpoints publicos por servicio post-deploy con datos publicados.
+4. Frontend/Web Dev: conectar pagina publica a servicios publicados cuando QA cierre la API publica.

@@ -606,7 +606,7 @@ Reglas:
 
 Devuelve servicios publicados para busqueda/listado publico.
 
-Query params sugeridos:
+Query params MVP:
 
 ```text
 q
@@ -631,11 +631,13 @@ Response `200`:
       "description": "...",
       "priceFrom": "CRC 120000",
       "coverUrl": "https://...",
+      "gallery": ["https://..."],
       "company": {
         "id": "company_123",
         "slug": "aurisbel",
         "name": "Aurisbel",
         "province": "Heredia",
+        "canton": "San Francisco",
         "plan": "free"
       }
     }
@@ -648,8 +650,13 @@ Reglas:
 
 - Solo servicios `published`.
 - Solo empresas `published`.
+- `q` filtra de forma basica por `name`, `description`, `category` y `eventTypes`.
+- `category`, `eventType` y `province` hacen match exacto normalizado.
+- `limit` tiene maximo `50`.
+- `cursor` queda reservado para una iteracion futura; por ahora siempre responde `nextCursor: ""`.
 - Ordenar por `sortBoost`, `isFeatured`, relevancia y fecha segun decision de producto.
 - No devolver datos privados ni imagenes pendientes.
+- Implementacion MVP puede escanear servicios publicados y resolver empresas por `companyId`; migrar a `ServiceIndex` cuando se requiera ranking/paginacion real.
 
 ### GET `/api/public/companies/{slug}`
 
@@ -666,13 +673,21 @@ Response `200`:
   "logoUrl": "https://...",
   "coverUrl": "https://...",
   "whatsapp": "50688888888",
+  "province": "Heredia",
+  "canton": "San Francisco",
+  "selectedServiceSlug": "mesa-dulce",
   "services": [
     {
       "id": "service_123",
       "slug": "mesa-dulce",
       "name": "Mesa dulce",
       "status": "published",
-      "coverUrl": "https://..."
+      "category": "Mesas de dulces",
+      "eventTypes": ["Bodas"],
+      "priceFrom": "CRC 120000",
+      "description": "...",
+      "coverUrl": "https://...",
+      "gallery": ["https://..."]
     }
   ]
 }
@@ -682,7 +697,8 @@ Reglas:
 
 - Si la empresa no esta `published`, responder `404`.
 - Solo incluir servicios `published`.
-- Permitir query opcional `?service=mesa-dulce` para que frontend destaque el servicio seleccionado.
+- Permitir query opcional `?service=mesa-dulce`; si coincide con un servicio publicado devuelto, responder `selectedServiceSlug` con ese slug. Si no coincide, responder `selectedServiceSlug: ""`.
+- No devolver `email`, hashes, `partitionKey`, `rowKey`, tokens, metadata interna ni imagenes pendientes.
 
 ## Estados
 
