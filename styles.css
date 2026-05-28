@@ -661,6 +661,28 @@ button:focus-visible,
   font-size: 0.9rem;
 }
 
+.empty-results {
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 24px;
+}
+
+.empty-results h3 {
+  font-size: 1.45rem;
+}
+
+.empty-results p {
+  max-width: 560px;
+  color: var(--muted);
+}
+
+.empty-results .secondary-button {
+  justify-self: start;
+}
+
 .wide-card {
   display: grid;
   grid-template-columns: 230px 1fr;

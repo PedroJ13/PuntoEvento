@@ -423,9 +423,31 @@ function serviceMatchesFilters(service, filters = {}) {
   return true;
 }
 
+function hasActiveServiceFilters(filters = {}) {
+  return ["q", "eventType", "province", "service"].some((key) => {
+    const value = normalizeFilterValue(filters[key]);
+    return value && value !== "todos";
+  });
+}
+
 function filteredServices() {
-  const matches = services.filter((service) => serviceMatchesFilters(service, currentSearchFilters));
-  return matches.length ? matches : services;
+  if (!hasActiveServiceFilters(currentSearchFilters)) return services;
+  return services.filter((service) => serviceMatchesFilters(service, currentSearchFilters));
+}
+
+function emptyServicesState() {
+  return `
+    <article class="empty-results" role="status">
+      <p class="eyebrow">Sin coincidencias</p>
+      <h3>No encontramos servicios con esos filtros</h3>
+      <p>Prueba con otra categoria o provincia para ver mas opciones disponibles.</p>
+      <button class="secondary-button" type="button" data-clear-service-filters>Limpiar filtros</button>
+    </article>
+  `;
+}
+
+function selectedOption(currentValue, optionValue) {
+  return normalizeFilterValue(currentValue) === normalizeFilterValue(optionValue) ? "selected" : "";
 }
 
 function homePage() {
@@ -575,20 +597,20 @@ function weddingsPage() {
         <div class="field">
           <label>Servicio</label>
           <select name="service">
-            <option>Todos</option>
-            <option>Salon y jardin</option>
-            <option>Catering</option>
-            <option>Musica y luces</option>
-            <option>Decoracion floral</option>
+            <option ${selectedOption(currentSearchFilters.service, "Todos")}>Todos</option>
+            <option ${selectedOption(currentSearchFilters.service, "Salon y jardin")}>Salon y jardin</option>
+            <option ${selectedOption(currentSearchFilters.service, "Catering")}>Catering</option>
+            <option ${selectedOption(currentSearchFilters.service, "Musica y luces")}>Musica y luces</option>
+            <option ${selectedOption(currentSearchFilters.service, "Decoracion floral")}>Decoracion floral</option>
           </select>
         </div>
         <div class="field">
           <label>Provincia</label>
           <select name="province">
-            <option>Todos</option>
-            <option>San Jose</option>
-            <option>Heredia</option>
-            <option>Alajuela</option>
+            <option ${selectedOption(currentSearchFilters.province, "Todos")}>Todos</option>
+            <option ${selectedOption(currentSearchFilters.province, "San Jose")}>San Jose</option>
+            <option ${selectedOption(currentSearchFilters.province, "Heredia")}>Heredia</option>
+            <option ${selectedOption(currentSearchFilters.province, "Alajuela")}>Alajuela</option>
           </select>
         </div>
         <div class="field">
@@ -627,7 +649,7 @@ function weddingsPage() {
             <button class="ghost-button" data-open-quote>Cotizar seleccionados</button>
           </div>
           <div class="result-list" id="providerResults">
-            ${results.map(wideServiceCard).join("")}
+            ${results.length ? results.map(wideServiceCard).join("") : emptyServicesState()}
           </div>
           ${dataSourceNotice()}
         </div>
@@ -1160,9 +1182,16 @@ function bindPageEvents() {
         province: formData.get("province"),
       };
       render();
-      showToast("Filtros aplicados.");
+      const resultCount = filteredServices().length;
+      showToast(resultCount ? `${resultCount} servicio(s) encontrado(s).` : "No encontramos servicios con esos filtros.");
     });
   }
+
+  document.querySelector("[data-clear-service-filters]")?.addEventListener("click", () => {
+    currentSearchFilters = {};
+    render();
+    showToast("Filtros limpiados.");
+  });
 
   bindCompanyRegistration();
   bindCarousel();
