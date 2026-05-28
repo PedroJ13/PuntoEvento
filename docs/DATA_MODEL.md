@@ -203,6 +203,37 @@ Reglas:
 }
 ```
 
+## Upload
+
+Reserva temporal para imagenes pendientes de empresa o servicio.
+
+```json
+{
+  "id": "upload_123",
+  "companyId": "company_123",
+  "scope": "service",
+  "serviceId": "service_123",
+  "imageType": "cover",
+  "fileName": "mesa.jpg",
+  "contentType": "image/jpeg",
+  "size": 320000,
+  "status": "reserved",
+  "pendingBlobName": "companies/company_123/services/service_123/cover/upload_123.jpg",
+  "pendingBlobUrl": "https://...",
+  "createdAt": "2026-05-28T00:00:00Z",
+  "updatedAt": "2026-05-28T00:00:00Z",
+  "expiresAt": "2026-05-28T00:10:00Z"
+}
+```
+
+Reglas:
+
+- `companyId` sale de la sesion, nunca del cliente.
+- `scope` puede ser company o service.
+- Si `scope` es service, `serviceId` debe pertenecer a la empresa.
+- Subidas empiezan como `reserved` en contenedor pendiente.
+- Publicar o asociar la imagen al perfil/servicio requiere validacion posterior.
+
 ## Estados
 
 Company:

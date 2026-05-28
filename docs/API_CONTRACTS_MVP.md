@@ -406,6 +406,7 @@ Validaciones:
 - Extensiones permitidas: `.jpg`, `.jpeg`, `.png`, `.webp`.
 - SAS de escritura solo para un blob especifico y de corta duracion.
 - Subida siempre a contenedor pendiente; publicar solo despues de revision.
+- Crea reserva en tabla `Uploads` con `status: reserved`.
 
 ### GET `/api/public/services`
 

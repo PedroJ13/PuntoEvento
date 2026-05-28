@@ -16,3 +16,7 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-052-HANDOFF.md` | Completado Backend | Se creo `TASK-053` para QA local de `DELETE`. |
 | `tasks/TASK-053-HANDOFF.md` | Aprobado QA local | Se creo `TASK-054` para smoke Azure de `DELETE`. |
 | `tasks/TASK-054-HANDOFF.md` | Bloqueado | Se creo `TASK-055` para commit/push del bloque `DELETE`. |
+| `tasks/TASK-055-HANDOFF.md` | Completado Product/Architect | Se debe repetir `TASK-054` para smoke Azure de `DELETE`. |
+| `tasks/TASK-054-HANDOFF.md` | Aprobado Azure en reintento | Se creo `TASK-056` para upload firmado de imagenes. |
+| `tasks/TASK-056-HANDOFF.md` | Completado Backend | Se creo `TASK-057` para QA local de `POST /api/uploads/sign`. |
+| `tasks/TASK-057-HANDOFF.md` | Aprobado QA local | Se creo `TASK-058` para smoke Azure de `POST /api/uploads/sign`. |

@@ -12,32 +12,33 @@ usando una sesion real de empresa, cookie real y Table Storage real.
 
 ## Resultado general
 
-Estado: BLOQUEADO por precondicion.
+Estado: APROBADO.
 
-No se ejecuto el smoke Azure real porque la precondicion de la asignacion no esta cumplida en este workspace:
+El smoke autenticado contra Azure real paso completo:
+
+- Credenciales admin cargadas desde `local-secrets/qa-admin.ps1`.
+- Invitacion creada y aceptada correctamente.
+- Servicio QA creado con `POST`.
+- Servicio desactivado con `DELETE`.
+- `GET /api/companies/me/services` refleja el servicio con `status: inactive`.
+- `DELETE` sobre servicio inexistente responde `404`.
+- Logout invalida la cookie.
+- Luego del logout, `DELETE` responde `401`.
+
+No se registraron secretos, token de invitacion ni cookie.
+
+## Commit local verificado
 
 ```text
-Product/Architect/User debe haber commiteado y pusheado el bloque DELETE antes de ejecutar este smoke.
+8a9d16d5bf0e2fcbfaa63a7ce08641ffe457dec4
+8a9d16d Add company services delete endpoint
 ```
 
-Evidencia local:
-
-```text
-HEAD: 8885e6e Add company services update endpoint
-SHA: 8885e6ed0f475a8a4e93d909e59b1f4cf056a3b0
-git ls-files api/company-services-delete -> sin salida
-git status api/company-services-delete -> ?? api/company-services-delete/
-```
-
-Esto indica que los archivos del endpoint DELETE aun no estan trackeados en el commit local actual, por lo que no hay base confiable para asumir que el DELETE ya fue pusheado/desplegado en Azure.
-
-## URL base prevista
+## URL base probada
 
 ```text
 https://zealous-field-08fdd720f.7.azurestaticapps.net
 ```
-
-No se hicieron requests contra Azure en esta pasada para evitar validar un ambiente que probablemente no contiene el endpoint DELETE desplegado.
 
 ## Empresa QA objetivo
 
@@ -49,65 +50,110 @@ slug: qa-company-register-test
 
 ## Confirmacion booleana de credenciales
 
-Las credenciales admin si cargan desde `local-secrets/qa-admin.ps1`:
-
 ```text
 ADMIN_USERNAME_SET=True
 ADMIN_PASSWORD_SET=True
 ```
 
-No se registraron valores reales de usuario/password.
-
 ## Status codes obtenidos
 
-No se obtuvieron status codes de Azure en TASK-054 porque el smoke fue bloqueado antes de ejecutar requests.
-
-| Caso | Resultado |
+| Caso | Status |
 | --- | --- |
-| Crear invitacion real | No ejecutado |
-| Aceptar invitacion | No ejecutado |
-| Crear servicio QA con `POST` | No ejecutado |
-| Desactivar servicio con `DELETE` | No ejecutado |
-| `GET` mostrando `status: inactive` | No ejecutado |
-| `DELETE` inexistente | No ejecutado |
-| Logout | No ejecutado |
-| `DELETE` despues de logout | No ejecutado |
+| Crear invitacion real | `201` |
+| Aceptar invitacion | `200` |
+| Crear servicio QA con `POST` | `201` |
+| Desactivar servicio QA con `DELETE` | `200` |
+| `GET /api/companies/me/services` despues de DELETE | `200` |
+| `DELETE` sobre servicio inexistente | `404` |
+| Logout | `200` |
+| `DELETE` despues de logout | `401` |
 
-## ServiceId creado y desactivado
+## Servicio creado y desactivado
 
-No aplica. No se creo ni desactivo servicio real en esta pasada.
+```text
+serviceId: service_e10ac0b1-7751-4063-af66-cf3da2eacca1
+serviceName: QA Delete Service 20260528-20260528-094614
+companyId: company_c0f05305-6b1d-4ba0-b4c2-cd987c324bd2
+status: inactive
+updatedAt: 2026-05-28T15:46:21.012Z
+```
+
+## Confirmaciones DELETE
+
+Validaciones sobre respuesta `200`:
+
+```text
+companyMatches=True
+statusInactive=True
+updatedAtChanged=True
+getShowsInactive=True
+```
 
 ## Confirmacion de no fuga metadata/ranking
 
-No confirmada en Azure real para `DELETE` porque no hubo respuesta `200`.
+Campos revisados como ausentes en respuesta `200`:
 
-La confirmacion local/estructural previa esta documentada en `tasks/TASK-053-HANDOFF.md`.
+```text
+partitionKey
+PartitionKey
+rowKey
+RowKey
+etag
+odata.etag
+timestamp
+Timestamp
+tokenHash
+sessionHash
+token
+cookie
+pe_company_session
+sortBoost
+isFeatured
+featuredUntil
+rankingScore
+metadata
+```
 
-## Confirmacion de GET con status inactive
+Resultado:
 
-No confirmada en Azure real.
+```text
+leakedKeys=[]
+noMetadataRankingLeak=True
+```
+
+## Confirmacion de GET con inactive
+
+Despues del `DELETE`, se ejecuto:
+
+```text
+GET /api/companies/me/services
+```
+
+Resultado:
+
+```text
+getAfterDeleteStatus=200
+getShowsInactive=True
+```
 
 ## Confirmacion logout y posterior 401
 
-No confirmada en Azure real.
+Resultado:
+
+```text
+logoutStatus=200
+deleteAfterLogoutStatus=401
+```
 
 ## Riesgos restantes
 
-- `DELETE /api/companies/me/services/{serviceId}` todavia no esta validado post-deploy con cookie real.
-- El endpoint DELETE aparece como archivos no trackeados localmente; Product/Architect debe commitear y pushear antes del smoke.
-- Si se ejecutara smoke ahora, podria dar falso negativo por endpoint ausente en Azure o falso positivo contra un despliegue no trazable.
-- Siguen pendientes limpieza/desactivacion real de datos QA existentes una vez desplegado DELETE.
+- El servicio QA creado queda persistido como `inactive` en Azure Table Storage.
+- Falta validar aislamiento Empresa A vs Empresa B en Azure real para DELETE con dos sesiones reales.
+- No existe endpoint de restauracion/reactivacion.
+- La autenticacion admin sigue usando credenciales compartidas para QA; se mantiene pendiente rotar `ADMIN_PASSWORD` cuando cierre la ventana de pruebas.
 
 ## Recomendacion
 
-Corregir antes: Product/Architect/User debe commitear y pushear el bloque `DELETE /api/companies/me/services/{serviceId}` y esperar el deploy exitoso.
+Seguir con upload firmado de imagenes.
 
-Despues de eso, QA/Infra Azure debe repetir TASK-054 para validar:
-
-- `DELETE` responde `200`.
-- El servicio queda `status: inactive`.
-- `GET /api/companies/me/services` refleja `inactive`.
-- `DELETE` inexistente responde `404`.
-- Logout invalida cookie y `DELETE` posterior responde `401`.
-
-No avanzar a upload firmado de imagenes hasta completar este smoke Azure.
+Desde QA/Infra Azure, `DELETE /api/companies/me/services/{serviceId}` queda aprobado para el flujo autenticado real de MVP. Product/Architect puede avanzar al siguiente bloque: upload firmado para imagenes de empresa/servicio.
