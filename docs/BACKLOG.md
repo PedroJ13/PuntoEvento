@@ -102,11 +102,13 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Deploy y QA Azure de `GET /api/companies/me`.
 - [x] Implementar endpoint listar servicios propios `GET /api/companies/me/services`.
 - [x] QA local/estructural de `GET /api/companies/me/services`.
-- [ ] Deploy y QA Azure de `GET /api/companies/me/services`.
+- [x] Deploy y QA Azure de `GET /api/companies/me/services` con sesion real.
 - [x] Endpoint crear servicios propios `POST /api/companies/me/services`.
 - [x] QA local/estructural de `POST /api/companies/me/services`.
-- [ ] Deploy y QA Azure de `POST /api/companies/me/services`.
-- [ ] Endpoint actualizar servicios propios `PATCH /api/companies/me/services/{id}`.
+- [x] Deploy y QA Azure de `POST /api/companies/me/services` con sesion real.
+- [x] Endpoint actualizar servicios propios `PATCH /api/companies/me/services/{id}`.
+- [x] QA local/estructural de `PATCH /api/companies/me/services/{id}`.
+- [ ] Deploy y QA Azure de `PATCH /api/companies/me/services/{id}` con sesion real.
 - [ ] Endpoint eliminar/desactivar servicios propios.
 - [ ] Endpoint upload firmado para imagenes.
 - [ ] Endpoint aprobar/rechazar empresa o servicio.
@@ -149,6 +151,6 @@ Entregable:
 Prioridad inmediata para los equipos:
 
 1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-2. Product/Architect: commitear y pushear `POST /api/companies/me/services`.
-3. QA/Infra Azure: validar `GET` y `POST /api/companies/me/services` post-deploy con cookie real y datos controlados.
-4. Backend API: implementar `PATCH /api/companies/me/services/{id}` despues del smoke Azure.
+2. Product/Architect: commitear y pushear `PATCH /api/companies/me/services/{id}`.
+3. QA/Infra Azure: validar `PATCH` post-deploy con cookie real.
+4. Backend API: implementar borrado logico de servicios propios despues del smoke Azure aprobado.

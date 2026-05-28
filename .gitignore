@@ -1,0 +1,3 @@
+tasks/generated/
+local-secrets/
+*.local.secrets.ps1

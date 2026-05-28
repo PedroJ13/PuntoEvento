@@ -303,11 +303,48 @@ Validaciones:
 
 Actualiza un servicio propio.
 
+Request parcial:
+
+```json
+{
+  "name": "Mesa dulce premium",
+  "category": "Mesas de dulces",
+  "eventTypes": ["Bodas"],
+  "priceFrom": "CRC 150000",
+  "description": "Mesa dulce premium para bodas.",
+  "coverUrl": "",
+  "gallery": []
+}
+```
+
+Response `200`:
+
+```json
+{
+  "id": "service_123",
+  "companyId": "company_123",
+  "slug": "mesa-dulce-premium",
+  "name": "Mesa dulce premium",
+  "category": "Mesas de dulces",
+  "status": "draft",
+  "eventTypes": ["Bodas"],
+  "priceFrom": "CRC 150000",
+  "description": "Mesa dulce premium para bodas.",
+  "coverUrl": "",
+  "gallery": [],
+  "createdAt": "2026-05-27T00:00:00Z",
+  "updatedAt": "2026-05-28T00:00:00Z"
+}
+```
+
 Validaciones:
 
 - `serviceId` debe pertenecer a la empresa autenticada.
 - No permitir editar servicios de otra empresa.
-- No permitir cambiar `companyId`, `plan`, `sortBoost`, `isFeatured`, `featuredUntil`.
+- No permitir cambiar `companyId`, `status`, `plan`, `sortBoost`, `isFeatured`, `featuredUntil`.
+- Si cambia `name`, regenerar `slug`.
+- Si el nuevo `slug` ya existe en otro servicio de la misma empresa, responder `409`.
+- `eventTypes` y `gallery` deben ser arreglos si vienen presentes.
 - Si un servicio `published` cambia contenido publico, puede volver a `pending`.
 
 ### DELETE `/api/companies/me/services/{serviceId}`
