@@ -655,6 +655,12 @@ button:focus-visible,
   gap: 14px;
 }
 
+.data-source-note {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .wide-card {
   display: grid;
   grid-template-columns: 230px 1fr;
@@ -841,6 +847,31 @@ button:focus-visible,
 .content-block {
   padding: 26px 0;
   border-top: 1px solid var(--line);
+}
+
+.service-list {
+  display: grid;
+  gap: 12px;
+}
+
+.service-option {
+  display: grid;
+  grid-template-columns: 1fr minmax(150px, auto);
+  gap: 16px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 16px;
+  background: #f7faf9;
+}
+
+.service-option.is-selected {
+  border-color: rgba(0, 127, 122, 0.45);
+  background: #eef8f5;
+}
+
+.service-option .ghost-button {
+  margin-top: 10px;
 }
 
 .review-grid {
@@ -1253,6 +1284,10 @@ button:focus-visible,
   }
 
   .wide-card {
+    grid-template-columns: 1fr;
+  }
+
+  .service-option {
     grid-template-columns: 1fr;
   }
 

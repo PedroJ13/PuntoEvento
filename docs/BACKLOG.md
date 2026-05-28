@@ -58,12 +58,14 @@ Entregable:
 
 Objetivo: que la pagina publica busque y muestre servicios especificos, sin perder el perfil completo de empresa.
 
-- [ ] Cambiar resultados demo para renderizar servicios.
-- [ ] Mostrar empresa asociada dentro del card de servicio.
-- [ ] Agregar link "Ver otros servicios de esta empresa".
-- [ ] Crear perfil empresa con servicio seleccionado destacado.
-- [ ] Mantener home actual sin reescritura.
-- [ ] Validar mobile y desktop.
+- [x] Cambiar resultados demo/API para renderizar servicios.
+- [x] Mostrar empresa asociada dentro del card de servicio.
+- [x] Agregar link para ver perfil de empresa desde un servicio.
+- [x] Crear perfil empresa con servicio seleccionado destacado.
+- [x] Mantener home actual sin reescritura.
+- [x] Validar mobile y desktop.
+- [x] QA local de pagina publica conectada a servicios publicados.
+- [ ] Deploy y QA Azure de pagina publica conectada a servicios publicados.
 
 Entregable:
 
@@ -167,6 +169,6 @@ Entregable:
 Prioridad inmediata para los equipos:
 
 1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-2. Frontend/Web Dev: conectar pagina publica a servicios publicados.
-3. QA: validar localmente la pagina publica conectada a API/fallback.
-4. QA/Infra Azure: validar la pagina publica post-deploy con endpoints publicos reales.
+2. Product/Architect: commitear y pushear conexion frontend de pagina publica.
+3. QA/Infra Azure: validar la pagina publica post-deploy con endpoints publicos reales.
+4. Frontend/Web Dev: ajustar cualquier hallazgo visual post-deploy antes de invitar empresas reales.

@@ -32,3 +32,5 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-067-HANDOFF.md` | Completado Backend | Se creo `TASK-068` para QA local/estructural de endpoints publicos por servicio. |
 | `tasks/TASK-068-HANDOFF.md` | Aprobado con observaciones | Se creo `TASK-069` para QA Azure de endpoints publicos por servicio post-deploy. |
 | `tasks/TASK-069-HANDOFF.md` | Aprobado con observaciones | Se creo `TASK-070` para conectar pagina publica a servicios publicados. |
+| `tasks/TASK-070-HANDOFF.md` | Completado Web Dev | Se creo `TASK-071` para QA local de pagina publica conectada. |
+| `tasks/TASK-071-HANDOFF.md` | Aprobado con observaciones | Se creo `TASK-072` para QA Azure post-deploy de pagina publica conectada. |

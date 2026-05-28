@@ -5,6 +5,8 @@ const CONFIG = {
   providersUrl: "data/providers.json",
   packagesUrl: "data/packages.json",
   categoriesUrl: "data/categories.json",
+  publicServicesUrl: "/api/public/services",
+  publicCompanyUrl: (slug) => `/api/public/companies/${encodeURIComponent(slug)}`,
   fallbackProviderImage: "assets/images/fallback-provider.svg",
   apiBaseUrl: "/api",
   maxProviderImages: 6,
@@ -15,6 +17,11 @@ let providers = [];
 let providerGallery = [];
 let packages = [];
 let categories = [];
+let services = [];
+let serviceDataSource = "demo";
+let serviceDataNotice = "";
+let currentSearchFilters = {};
+const companyProfileCache = new Map();
 
 const app = document.querySelector("#app");
 const drawer = document.querySelector("#quoteDrawer");
@@ -65,7 +72,115 @@ async function loadProviderData() {
     vendor: providers.find((provider) => provider.id === pack.providerId)?.name || "Proveedor demo",
   }));
   categories = categoryData;
+  services = buildDemoServices();
+  serviceDataSource = "demo";
+  serviceDataNotice = "Mostrando datos demo porque la API publica no respondio.";
+
+  try {
+    const publicServices = await fetchPublicServices();
+    services = publicServices;
+    serviceDataSource = "api";
+    serviceDataNotice = "";
+  } catch (error) {
+    console.info("Usando fallback demo de servicios.", error);
+  }
+
   providerGallery = providers[0]?.gallery || [];
+}
+
+async function fetchPublicServices(params = {}) {
+  const url = new URL(CONFIG.publicServicesUrl, window.location.href);
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) url.searchParams.set(key, value);
+  });
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`No se pudo cargar ${CONFIG.publicServicesUrl}`);
+  }
+
+  const payload = await response.json();
+  const items = Array.isArray(payload) ? payload : payload.items;
+  if (!Array.isArray(items)) {
+    throw new Error("Respuesta inesperada de servicios publicos");
+  }
+
+  return items.map(normalizePublicService).filter((service) => service.name && service.company.slug);
+}
+
+function normalizePublicService(service) {
+  const company = service.company || {};
+  const companySlug = company.slug || company.id || service.companySlug || service.providerId || "";
+  const gallery = normalizeGallery(service.gallery, service.coverUrl || company.coverUrl, service.name);
+
+  return {
+    id: service.id || service.slug || `${companySlug}-${service.name || "servicio"}`,
+    slug: service.slug || service.id || "",
+    name: service.name || "Servicio publicado",
+    category: service.category || "",
+    eventTypes: Array.isArray(service.eventTypes) ? service.eventTypes : [],
+    description: service.description || "",
+    priceFrom: service.priceFrom || service.price || "Consultar",
+    coverUrl: service.coverUrl || company.coverUrl || CONFIG.fallbackProviderImage,
+    gallery,
+    company: {
+      id: company.id || companySlug,
+      slug: companySlug,
+      name: company.name || "Empresa publicada",
+      province: company.province || "",
+      canton: company.canton || "",
+      plan: company.plan || "free",
+      logoUrl: company.logoUrl || "",
+    },
+  };
+}
+
+function buildDemoServices() {
+  return packages
+    .map((pack) => {
+      const provider = providers.find((item) => item.id === pack.providerId);
+      if (!provider) return null;
+
+      return {
+        id: pack.id,
+        slug: pack.id,
+        name: pack.title,
+        category: provider.category,
+        eventTypes: pack.eventType ? [pack.eventType] : [],
+        description: pack.details || provider.description,
+        priceFrom: pack.price || provider.price || "Consultar",
+        coverUrl: provider.image || CONFIG.fallbackProviderImage,
+        gallery: normalizeGallery(provider.gallery, provider.image, provider.name),
+        company: {
+          id: provider.id,
+          slug: provider.id,
+          name: provider.name,
+          province: provider.location,
+          canton: "",
+          plan: "demo",
+          logoUrl: "",
+        },
+      };
+    })
+    .filter(Boolean);
+}
+
+function normalizeGallery(gallery, fallbackImage, fallbackAlt) {
+  if (Array.isArray(gallery) && gallery.length) {
+    return gallery
+      .map((item) => ({
+        src: typeof item === "string" ? item : item.src,
+        alt: typeof item === "string" ? fallbackAlt : item.alt || fallbackAlt,
+      }))
+      .filter((item) => item.src);
+  }
+
+  return [
+    {
+      src: fallbackImage || CONFIG.fallbackProviderImage,
+      alt: fallbackAlt || "Servicio",
+    },
+  ];
 }
 
 function imageFallbackAttribute() {
@@ -138,8 +253,20 @@ function providerHref(provider) {
   return `#proveedor/${encodeURIComponent(provider.id || "")}`;
 }
 
+function serviceHref(service) {
+  const companySlug = service.company?.slug || "";
+  const serviceSlug = service.slug || "";
+  const suffix = serviceSlug ? `/${encodeURIComponent(serviceSlug)}` : "";
+  return `#proveedor/${encodeURIComponent(companySlug)}${suffix}`;
+}
+
 function packagesForProvider(providerId) {
   return packages.filter((pack) => pack.providerId === providerId);
+}
+
+function dataSourceNotice() {
+  if (serviceDataSource !== "demo" || !serviceDataNotice) return "";
+  return `<p class="data-source-note">${safeText(serviceDataNotice)}</p>`;
 }
 
 function providerCard(provider) {
@@ -160,6 +287,31 @@ function providerCard(provider) {
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
           <button class="secondary-button" data-open-quote>Cotizar</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function serviceCard(service) {
+  const meta = [service.category, service.company?.province].filter(Boolean).join(" · ");
+  return `
+    <article class="provider-card">
+      <img src="${safeImageUrl(service.coverUrl)}" alt="${safeText(service.name)}" loading="lazy" ${imageFallbackAttribute()}>
+      <div class="card-body">
+        <div class="tag-row">
+          <span class="tag verified">Servicio publicado</span>
+          ${service.company?.plan && service.company.plan !== "free" ? `<span class="tag">${safeText(service.company.plan)}</span>` : ""}
+        </div>
+        <div>
+          <h3>${safeText(service.name)}</h3>
+          <p class="card-meta">${safeText(service.company?.name)}${meta ? ` · ${safeText(meta)}` : ""}</p>
+        </div>
+        <p>${safeText(service.description)}</p>
+        <strong>${safeText(service.priceFrom)}</strong>
+        <div class="card-actions">
+          <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver empresa</a>
+          <button class="secondary-button" data-open-quote data-service-name="${safeText(service.name)}">Cotizar servicio</button>
         </div>
       </div>
     </article>
@@ -191,6 +343,32 @@ function wideProviderCard(provider) {
   `;
 }
 
+function wideServiceCard(service) {
+  const meta = [service.category, service.company?.province].filter(Boolean).join(" · ");
+  const eventTags = Array.isArray(service.eventTypes) ? service.eventTypes.slice(0, 2) : [];
+  return `
+    <article class="wide-card" data-category="${safeText(service.category)}">
+      <img src="${safeImageUrl(service.coverUrl)}" alt="${safeText(service.name)}" loading="lazy" ${imageFallbackAttribute()}>
+      <div class="card-body">
+        <div class="tag-row">
+          <span class="tag verified">Servicio</span>
+          ${eventTags.map((eventType) => `<span class="tag">${safeText(eventType)}</span>`).join("")}
+        </div>
+        <div>
+          <h3>${safeText(service.name)}</h3>
+          <p class="card-meta">${safeText(service.company?.name)}${meta ? ` · ${safeText(meta)}` : ""}</p>
+        </div>
+        <p>${safeText(service.description)}</p>
+        <strong>${safeText(service.priceFrom)}</strong>
+        <div class="card-actions">
+          <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver empresa</a>
+          <button class="primary-button" data-open-quote data-service-name="${safeText(service.name)}">Cotizar servicio</button>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
 function ratingStars(rating, reviews) {
   return `
     <div class="rating-row" aria-label="${safeText(rating)} de 5 estrellas, ${safeText(reviews)} opiniones">
@@ -212,6 +390,42 @@ function packageCard(pack) {
       <button class="secondary-button" data-open-quote>Cotizar paquete</button>
     </article>
   `;
+}
+
+function normalizeFilterValue(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function serviceMatchesFilters(service, filters = {}) {
+  const serviceText = normalizeFilterValue(
+    [
+      service.name,
+      service.category,
+      service.description,
+      service.company?.name,
+      service.company?.province,
+      ...(service.eventTypes || []),
+    ].join(" "),
+  );
+  const q = normalizeFilterValue(filters.q);
+  const eventType = normalizeFilterValue(filters.eventType);
+  const province = normalizeFilterValue(filters.province);
+  const serviceCategory = normalizeFilterValue(filters.service);
+
+  if (q && !serviceText.includes(q)) return false;
+  if (eventType && eventType !== "todos" && !serviceText.includes(eventType)) return false;
+  if (province && province !== "todos" && !normalizeFilterValue(service.company?.province).includes(province)) return false;
+  if (serviceCategory && serviceCategory !== "todos" && !serviceText.includes(serviceCategory)) return false;
+  return true;
+}
+
+function filteredServices() {
+  const matches = services.filter((service) => serviceMatchesFilters(service, currentSearchFilters));
+  return matches.length ? matches : services;
 }
 
 function homePage() {
@@ -300,13 +514,14 @@ function homePage() {
       <div class="section-header">
         <div>
           <p class="eyebrow">Destacados</p>
-          <h2>Proveedores listos para cotizar</h2>
+          <h2>Servicios listos para cotizar</h2>
         </div>
         <button class="ghost-button" data-open-quote>Cotizacion multiple</button>
       </div>
       <div class="cards-grid">
-        ${providers.slice(0, 3).map(providerCard).join("")}
+        ${services.slice(0, 3).map(serviceCard).join("")}
       </div>
+      ${dataSourceNotice()}
     </section>
 
     <section class="band">
@@ -342,6 +557,7 @@ function homePage() {
 }
 
 function weddingsPage() {
+  const results = filteredServices();
   return `
     <section class="subhero">
       <div class="subhero-inner">
@@ -369,6 +585,7 @@ function weddingsPage() {
         <div class="field">
           <label>Provincia</label>
           <select name="province">
+            <option>Todos</option>
             <option>San Jose</option>
             <option>Heredia</option>
             <option>Alajuela</option>
@@ -404,14 +621,15 @@ function weddingsPage() {
         <div>
           <div class="section-header">
             <div>
-              <p class="eyebrow">Resultados</p>
-              <h2>Opciones recomendadas</h2>
+            <p class="eyebrow">Resultados</p>
+              <h2>Servicios recomendados</h2>
             </div>
             <button class="ghost-button" data-open-quote>Cotizar seleccionados</button>
           </div>
           <div class="result-list" id="providerResults">
-            ${providers.map(wideProviderCard).join("")}
+            ${results.map(wideServiceCard).join("")}
           </div>
+          ${dataSourceNotice()}
         </div>
       </div>
     </section>
@@ -432,7 +650,168 @@ function weddingsPage() {
   `;
 }
 
-function providerPage(providerId) {
+async function providerPage(companySlug, serviceSlug = "") {
+  if (serviceDataSource === "api" && companySlug) {
+    try {
+      const company = await fetchPublicCompany(companySlug, serviceSlug);
+      return companyProfilePage(company, serviceSlug || company.selectedServiceSlug || "");
+    } catch (error) {
+      console.info("Usando fallback demo de perfil.", error);
+    }
+  }
+
+  return providerDemoPage(companySlug);
+}
+
+async function fetchPublicCompany(companySlug, serviceSlug = "") {
+  const cacheKey = `${companySlug}:${serviceSlug}`;
+  if (companyProfileCache.has(cacheKey)) return companyProfileCache.get(cacheKey);
+
+  const url = new URL(CONFIG.publicCompanyUrl(companySlug), window.location.href);
+  if (serviceSlug) url.searchParams.set("service", serviceSlug);
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`No se pudo cargar la empresa ${companySlug}`);
+  }
+
+  const company = await response.json();
+  companyProfileCache.set(cacheKey, company);
+  return company;
+}
+
+function companyProfilePage(company, selectedServiceSlug = "") {
+  const publishedServices = (Array.isArray(company.services) ? company.services : [])
+    .filter((service) => !service.status || service.status === "published")
+    .map((service) =>
+      normalizePublicService({
+        ...service,
+        company: {
+          id: company.id,
+          slug: company.slug,
+          name: company.name,
+          province: company.province,
+          canton: company.canton,
+          plan: company.plan,
+          logoUrl: company.logoUrl,
+        },
+      }),
+    );
+  const selectedService =
+    publishedServices.find((service) => service.slug === selectedServiceSlug) || publishedServices[0];
+
+  if (!company || company.status !== "published" || !publishedServices.length || !selectedService) {
+    return `
+      <section class="section">
+        <p class="eyebrow">Empresa no disponible</p>
+        <h1>No encontramos servicios publicados</h1>
+        <p>Vuelve al listado para elegir una empresa disponible.</p>
+        <a class="primary-button" href="#bodas">Ver servicios</a>
+      </section>
+    `;
+  }
+
+  providerGallery = normalizeGallery(
+    selectedService.gallery,
+    selectedService.coverUrl || company.coverUrl || CONFIG.fallbackProviderImage,
+    selectedService.name,
+  );
+  const location = [company.canton, company.province].filter(Boolean).join(", ");
+
+  return `
+    <section class="provider-hero">
+      <div>
+        <div class="provider-carousel" aria-label="Galeria de fotos de la empresa">
+          <div class="carousel-stage">
+            <button class="carousel-nav prev" type="button" data-carousel-prev aria-label="Foto anterior">&lsaquo;</button>
+            <img class="carousel-image" src="${safeImageUrl(providerGallery[0].src)}" alt="${safeText(providerGallery[0].alt)}" data-carousel-image ${imageFallbackAttribute()}>
+            <button class="carousel-nav next" type="button" data-carousel-next aria-label="Foto siguiente">&rsaquo;</button>
+            <div class="carousel-count" data-carousel-count>1 / ${providerGallery.length}</div>
+          </div>
+          <div class="carousel-thumbs" aria-label="Miniaturas">
+            ${providerGallery
+              .map(
+                (item, index) => `
+                  <button class="thumb ${index === 0 ? "is-active" : ""}" type="button" data-carousel-thumb="${index}" aria-label="Ver foto ${index + 1}">
+                    <img src="${safeImageUrl(item.src)}" alt="${safeText(item.alt)}" loading="lazy" ${imageFallbackAttribute()}>
+                  </button>
+                `,
+              )
+              .join("")}
+          </div>
+        </div>
+      </div>
+      <aside class="provider-summary">
+        <div class="tag-row">
+          <span class="tag verified">Empresa publicada</span>
+          <span class="tag">${safeText(company.plan || "free")}</span>
+        </div>
+        <h1 class="provider-title">${safeText(company.name)}</h1>
+        <p class="card-meta">${safeText(location || company.province || "Costa Rica")}</p>
+        <div class="summary-price">
+          <span>Servicio destacado</span>
+          <strong>${safeText(selectedService.name)}</strong>
+        </div>
+        <div class="card-actions">
+          <button class="primary-button" data-open-quote data-service-name="${safeText(selectedService.name)}">Cotizar servicio</button>
+          <a class="secondary-button" href="#bodas">Ver mas servicios</a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="provider-content">
+      <div class="content-grid">
+        <div>
+          <article class="content-block">
+            <p class="eyebrow">Servicio seleccionado</p>
+            <h2>${safeText(selectedService.name)}</h2>
+            <p>${safeText(selectedService.description || company.description)}</p>
+            <ul class="feature-list">
+              <li><span class="check">&#10003;</span><span>${safeText(selectedService.category || "Servicio para eventos")}.</span></li>
+              <li><span class="check">&#10003;</span><span>${safeText(selectedService.priceFrom || "Precio a consultar")}.</span></li>
+              <li><span class="check">&#10003;</span><span>Cotizacion por servicio desde la ficha de empresa.</span></li>
+            </ul>
+          </article>
+
+          <article class="content-block">
+            <p class="eyebrow">Servicios de la empresa</p>
+            <h2>Opciones publicadas</h2>
+            <div class="service-list">
+              ${publishedServices
+                .map(
+                  (service) => `
+                    <article class="service-option ${service.slug === selectedService.slug ? "is-selected" : ""}">
+                      <div>
+                        <p class="package-meta">${safeText(service.category)}</p>
+                        <h3>${safeText(service.name)}</h3>
+                        <p>${safeText(service.description)}</p>
+                      </div>
+                      <div>
+                        <strong>${safeText(service.priceFrom)}</strong>
+                        <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver servicio</a>
+                      </div>
+                    </article>
+                  `,
+                )
+                .join("")}
+            </div>
+          </article>
+        </div>
+
+        <aside class="side-panel">
+          <h3>Datos clave</h3>
+          <ul class="feature-list">
+            <li><span class="check">&#10003;</span><span>${safeText(location || "Costa Rica")}.</span></li>
+            <li><span class="check">&#10003;</span><span>${publishedServices.length} servicio(s) publicado(s).</span></li>
+            <li><span class="check">&#10003;</span><span>Perfil revisado antes de publicarse.</span></li>
+          </ul>
+          <button class="primary-button" data-open-quote data-service-name="${safeText(selectedService.name)}">Pedir presupuesto</button>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function providerDemoPage(providerId) {
   const selectedProvider = providerId ? providers.find((item) => item.id === providerId) : providers[0];
   const provider = selectedProvider || providers[0];
   if (!provider) {
@@ -722,15 +1101,16 @@ function companiesPage() {
   `;
 }
 
-function render() {
-  const [route = "inicio", providerId] = window.location.hash.replace("#", "").split("/");
+async function render() {
+  const [route = "inicio", providerId, serviceSlug] = window.location.hash.replace("#", "").split("/");
   const pages = {
     inicio: homePage,
     bodas: weddingsPage,
-    proveedor: () => providerPage(providerId),
+    proveedor: () => providerPage(providerId, serviceSlug),
     empresas: companiesPage,
   };
-  app.innerHTML = `<div class="page">${(pages[route] || homePage)()}</div>`;
+  const page = pages[route] || homePage;
+  app.innerHTML = `<div class="page">${await page()}</div>`;
   document.querySelectorAll(".nav a").forEach((link) => {
     link.classList.toggle("is-active", link.getAttribute("href") === `#${route}`);
   });
@@ -760,8 +1140,13 @@ function bindPageEvents() {
   if (homeSearch) {
     homeSearch.addEventListener("submit", (event) => {
       event.preventDefault();
+      const formData = new FormData(homeSearch);
+      currentSearchFilters = {
+        eventType: formData.get("eventType"),
+        province: formData.get("location"),
+      };
       window.location.hash = "bodas";
-      showToast("Busqueda demo aplicada: mostrando proveedores recomendados.");
+      showToast("Busqueda aplicada: mostrando servicios recomendados.");
     });
   }
 
@@ -769,7 +1154,13 @@ function bindPageEvents() {
   if (filters) {
     filters.addEventListener("submit", (event) => {
       event.preventDefault();
-      showToast("Filtros demo aplicados.");
+      const formData = new FormData(filters);
+      currentSearchFilters = {
+        service: formData.get("service"),
+        province: formData.get("province"),
+      };
+      render();
+      showToast("Filtros aplicados.");
     });
   }
 
