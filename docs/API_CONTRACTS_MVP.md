@@ -276,16 +276,26 @@ Response `201`:
 
 ```json
 {
-  "serviceId": "service_123",
+  "id": "service_123",
+  "companyId": "company_123",
   "slug": "mesa-dulce",
-  "status": "draft"
+  "name": "Mesa dulce",
+  "category": "Mesas de dulces",
+  "status": "draft",
+  "eventTypes": ["Bodas", "Cumpleanos"],
+  "priceFrom": "CRC 120000",
+  "description": "Mesa dulce personalizada.",
+  "coverUrl": "",
+  "gallery": [],
+  "createdAt": "2026-05-27T00:00:00Z",
+  "updatedAt": "2026-05-27T00:00:00Z"
 }
 ```
 
 Validaciones:
 
-- `name`, `category` y `description` requeridos.
-- `eventTypes` debe ser arreglo de valores conocidos o texto limpio.
+- `name` y `category` requeridos.
+- `eventTypes` debe ser arreglo; puede estar vacio mientras se define catalogo final.
 - `status` inicial `draft`; al enviar a revision puede pasar a `pending`.
 - `sortBoost`, `isFeatured` y `featuredUntil` no son editables por empresa en MVP.
 

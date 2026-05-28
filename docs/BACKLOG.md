@@ -103,7 +103,9 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Implementar endpoint listar servicios propios `GET /api/companies/me/services`.
 - [x] QA local/estructural de `GET /api/companies/me/services`.
 - [ ] Deploy y QA Azure de `GET /api/companies/me/services`.
-- [ ] Endpoint crear servicios propios `POST /api/companies/me/services`.
+- [x] Endpoint crear servicios propios `POST /api/companies/me/services`.
+- [x] QA local/estructural de `POST /api/companies/me/services`.
+- [ ] Deploy y QA Azure de `POST /api/companies/me/services`.
 - [ ] Endpoint actualizar servicios propios `PATCH /api/companies/me/services/{id}`.
 - [ ] Endpoint eliminar/desactivar servicios propios.
 - [ ] Endpoint upload firmado para imagenes.
@@ -147,6 +149,6 @@ Entregable:
 Prioridad inmediata para los equipos:
 
 1. Product/Owner: rotar `ADMIN_PASSWORD` porque el temporal fue expuesto durante la prueba.
-2. Product/Architect: commitear y pushear el endpoint de listado de servicios.
-3. Backend API: implementar `POST /api/companies/me/services` para crear servicios propios en estado `draft`.
-4. QA/Infra Azure: validar `GET /api/companies/me/services` post-deploy con cookie real y datos controlados.
+2. Product/Architect: commitear y pushear `POST /api/companies/me/services`.
+3. QA/Infra Azure: validar `GET` y `POST /api/companies/me/services` post-deploy con cookie real y datos controlados.
+4. Backend API: implementar `PATCH /api/companies/me/services/{id}` despues del smoke Azure.
