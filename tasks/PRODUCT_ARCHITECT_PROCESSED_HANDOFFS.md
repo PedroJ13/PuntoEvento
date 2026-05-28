@@ -26,3 +26,5 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-061-HANDOFF.md` | Aprobado Azure | Se creo `TASK-062` para aprobacion/rechazo interno. |
 | `tasks/TASK-062-HANDOFF.md` | Completado Backend | Se creo `TASK-063` para QA local de moderacion interna. |
 | `tasks/TASK-063-HANDOFF.md` | Aprobado QA local | Se creo `TASK-064` para smoke Azure de moderacion interna. |
+| `tasks/TASK-064-HANDOFF.md` | Aprobado con observaciones | Se creo `TASK-065` para resolver acceso publico a imagenes publicadas. |
+| `tasks/TASK-065-HANDOFF.md` | Aprobado con cambios aplicados | Se creo `TASK-066` para QA Azure de render de imagen publica. |
