@@ -37,3 +37,4 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-072-HANDOFF.md` | Aprobado con observaciones | Se creo `TASK-073` para corregir estado vacio de filtros sin resultados. |
 | `tasks/TASK-073-HANDOFF.md` | Completado Web Dev | Se creo `TASK-074` para QA local de estado vacio en filtros de servicios. |
 | `tasks/TASK-074-HANDOFF.md` | Aprobado QA local | Se creo `TASK-075` para QA Azure de estado vacio post-deploy. |
+| `tasks/TASK-075-HANDOFF.md` | Aprobado Azure | Se creo `TASK-076` para publicar una imagen real de demo en el servicio QA principal. |
