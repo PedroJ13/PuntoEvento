@@ -205,6 +205,161 @@ Validaciones:
 - No devolver `tokenHash`, storage keys, connection strings ni secretos.
 - Registrar `status: active`, `expiresAt`, `createdAt`, `updatedAt`.
 
+### POST `/api/internal/companies/{companyId}/approve`
+
+Publica una empresa.
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "status": "published"
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- Actualiza `Companies.status` a `published`.
+- Actualiza `updatedAt`.
+- Limpia `rejectionReason`.
+
+### POST `/api/internal/companies/{companyId}/reject`
+
+Rechaza una empresa.
+
+Request opcional:
+
+```json
+{
+  "reason": "Informacion incompleta"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "status": "rejected"
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- Actualiza `Companies.status` a `rejected`.
+- Guarda `rejectionReason` si se envia.
+- Actualiza `updatedAt`.
+
+### POST `/api/internal/services/{companyId}/{serviceId}/approve`
+
+Publica un servicio.
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "status": "published"
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- El servicio debe existir en `Services` con `PartitionKey=companyId` y `RowKey=serviceId`.
+- Actualiza `Services.status` a `published`.
+- Actualiza `updatedAt`.
+- Limpia `rejectionReason`.
+
+### POST `/api/internal/services/{companyId}/{serviceId}/reject`
+
+Rechaza un servicio.
+
+Request opcional:
+
+```json
+{
+  "reason": "Imagen borrosa"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "status": "rejected"
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- El servicio debe existir.
+- Actualiza `Services.status` a `rejected`.
+- Guarda `rejectionReason` si se envia.
+- Actualiza `updatedAt`.
+
+### POST `/api/internal/uploads/{companyId}/{uploadId}/approve`
+
+Publica un upload pendiente.
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "status": "published",
+  "publicBlobUrl": "https://..."
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- El upload debe existir en `Uploads` con `PartitionKey=companyId` y `RowKey=uploadId`.
+- Solo uploads `pending` pueden aprobarse.
+- Copia el blob desde el contenedor pendiente hacia el contenedor publico usando el mismo path `companies/...`.
+- Cambia `Uploads.status` a `published` y guarda `publicBlobName`, `publicBlobUrl` y `updatedAt`.
+- Intenta borrar el blob pendiente despues de publicar; si falla el borrado, no falla la publicacion.
+- Si `scope=service` e `imageType=cover`, actualiza `Services.coverUrl`.
+- Si `scope=service` e `imageType=gallery`, agrega la URL a `Services.gallery`.
+- Si `scope=company` e `imageType=cover`, actualiza `Companies.coverUrl`.
+- Si `scope=company` e `imageType=logo`, actualiza `Companies.logoUrl`.
+- Si `scope=company` e `imageType=gallery`, solo deja el upload publicado porque `Company` no tiene campo `gallery` definido para MVP.
+
+### POST `/api/internal/uploads/{companyId}/{uploadId}/reject`
+
+Rechaza un upload.
+
+Request opcional:
+
+```json
+{
+  "reason": "Imagen borrosa"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "status": "rejected"
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- El upload debe existir.
+- Cambia `Uploads.status` a `rejected`.
+- Guarda `rejectionReason` si se envia.
+- No copia ni publica el blob.
+
 ### PATCH `/api/companies/me`
 
 Actualiza datos editables de la empresa autenticada.
@@ -553,6 +708,15 @@ Upload/Image:
 - `pending`
 - `published`
 - `rejected`
+
+Errores comunes de endpoints internos:
+
+- `400` para validacion de parametros.
+- `401` si falta credencial admin.
+- `404` si la entidad no existe.
+- `405` si el metodo no es permitido.
+- `409` si el estado no permite la accion solicitada.
+- `500` para error inesperado.
 
 ## Persistencia MVP sugerida
 

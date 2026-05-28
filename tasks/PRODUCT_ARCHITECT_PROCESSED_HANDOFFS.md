@@ -23,3 +23,6 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-058-HANDOFF.md` | Aprobado Azure | Se creo `TASK-059` para confirmacion de upload completado. |
 | `tasks/TASK-059-HANDOFF.md` | Completado Backend | Se creo `TASK-060` para QA local de `POST /api/uploads/confirm`. |
 | `tasks/TASK-060-HANDOFF.md` | Aprobado QA local | Se creo `TASK-061` para smoke Azure de `POST /api/uploads/confirm`. |
+| `tasks/TASK-061-HANDOFF.md` | Aprobado Azure | Se creo `TASK-062` para aprobacion/rechazo interno. |
+| `tasks/TASK-062-HANDOFF.md` | Completado Backend | Se creo `TASK-063` para QA local de moderacion interna. |
+| `tasks/TASK-063-HANDOFF.md` | Aprobado QA local | Se creo `TASK-064` para smoke Azure de moderacion interna. |

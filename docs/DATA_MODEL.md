@@ -220,6 +220,8 @@ Reserva temporal para imagenes pendientes de empresa o servicio.
   "status": "reserved",
   "pendingBlobName": "companies/company_123/services/service_123/cover/upload_123.jpg",
   "pendingBlobUrl": "https://...",
+  "publicBlobName": "",
+  "publicBlobUrl": "",
   "createdAt": "2026-05-28T00:00:00Z",
   "updatedAt": "2026-05-28T00:00:00Z",
   "expiresAt": "2026-05-28T00:10:00Z"
@@ -233,6 +235,8 @@ Reglas:
 - Si `scope` es service, `serviceId` debe pertenecer a la empresa.
 - Subidas empiezan como `reserved` en contenedor pendiente.
 - Al confirmar la subida, el estado pasa a `pending`, `size` se reemplaza por el tamano real del blob y `expiresAt` se limpia porque ya no aplica como vencimiento de reserva.
+- Al aprobar internamente, el estado pasa a `published`, se guarda `publicBlobUrl` y la URL se aplica a `Service.coverUrl`, `Service.gallery`, `Company.coverUrl` o `Company.logoUrl` segun `scope` e `imageType`.
+- Si `scope=company` e `imageType=gallery`, el upload queda publicado pero no se aplica a la empresa porque el modelo MVP no define `Company.gallery`.
 - Publicar o asociar la imagen al perfil/servicio requiere validacion posterior.
 
 ## Estados
