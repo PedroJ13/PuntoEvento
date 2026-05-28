@@ -25,6 +25,7 @@ function Invoke-JsonRequest {
     Uri = $Uri
     Headers = $Headers
     ContentType = "application/json"
+    UseBasicParsing = $true
     ErrorAction = "Stop"
   }
 
@@ -124,6 +125,7 @@ $acceptParams = @{
   ContentType = "application/json"
   Body = (@{ token = $token } | ConvertTo-Json)
   WebSession = $session
+  UseBasicParsing = $true
   ErrorAction = "Stop"
 }
 $acceptResponse = Invoke-WebRequest @acceptParams
@@ -142,7 +144,37 @@ $reuseResponse = Invoke-JsonRequest `
 Write-Host "Status: $($reuseResponse.StatusCode)"
 Write-Host "Body: $($reuseResponse.RawBody)"
 
-Write-Step "4. Logout with cookie"
+Write-Step "4. GET companies/me with cookie"
+$meResponse = Invoke-JsonRequest `
+  -Method "GET" `
+  -Uri "$BaseUrl/api/companies/me" `
+  -WebSession $session
+Write-Host "Status: $($meResponse.StatusCode)"
+if ($meResponse.StatusCode -eq 200) {
+  Write-Host "id: $($meResponse.Body.id)"
+  Write-Host "slug: $($meResponse.Body.slug)"
+  Write-Host "name: $($meResponse.Body.name)"
+  Write-Host "status: $($meResponse.Body.status)"
+  Write-Host "plan: $($meResponse.Body.plan)"
+  Write-Host "email: $($meResponse.Body.email)"
+  $forbiddenKeys = @(
+    "partitionKey",
+    "rowKey",
+    "etag",
+    "timestamp",
+    "tokenHash",
+    "sessionHash",
+    "pe_company_session"
+  )
+  $presentForbiddenKeys = @($forbiddenKeys | Where-Object {
+    $meResponse.Body.PSObject.Properties.Name -contains $_
+  })
+  Write-Host "forbiddenKeysPresent: $($presentForbiddenKeys -join ',')"
+} else {
+  Write-Host "Body: $($meResponse.RawBody)"
+}
+
+Write-Step "5. Logout with cookie"
 $logoutResponse = Invoke-JsonRequest `
   -Method "POST" `
   -Uri "$BaseUrl/api/company-auth/logout" `
@@ -152,11 +184,21 @@ Write-Host "Status: $($logoutResponse.StatusCode)"
 Write-Host "Body: $($logoutResponse.RawBody)"
 Write-Host "Set-Cookie: $(Redact-SetCookie $logoutResponse.Headers['Set-Cookie'])"
 
+Write-Step "6. GET companies/me after logout"
+$meAfterLogoutResponse = Invoke-JsonRequest `
+  -Method "GET" `
+  -Uri "$BaseUrl/api/companies/me" `
+  -WebSession $session
+Write-Host "Status: $($meAfterLogoutResponse.StatusCode)"
+Write-Host "Body: $($meAfterLogoutResponse.RawBody)"
+
 Write-Step "Summary"
 Write-Host "createInviteStatus=$($inviteResponse.StatusCode)"
 Write-Host "acceptInviteStatus=$([int]$acceptResponse.StatusCode)"
 Write-Host "reuseTokenStatus=$($reuseResponse.StatusCode)"
+Write-Host "companiesMeStatus=$($meResponse.StatusCode)"
 Write-Host "logoutStatus=$($logoutResponse.StatusCode)"
+Write-Host "companiesMeAfterLogoutStatus=$($meAfterLogoutResponse.StatusCode)"
 Write-Host "inviteId=$inviteId"
 Write-Host "token=<redacted>"
 Write-Host "sessionCookie=<redacted>"
