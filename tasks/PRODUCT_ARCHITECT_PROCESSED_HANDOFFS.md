@@ -57,3 +57,5 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-085-HANDOFF.md` | Bloqueado parcialmente | Se creo `TASK-093` para Backend/API: listados internos de Companies, Services y Uploads pendientes. |
 | `tasks/TASK-093-HANDOFF.md` | Completado Backend/API | Se creo `TASK-094` para QA local/estructural de los endpoints internos de listado. |
 | `tasks/TASK-094-HANDOFF.md` | Aprobado QA local/estructural | Se creo `TASK-095` para QA Azure de endpoints internos de listado post-deploy. |
+| `tasks/TASK-095-HANDOFF.md` | Requiere cambios | Se creo `TASK-096` para Backend/API: enrutar metodos no GET y devolver `405` en Azure. |
+| `tasks/TASK-096-HANDOFF.md` | Completado Backend/API | Se creo `TASK-097` para re-smoke Azure de listados internos post-deploy. |
