@@ -62,3 +62,7 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-097-HANDOFF.md` | Aprobado QA Azure | Se creo `TASK-098` para Web Dev: conectar `admin.html` a listados internos reales. |
 | `tasks/TASK-098-HANDOFF.md` | Completado Web Dev | Se creo `TASK-099` para QA local de admin UI conectada al modelo nuevo. |
 | `tasks/TASK-099-HANDOFF.md` | Aprobado QA local | Se creo `TASK-100` para QA Azure de admin UI conectada post-deploy. |
+| `tasks/TASK-100-HANDOFF.md` | Bloqueado por credencial admin | Se creo `TASK-101` para Infra Azure / Product: alinear credenciales admin y `local-secrets`. |
+| `tasks/TASK-101-HANDOFF.md` | Aprobado Infra Azure / Product | Se creo `TASK-102` para reintento QA Azure de admin UI con credencial corregida. |
+| `tasks/TASK-102-HANDOFF.md` | Bloqueado por header UI | Se creo `TASK-103` para Web Dev: usar `X-Punto-Admin-Credential` en `admin.js` y subir cache busting. |
+| `tasks/TASK-103-HANDOFF.md` | Completado Web Dev | Se creo `TASK-104` para QA Azure post-deploy de `admin.js?v=11`. |

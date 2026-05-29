@@ -159,7 +159,7 @@ function setDemoMode(enabled) {
 
 function authHeaders() {
   return {
-    Authorization: `Basic ${state.auth}`,
+    "X-Punto-Admin-Credential": `Basic ${state.auth}`,
     "Content-Type": "application/json",
   };
 }

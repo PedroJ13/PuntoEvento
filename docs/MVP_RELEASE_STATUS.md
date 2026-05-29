@@ -16,7 +16,7 @@ Resumen:
 - API MVP con registro, autenticacion por invitacion, servicios propios, uploads y aprobacion/rechazo mayormente implementada.
 - Bloqueadores operativos recientes cerrados: `ADMIN_PASSWORD` rotado y galeria QA visual limpiada.
 - QA Azure enfocado confirmo que el flujo completo funciona por API/manual.
-- Falta conectar UI real de admin para que Product Owner lo pruebe completo sin apoyo tecnico.
+- `admin.html` ya tiene fix local para usar `X-Punto-Admin-Credential`; falta deploy y QA Azure de `admin.js?v=11`.
 
 ## Alcance congelado MVP
 
@@ -43,7 +43,8 @@ Fuera del MVP inicial:
 
 ## Bloqueadores actuales
 
-- `admin.html` ya fue conectado a los listados internos reales y aprobado por QA local; falta commit/deploy y QA Azure.
+- `admin.html` ya fue conectado a los listados internos reales, aprobado por QA local y visible en Azure.
+- QA Azure de `admin.html` debe repetirse despues del deploy de `admin.js?v=11`.
 - Decidir si el MVP acepta el flujo temporal de revision al guardar servicio o si necesita endpoint explicito `submit-review`.
 - Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
 
@@ -64,7 +65,8 @@ Validado segun backlog:
 
 Pendiente:
 
-- Deploy y QA Azure de UI admin conectada al modelo nuevo.
+- Deploy de `admin.js?v=11` con `X-Punto-Admin-Credential`.
+- Reintentar QA Azure de UI admin conectada al modelo nuevo.
 - Decidir si MVP necesita endpoint explicito para enviar servicios a revision.
 - Ejecutar QA Azure post-integracion UI.
 
@@ -109,8 +111,8 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Ahora
 
-- Product / Architect / Release: commitear y pushear admin UI conectada al modelo nuevo.
-- QA / Infra Azure: ejecutar `TASK-100` despues del deploy.
+- Product / Architect / Release: commitear/pushear el fix de `admin.js?v=11`.
+- QA / Infra Azure: ejecutar `TASK-104` despues del deploy.
 - Product / Architect / Release: mantener decision abierta sobre endpoint explicito `submit-review` hasta validar admin UI.
 
 ### Siguiente
@@ -121,7 +123,7 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Bloqueado
 
-- Product Owner no puede probar flujo completo desde navegador hasta conectar admin al modelo nuevo.
+- Product Owner no puede probar flujo completo desde navegador hasta aprobar QA Azure de `admin.html`.
 - Invitar primeras empresas reales hasta cerrar QA Azure completo y bloqueadores P0/P1.
 
 ### Hecho
@@ -145,6 +147,10 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 - QA Azure aprobo endpoints internos de listado para moderacion nueva, incluyendo `POST -> 405`.
 - Web Dev conecto `admin.html` a listados y acciones reales de Companies, Services y Uploads del modelo nuevo.
 - QA local aprobo admin UI conectada al modelo nuevo con mocks, acciones y responsive basico.
+- Deploy de `admin.html` conectado al modelo nuevo esta visible en Azure; QA Azure confirmo assets nuevos pero quedo bloqueado por credencial admin.
+- Infra Azure / Product completo rotacion y validacion de credencial admin para QA Azure de `admin.html`.
+- QA Azure confirmo que la credencial corregida funciona por API con `X-Punto-Admin-Credential`; la UI queda bloqueada por usar `Authorization`.
+- Web Dev corrigio `admin.js` para enviar `X-Punto-Admin-Credential` y subio cache busting a `admin.js?v=11`.
 
 ## Como actualizar este documento
 
