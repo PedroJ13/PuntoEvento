@@ -77,3 +77,6 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-111-HANDOFF.md` | Completado Backend/API | Se creo `TASK-113` para QA local/estructural de `submit-review` y reglas de status. |
 | `tasks/TASK-112-HANDOFF.md` | Bloqueado por deploy pendiente | Se crea `TASK-114` para reintento QA Azure despues del proximo deploy. |
 | `tasks/TASK-113-HANDOFF.md` | Aprobado QA local/estructural | Se crea `TASK-115` para QA Azure de `submit-review` post-deploy y `TASK-116` para panel empresa. |
+| `tasks/TASK-114-HANDOFF.md` | Aprobado QA Azure | `PO-001` queda resuelto en deploy actual; continuar con panel empresa. |
+| `tasks/TASK-115-HANDOFF.md` | Aprobado QA Azure | `submit-review` aprobado en Azure real; continuar integracion en panel empresa y decidir limpieza de datos QA. |
+| `tasks/TASK-116-HANDOFF.md` | Completado Web Dev | Se crea `TASK-117` para QA Azure post-deploy de panel empresa con `Enviar a revision`. |

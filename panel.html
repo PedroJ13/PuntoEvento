@@ -6,7 +6,7 @@
     <title>Panel empresa | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=14" />
-    <link rel="stylesheet" href="panel.css?v=3" />
+    <link rel="stylesheet" href="panel.css?v=4" />
   </head>
   <body class="panel-body">
     <main class="panel-shell">
@@ -62,9 +62,19 @@
             <div>
               <p class="eyebrow" data-service-form-mode>Nuevo servicio</p>
               <h3>Datos del servicio</h3>
-              <p>Los cambios se guardan en Azure para la empresa autenticada.</p>
+              <p>Guarda el servicio como borrador. Cuando este completo, envialo a revision.</p>
             </div>
             <input name="id" type="hidden" />
+            <div class="readonly-summary full-field" data-service-readonly-summary>
+              <div>
+                <strong>Estado actual</strong>
+                <span data-current-service-status>Borrador</span>
+              </div>
+              <div>
+                <strong>Fotos aprobadas</strong>
+                <span data-current-photo-count>0 archivo(s)</span>
+              </div>
+            </div>
             <label>
               <span>Nombre</span>
               <input name="name" required maxlength="80" />
@@ -81,20 +91,6 @@
               <span>Precio desde</span>
               <input name="priceFrom" required placeholder="CRC 120000" />
             </label>
-            <label>
-              <span>Estado</span>
-              <select name="status" required>
-                <option value="draft">draft</option>
-                <option value="pending">pending</option>
-                <option value="published">published</option>
-                <option value="rejected">rejected</option>
-                <option value="inactive">inactive</option>
-              </select>
-            </label>
-            <label>
-              <span>Cantidad de fotos</span>
-              <input name="photoCount" type="number" min="0" max="20" readonly required />
-            </label>
             <label class="file-field full-field">
               <span>Cover del servicio</span>
               <input name="photos" type="file" accept="image/*" data-service-photos />
@@ -106,8 +102,8 @@
               <textarea name="description" rows="4" required maxlength="320"></textarea>
             </label>
             <div class="form-actions">
-              <button class="primary-button" type="submit">Guardar servicio</button>
-              <button class="secondary-button" type="button" data-send-review>Como se revisa</button>
+              <button class="primary-button" type="submit">Guardar borrador</button>
+              <button class="secondary-button" type="button" data-send-review>Enviar a revision</button>
               <button class="ghost-button" type="button" data-cancel-service>Cancelar</button>
             </div>
             <p class="panel-message" data-form-message></p>
@@ -115,6 +111,6 @@
         </div>
       </section>
     </main>
-    <script src="panel.js?v=3"></script>
+    <script src="panel.js?v=4"></script>
   </body>
 </html>

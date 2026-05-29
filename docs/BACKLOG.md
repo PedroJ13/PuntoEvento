@@ -159,8 +159,9 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Definir si MVP necesita endpoint explicito para enviar servicio a revision.
 - [x] Implementar endpoint explicito para enviar servicio a revision.
 - [x] QA local/estructural de `POST /api/companies/me/services/{serviceId}/submit-review`.
-- [ ] Deploy y QA Azure de `POST /api/companies/me/services/{serviceId}/submit-review`.
-- [ ] Ajustar panel empresa para usar `Enviar a revision` explicito.
+- [x] Deploy y QA Azure de `POST /api/companies/me/services/{serviceId}/submit-review`.
+- [x] Ajustar panel empresa para usar `Enviar a revision` explicito.
+- [ ] Deploy y QA Azure de panel empresa con `Enviar a revision`.
 - [x] Conectar UI admin para moderar Companies, Services y Uploads del modelo nuevo.
 - [x] QA local de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
 - [x] Deploy y QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
@@ -192,10 +193,10 @@ Objetivo: validar que el flujo puede usarse por empresas reales.
 - [x] Rotar `ADMIN_PASSWORD` expuesto durante prueba Product Owner.
 - [x] Triar hallazgos Product Owner y cerrar decisiones P1 de producto/datos.
 - [x] Ajustar registro publico despues de exito: limpiar/ocultar formulario y prevenir doble submit.
-- [ ] QA Azure de registro publico despues de exito y prevencion de doble submit.
+- [x] QA Azure de registro publico despues de exito y prevencion de doble submit.
 - [x] Definir campos de contacto/sociales de empresa y separar publicos vs internos.
 - [x] Cerrar taxonomia MVP: `Categoria` como servicio y `Tipos de evento` como ocasiones.
-- [ ] Ajustar formulario de servicio: quitar estado editable, quitar cantidad manual de fotos y resolver `Como se revisa`.
+- [x] Ajustar formulario de servicio: quitar estado editable, quitar cantidad manual de fotos y resolver `Como se revisa`.
 - [ ] Implementar alcance de imagenes por servicio: cover + galeria.
 - [ ] Disenar moderacion admin por expediente de empresa.
 - [x] Definir reglas de cascada para aprobar/rechazar empresa, servicios e imagenes.
@@ -218,6 +219,6 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product / Architect / Release: commit/push del bloque `TASK-110` y `TASK-111` para activar deploy.
-2. QA: ejecutar `TASK-114` y `TASK-115` despues del deploy.
-3. Web Dev: ejecutar `TASK-116` para ajustar panel empresa con `Enviar a revision`.
+1. Product / Architect / Release: commit/push de `TASK-116` para activar deploy del panel.
+2. QA: ejecutar `TASK-117` despues del deploy.
+3. Product / Architect / Release: definir limpieza de datos QA antes de demo owner.

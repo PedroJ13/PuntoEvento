@@ -1,6 +1,20 @@
 const API_BASE = "/api";
 const SERVICE_STATUSES = ["draft", "pending", "published", "rejected", "inactive"];
-const FALLBACK_CATEGORIES = ["Bodas", "Salones", "Catering", "Corporativos", "Fiestas infantiles", "Decoracion"];
+const FALLBACK_CATEGORIES = [
+  "Salon y jardin",
+  "Catering",
+  "Fotografia",
+  "Video",
+  "Musica y DJ",
+  "Decoracion",
+  "Flores",
+  "Mesa dulce",
+  "Queques",
+  "Wedding planner",
+  "Mobiliario",
+  "Animacion",
+  "Alquiler de menaje",
+];
 const FALLBACK_EVENT_TYPES = [
   "Bodas",
   "Cumpleanos",
@@ -107,6 +121,19 @@ function serviceStatusLabel(status) {
   return labels[normalizeStatus(status)];
 }
 
+function canSubmitReview(service) {
+  return ["draft", "rejected"].includes(normalizeStatus(service?.status));
+}
+
+function submitReviewStatusMessage(status) {
+  const messages = {
+    pending: "Este servicio ya esta en revision.",
+    published: "Este servicio ya esta publicado. Editalo para guardarlo como borrador antes de enviarlo de nuevo.",
+    inactive: "Este servicio esta inactivo. Activalo o crea uno nuevo antes de enviarlo a revision.",
+  };
+  return messages[normalizeStatus(status)] || "Este servicio no se puede enviar a revision en su estado actual.";
+}
+
 function publicCompanyHref(service = null) {
   if (!state.company?.slug) return "index.html#inicio";
   const serviceSlug = service?.slug ? `/${encodeURIComponent(service.slug)}` : "";
@@ -164,7 +191,13 @@ async function loadCatalogs() {
   ]);
 
   if (Array.isArray(categories)) {
-    state.categories = categories.map((item) => item.label || item.name).filter(Boolean);
+    const serviceCategories = categories
+      .filter((item) => item.label || item.id || item.group)
+      .map((item) => item.label || item.name)
+      .filter(Boolean);
+    if (serviceCategories.length) {
+      state.categories = serviceCategories;
+    }
   }
   if (Array.isArray(eventTypes)) {
     state.eventTypes = eventTypes.map((item) => item.label || item.name).filter(Boolean);
@@ -226,6 +259,9 @@ function serviceMarkup(service) {
     normalizeStatus(service.status) === "published"
       ? `<a class="ghost-button compact-button" href="${escapeHtml(publicCompanyHref(service))}">Ver publico</a>`
       : `<span class="review-note">Visible cuando sea publicado.</span>`;
+  const reviewAction = canSubmitReview(service)
+    ? `<button class="primary-button compact-button" type="button" data-submit-review>Enviar a revision</button>`
+    : `<span class="review-note">${escapeHtml(submitReviewStatusMessage(service.status))}</span>`;
   return `
     <article class="service-card" data-service-id="${escapeHtml(service.id)}">
       <div class="service-card-header">
@@ -237,6 +273,7 @@ function serviceMarkup(service) {
         </div>
         <div class="service-actions">
           ${publicLink}
+          ${reviewAction}
           <button class="ghost-button compact-button" type="button" data-edit-service>Editar</button>
           <button class="secondary-button compact-button" type="button" data-delete-service>Desactivar</button>
         </div>
@@ -264,7 +301,7 @@ function renderServices() {
 }
 
 function setActionsDisabled(isDisabled) {
-  $$("[data-add-service], [data-logout]").forEach((button) => {
+  $$("[data-add-service], [data-logout], [data-submit-review]").forEach((button) => {
     button.disabled = isDisabled;
   });
 }
@@ -336,6 +373,18 @@ function renderPhotoPreview(file = null, service = null) {
   preview.innerHTML = '<div class="photo-preview-empty">Sin cover seleccionado.</div>';
 }
 
+function renderReadonlySummary(service = null) {
+  const statusNode = $("[data-current-service-status]");
+  const photoCountNode = $("[data-current-photo-count]");
+  if (statusNode) {
+    statusNode.textContent = service ? serviceStatusLabel(service.status) : "Borrador nuevo";
+  }
+  if (photoCountNode) {
+    const count = serviceImageCount(service || {});
+    photoCountNode.textContent = `${count} archivo(s)`;
+  }
+}
+
 function resetServiceForm(service = null) {
   const form = $("[data-service-form]");
   form.reset();
@@ -351,10 +400,18 @@ function resetServiceForm(service = null) {
     input.checked = selectedEventTypes.includes(input.value);
   });
   form.elements.priceFrom.value = service?.priceFrom || "";
-  form.elements.status.value = normalizeStatus(service?.status);
-  form.elements.status.disabled = true;
-  form.elements.photoCount.value = serviceImageCount(service || {});
   form.elements.description.value = service?.description || "";
+  renderReadonlySummary(service);
+  const reviewButton = $("[data-send-review]", form);
+  if (reviewButton) {
+    reviewButton.disabled = !service?.id || !canSubmitReview(service);
+    reviewButton.dataset.serviceId = service?.id || "";
+    reviewButton.title = service?.id
+      ? canSubmitReview(service)
+        ? "Enviar este borrador a revision interna."
+        : submitReviewStatusMessage(service.status)
+      : "Guarda el borrador antes de enviarlo a revision.";
+  }
   renderPhotoPreview(null, service);
   form.elements.name.focus();
 }
@@ -382,13 +439,32 @@ function servicePayloadFromForm(form) {
 }
 
 function validateServicePayload(payload) {
-  if (!payload.name || !payload.category || !payload.description) {
-    return "Completa nombre, categoria y descripcion.";
+  if (!payload.name) {
+    return "Completa el nombre del servicio.";
+  }
+  if (!payload.category) {
+    return "Selecciona la categoria del servicio.";
   }
   if (!payload.eventTypes.length) {
     return "Selecciona al menos un tipo de evento.";
   }
+  if (!payload.description) {
+    return "Completa la descripcion del servicio.";
+  }
+  if (!payload.priceFrom) {
+    return "Completa el precio desde antes de enviar a revision.";
+  }
   return "";
+}
+
+function validateServiceForReview(service) {
+  return validateServicePayload({
+    name: service?.name || "",
+    category: service?.category || "",
+    eventTypes: parseArray(service?.eventTypes),
+    description: service?.description || "",
+    priceFrom: service?.priceFrom || "",
+  });
 }
 
 async function saveService(form) {
@@ -408,7 +484,14 @@ async function saveService(form) {
   setFormMessage("Guardando servicio...");
   const saved =
     state.mode === "demo"
-      ? { ...existing, ...payload, id: existing?.id || `demo_${Date.now()}`, slug: existing?.slug || "", status: existing?.status || "draft", updatedAt: new Date().toISOString() }
+      ? {
+          ...existing,
+          ...payload,
+          id: existing?.id || `demo_${Date.now()}`,
+          slug: existing?.slug || "",
+          status: "draft",
+          updatedAt: new Date().toISOString(),
+        }
       : id
         ? await apiJson(`/companies/me/services/${encodeURIComponent(id)}`, {
             method: "PATCH",
@@ -421,9 +504,9 @@ async function saveService(form) {
 
   if (state.pendingCoverFile) {
     await uploadCover(saved.id, state.pendingCoverFile);
-    setPanelMessage("Servicio guardado. Cover enviado a revision.", "success");
+    setPanelMessage("Borrador guardado. Cover enviado a revision de imagenes.", "success");
   } else {
-    setPanelMessage("Servicio guardado.", "success");
+    setPanelMessage("Borrador guardado. Cuando este completo, envialo a revision.", "success");
   }
 
   closeServiceForm();
@@ -434,6 +517,78 @@ async function saveService(form) {
     renderServices();
   } else {
     await loadRealPanel();
+  }
+}
+
+function reviewErrorMessage(error, service = null) {
+  if (error.status === 400) {
+    return error.data?.error || validateServiceForReview(service) || "Completa los campos minimos antes de enviar a revision.";
+  }
+  if (error.status === 401) {
+    return "Tu sesion expiro. Abre de nuevo el enlace de invitacion o inicia sesion otra vez.";
+  }
+  if (error.status === 404) {
+    return "No encontramos este servicio en tu empresa. Recarga el panel e intenta de nuevo.";
+  }
+  if (error.status === 409) {
+    return error.data?.error || submitReviewStatusMessage(service?.status);
+  }
+  return "No se pudo enviar a revision. Intentalo de nuevo en unos minutos.";
+}
+
+async function submitServiceForReview(serviceId, trigger = null) {
+  const service = state.services.find((item) => item.id === serviceId);
+  if (!service) return;
+
+  const validationError = validateServiceForReview(service);
+  if (validationError) {
+    setPanelMessage(validationError, "error");
+    setFormMessage(validationError, "error");
+    return;
+  }
+  if (!canSubmitReview(service)) {
+    const message = submitReviewStatusMessage(service.status);
+    setPanelMessage(message, "error");
+    setFormMessage(message, "error");
+    return;
+  }
+
+  const originalText = trigger?.textContent;
+  if (trigger) {
+    trigger.disabled = true;
+    trigger.textContent = "Enviando...";
+  }
+  setPanelMessage(`Enviando "${service.name}" a revision...`);
+  setFormMessage("");
+
+  try {
+    const updated =
+      state.mode === "demo"
+        ? { ...service, status: "pending", updatedAt: new Date().toISOString() }
+        : await apiJson(`/companies/me/services/${encodeURIComponent(serviceId)}/submit-review`, {
+            method: "POST",
+            body: "{}",
+          });
+
+    service.status = normalizeStatus(updated.status);
+    service.updatedAt = updated.updatedAt || service.updatedAt;
+    setPanelMessage("Servicio enviado a revision.", "success");
+    renderServices();
+    const form = $("[data-service-form]");
+    if (form && !form.classList.contains("is-hidden") && form.elements.id.value === serviceId) {
+      resetServiceForm(service);
+    }
+  } catch (error) {
+    console.warn(error);
+    const message = reviewErrorMessage(error, service);
+    setPanelMessage(message, "error");
+    setFormMessage(message, "error");
+  } finally {
+    if (trigger) {
+      const latestService = state.services.find((item) => item.id === serviceId);
+      trigger.textContent = originalText;
+      trigger.disabled = latestService ? !canSubmitReview(latestService) : false;
+    }
   }
 }
 
@@ -524,7 +679,12 @@ document.addEventListener("click", async (event) => {
   }
 
   if (event.target.matches("[data-send-review]")) {
-    setFormMessage("Guarda el servicio y el equipo podra revisarlo desde admin interno.");
+    const serviceId = event.target.dataset.serviceId || $("[data-service-form]")?.elements.id.value;
+    if (!serviceId) {
+      setFormMessage("Guarda el borrador antes de enviarlo a revision.", "error");
+    } else {
+      await submitServiceForReview(serviceId, event.target);
+    }
   }
 
   if (event.target.matches("[data-logout]")) {
@@ -548,17 +708,18 @@ document.addEventListener("click", async (event) => {
       setPanelMessage("No se pudo desactivar el servicio.", "error");
     }
   }
+
+  const reviewButton = event.target.closest("[data-submit-review]");
+  if (reviewButton) {
+    const serviceId = reviewButton.closest("[data-service-id]")?.dataset.serviceId;
+    await submitServiceForReview(serviceId, reviewButton);
+  }
 });
 
 document.addEventListener("change", (event) => {
   if (!event.target.matches("[data-service-photos]")) return;
   const [file] = event.target.files || [];
   state.pendingCoverFile = file || null;
-  const form = event.target.closest("[data-service-form]");
-  if (form?.elements.photoCount) {
-    const currentCount = Number(form.elements.photoCount.value || 0);
-    form.elements.photoCount.value = file ? Math.max(currentCount, 1) : currentCount;
-  }
   renderPhotoPreview(file || null);
 });
 

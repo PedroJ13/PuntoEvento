@@ -68,9 +68,8 @@ Validado segun backlog:
 Pendiente:
 
 - Implementar decisiones P1 de `docs/PRODUCT_DECISIONS_PO_FINDINGS_2026-05-29.md`.
-- Publicar y ejecutar QA Azure del endpoint explicito para enviar servicios a revision.
-- Publicar y ejecutar QA Azure de la mejora de registro exitoso/doble submit de `TASK-110`.
-- Ajustar panel empresa para usar `Enviar a revision` explicito.
+- Publicar y ejecutar QA Azure de panel empresa con `Enviar a revision` explicito.
+- Definir limpieza de datos QA creados durante smoke Azure antes de demo owner.
 - Ejecutar re-prueba Product Owner despues de correcciones P0/P1.
 
 ## Ultimo deploy validado
@@ -114,9 +113,9 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Ahora
 
-- Product / Architect / Release: commit/push del bloque `TASK-110` y `TASK-111`.
-- QA: ejecutar `TASK-114` y `TASK-115` despues del deploy.
-- Web Dev: ejecutar `TASK-116` para panel empresa.
+- Product / Architect / Release: commit/push de `TASK-116` para activar deploy del panel.
+- QA: ejecutar `TASK-117` despues del deploy.
+- Product / Architect / Release: definir limpieza de datos QA antes de demo owner.
 
 ### Siguiente
 
@@ -164,6 +163,9 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 - Backend/API completo `TASK-111`: endpoint `submit-review` y reglas de status de servicio implementadas.
 - QA bloqueo `TASK-112` porque Azure aun sirve `index.html` con `app.js?v=20` y `styles.css?v=15`.
 - QA aprobo `TASK-113` local/estructural de `submit-review`; queda pendiente deploy y smoke Azure.
+- QA Azure aprobo `TASK-114`: registro publico con `app.js?v=21` y `styles.css?v=16` resuelve `PO-001`, evita doble submit y no crea duplicados visibles.
+- QA Azure aprobo `TASK-115`: `submit-review` funciona en Azure real con sesion de empresa, Azure Table Storage y negativos `409/400/401/404`.
+- Web Dev completo `TASK-116`: panel empresa separa `Guardar borrador -> Enviar a revision`, remueve estado editable y cantidad manual de fotos; queda pendiente QA Azure post-deploy.
 
 ## Como actualizar este documento
 
