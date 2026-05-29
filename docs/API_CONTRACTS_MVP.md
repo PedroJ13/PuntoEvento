@@ -225,6 +225,39 @@ Reglas:
 - Actualiza `updatedAt`.
 - Limpia `rejectionReason`.
 
+### GET `/api/internal/companies/pending`
+
+Lista empresas pendientes para moderacion interna.
+
+Response `200`:
+
+```json
+{
+  "items": [
+    {
+      "companyId": "company_123",
+      "slug": "aurisbel",
+      "name": "Aurisbel",
+      "email": "empresa@email.com",
+      "whatsapp": "50688888888",
+      "province": "Heredia",
+      "canton": "San Francisco",
+      "description": "...",
+      "status": "pending",
+      "plan": "free",
+      "createdAt": "2026-05-27T00:00:00Z",
+      "updatedAt": "2026-05-27T00:00:00Z"
+    }
+  ]
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- Lista solo `Companies` con `PartitionKey=company` y `status=pending`.
+- No devuelve `partitionKey`, `rowKey`, hashes, cookies, SAS, connection strings ni metadata interna.
+
 ### POST `/api/internal/companies/{companyId}/reject`
 
 Rechaza una empresa.
@@ -252,6 +285,43 @@ Reglas:
 - Actualiza `Companies.status` a `rejected`.
 - Guarda `rejectionReason` si se envia.
 - Actualiza `updatedAt`.
+
+### GET `/api/internal/services/pending`
+
+Lista servicios revisables para moderacion interna.
+
+Response `200`:
+
+```json
+{
+  "items": [
+    {
+      "companyId": "company_123",
+      "companyName": "Aurisbel",
+      "companySlug": "aurisbel",
+      "serviceId": "service_123",
+      "slug": "mesa-dulce",
+      "name": "Mesa dulce",
+      "category": "Mesas de dulces",
+      "eventTypes": ["Bodas"],
+      "priceFrom": "CRC 120000",
+      "description": "...",
+      "status": "draft",
+      "coverUrl": "",
+      "gallery": [],
+      "createdAt": "2026-05-27T00:00:00Z",
+      "updatedAt": "2026-05-27T00:00:00Z"
+    }
+  ]
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- Lista servicios con `status=draft` o `status=pending`.
+- Enriquece con `companyName` y `companySlug` cuando la empresa existe.
+- No devuelve `partitionKey`, `rowKey`, hashes, cookies, SAS, connection strings ni metadata interna.
 
 ### POST `/api/internal/services/{companyId}/{serviceId}/approve`
 
@@ -330,6 +400,39 @@ Reglas:
 - Si `scope=company` e `imageType=cover`, actualiza `Companies.coverUrl`.
 - Si `scope=company` e `imageType=logo`, actualiza `Companies.logoUrl`.
 - Si `scope=company` e `imageType=gallery`, solo deja el upload publicado porque `Company` no tiene campo `gallery` definido para MVP.
+
+### GET `/api/internal/uploads/pending`
+
+Lista uploads pendientes para moderacion interna.
+
+Response `200`:
+
+```json
+{
+  "items": [
+    {
+      "companyId": "company_123",
+      "uploadId": "upload_123",
+      "scope": "service",
+      "serviceId": "service_123",
+      "imageType": "cover",
+      "fileName": "foto.jpg",
+      "contentType": "image/jpeg",
+      "size": 12345,
+      "status": "pending",
+      "createdAt": "2026-05-27T00:00:00Z",
+      "updatedAt": "2026-05-27T00:00:00Z"
+    }
+  ]
+}
+```
+
+Reglas:
+
+- Requiere credencial interna admin.
+- Lista solo `Uploads` con `status=pending`.
+- No devuelve `pendingBlobName`, `pendingBlobUrl`, SAS, `partitionKey`, `rowKey`, hashes, cookies, connection strings ni metadata interna.
+- Preview visual de imagenes pendientes queda fuera de este contrato; si se necesita, debe ser un endpoint interno autenticado que no exponga SAS.
 
 ### POST `/api/internal/uploads/{companyId}/{uploadId}/reject`
 

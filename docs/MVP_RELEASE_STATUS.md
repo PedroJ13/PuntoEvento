@@ -16,7 +16,7 @@ Resumen:
 - API MVP con registro, autenticacion por invitacion, servicios propios, uploads y aprobacion/rechazo mayormente implementada.
 - Bloqueadores operativos recientes cerrados: `ADMIN_PASSWORD` rotado y galeria QA visual limpiada.
 - QA Azure enfocado confirmo que el flujo completo funciona por API/manual.
-- Falta conectar UI real de registro, panel empresa y admin para que Product Owner lo pruebe completo sin apoyo tecnico.
+- Falta conectar UI real de admin para que Product Owner lo pruebe completo sin apoyo tecnico.
 
 ## Alcance congelado MVP
 
@@ -43,8 +43,8 @@ Fuera del MVP inicial:
 
 ## Bloqueadores actuales
 
-- `panel.html` fue conectado a API real y aprobado por QA local, pero falta commit/deploy y QA Azure.
-- `admin.html` modera proveedores legacy; no modera Companies, Services ni Uploads del modelo nuevo.
+- `admin.html` ya muestra el bloqueo del modelo nuevo; Backend/API agrego endpoints internos de listado y QA local los aprobo. Falta deploy/QA Azure y Web Dev para conectarlos.
+- Decidir si el MVP acepta el flujo temporal de revision al guardar servicio o si necesita endpoint explicito `submit-review`.
 - Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
 
 ## Ambiente Azure
@@ -64,8 +64,8 @@ Validado segun backlog:
 
 Pendiente:
 
-- Commit/deploy y QA Azure de `panel.html` conectado al modelo nuevo.
-- Conectar UI admin del modelo nuevo.
+- Deploy y QA Azure de endpoints internos de listado para Companies, Services y Uploads pendientes.
+- Conectar UI admin del modelo nuevo a esos listados.
 - Decidir si MVP necesita endpoint explicito para enviar servicios a revision.
 - Ejecutar QA Azure post-integracion UI.
 
@@ -91,8 +91,8 @@ Riesgos aceptados:
 - [x] Pagina publica carga en Azure sin errores criticos.
 - [x] Registro de empresa validado en Azure por API.
 - [x] Invitacion/login empresa validado en Azure por API.
-- [ ] Panel empresa permite ver perfil propio desde UI desplegada.
-- [ ] Panel empresa permite crear/editar/desactivar servicios propios desde UI desplegada.
+- [x] Panel empresa permite ver perfil propio desde UI desplegada.
+- [x] Panel empresa permite crear/editar/desactivar servicios propios desde UI desplegada.
 - [x] Upload de imagenes validado con archivo real por API.
 - [x] Admin interno aprueba/rechaza empresa, servicio e imagenes por API.
 - [x] Servicio aprobado aparece en busqueda publica.
@@ -110,9 +110,10 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Ahora
 
-- Product / Architect / Release: commitear y pushear `panel.html` conectado a auth/API real.
-- QA / Infra Azure: validar `panel.html` en Azure despues del deploy.
-- Web Dev: crear UI admin para moderar Companies, Services y Uploads nuevos.
+- Product / Architect / Release: commitear y pushear endpoints internos de listado.
+- QA / Infra Azure: validar endpoints internos de listado despues del deploy.
+- Web Dev: conectar la pestana `Modelo nuevo` de `admin.html` a los listados reales despues de QA Azure.
+- Product / Architect / Release: decidir despues de admin UI si hace falta endpoint explicito `submit-review`.
 
 ### Siguiente
 
@@ -122,7 +123,7 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Bloqueado
 
-- Product Owner no puede probar flujo completo desde navegador hasta conectar registro, panel y admin al modelo nuevo.
+- Product Owner no puede probar flujo completo desde navegador hasta conectar admin al modelo nuevo.
 - Invitar primeras empresas reales hasta cerrar QA Azure completo y bloqueadores P0/P1.
 
 ### Hecho
@@ -138,6 +139,10 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 - Registro publico `#empresas` conectado al modelo nuevo, aprobado por QA local y desplegado en Azure con validacion parcial.
 - Submit visible de `#empresas` aprobado en Chrome normal contra Azure.
 - `panel.html` conectado localmente a API real y aprobado por QA local.
+- `panel.html` conectado a API real, desplegado y aprobado por QA Azure con sesion real, CRUD de servicios, upload cover y logout.
+- `admin.html` muestra pestana `Modelo nuevo` con bloqueo claro y sin datos falsos cuando faltan listados internos.
+- Backend/API implemento listados internos de Companies, Services y Uploads pendientes para moderacion nueva.
+- QA local/estructural aprobo endpoints internos de listado para moderacion nueva.
 
 ## Como actualizar este documento
 

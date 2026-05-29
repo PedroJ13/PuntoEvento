@@ -6,11 +6,13 @@ Web Dev.
 
 ## Dependencia
 
-Ejecutar despues de `TASK-083` y `TASK-084`, salvo que Product/Architect indique otra secuencia.
+Ejecutar ahora. `TASK-083`, `TASK-084`, `TASK-091` y `TASK-092` ya cerraron el registro publico y el panel empresa real en Azure.
 
 ## Contexto
 
 `TASK-082` encontro que `admin.html` existe y muestra login, pero sigue enfocado en revision legacy de proveedores.
+
+`TASK-092` aprobo en Azure real `panel.html` autenticado: la empresa puede aceptar invitacion, ver su empresa, crear/editar/desactivar servicios y subir cover. Lo que falta para prueba completa de Product Owner es que el admin interno pueda moderar desde UI el modelo nuevo.
 
 La moderacion real del modelo nuevo hoy se hace por API:
 
@@ -33,6 +35,7 @@ Para que Product Owner pruebe de punta a punta, necesita aprobar/rechazar desde 
 - `docs/MVP_RELEASE_STATUS.md`
 - `docs/API_CONTRACTS_MVP.md`
 - `tasks/TASK-082-HANDOFF.md`
+- `tasks/TASK-092-HANDOFF.md`
 - `admin.html`
 - `admin.js`
 - `admin.css`

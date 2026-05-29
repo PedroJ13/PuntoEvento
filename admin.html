@@ -6,15 +6,15 @@
     <title>Admin | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=14" />
-    <link rel="stylesheet" href="admin.css?v=5" />
+    <link rel="stylesheet" href="admin.css?v=6" />
   </head>
   <body class="admin-body">
     <main class="admin-shell">
       <header class="admin-header">
         <div>
           <p class="eyebrow">Administracion</p>
-          <h1>Revision de proveedores</h1>
-          <p>Revisa registros pendientes, aprueba imagenes y publica perfiles.</p>
+          <h1>Revision interna</h1>
+          <p>Modera proveedores legacy y revisa el estado de la migracion al modelo Company -> Services.</p>
         </div>
         <button class="ghost-button" type="button" data-refresh>Actualizar</button>
       </header>
@@ -56,6 +56,7 @@
 
         <nav class="admin-tabs" aria-label="Secciones admin">
           <button class="admin-tab is-active" type="button" data-tab-target="revision">Revision</button>
+          <button class="admin-tab" type="button" data-tab-target="modelo">Modelo nuevo</button>
           <button class="admin-tab" type="button" data-tab-target="empresa">Empresa demo</button>
           <button class="admin-tab" type="button" data-tab-target="servicios">Servicios</button>
         </nav>
@@ -72,6 +73,54 @@
             <p>Flujo actual de aprobacion manual. Se mantiene separado del panel empresa demo.</p>
           </div>
           <div class="admin-list" data-provider-list></div>
+        </section>
+
+        <section class="admin-section is-hidden" data-tab-panel="modelo">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Company -> Services</p>
+              <h2>Moderacion nueva</h2>
+            </div>
+            <p>Las acciones internas existen por API, pero aun falta un endpoint para listar pendientes.</p>
+          </div>
+
+          <div class="blocked-callout">
+            <strong>Bloqueado por falta de endpoint de listado.</strong>
+            <span>
+              El admin no puede aprobar o rechazar Companies, Services ni Uploads desde UI sin recibir los IDs
+              pendientes desde backend.
+            </span>
+          </div>
+
+          <div class="endpoint-grid" aria-label="Endpoints minimos recomendados">
+            <article class="endpoint-card">
+              <strong>Empresas pendientes</strong>
+              <code>GET /api/internal/companies/pending</code>
+              <span>Debe devolver `companyId`, nombre, email, estado y fechas seguras.</span>
+            </article>
+            <article class="endpoint-card">
+              <strong>Servicios pendientes</strong>
+              <code>GET /api/internal/services/pending</code>
+              <span>Debe devolver `companyId`, `serviceId`, empresa, nombre, categoria y estado.</span>
+            </article>
+            <article class="endpoint-card">
+              <strong>Uploads pendientes</strong>
+              <code>GET /api/internal/uploads/pending</code>
+              <span>Debe devolver `companyId`, `uploadId`, scope, tipo, preview seguro y estado.</span>
+            </article>
+          </div>
+
+          <div class="endpoint-grid" aria-label="Acciones ya disponibles">
+            <article class="endpoint-card is-ready">
+              <strong>Acciones disponibles con IDs</strong>
+              <code>POST /api/internal/companies/{companyId}/approve</code>
+              <code>POST /api/internal/companies/{companyId}/reject</code>
+              <code>POST /api/internal/services/{companyId}/{serviceId}/approve</code>
+              <code>POST /api/internal/services/{companyId}/{serviceId}/reject</code>
+              <code>POST /api/internal/uploads/{companyId}/{uploadId}/approve</code>
+              <code>POST /api/internal/uploads/{companyId}/{uploadId}/reject</code>
+            </article>
+          </div>
         </section>
 
         <section class="admin-section is-hidden" data-tab-panel="empresa">
@@ -111,15 +160,15 @@
               <p class="eyebrow">Revision interna</p>
               <h2>Servicios enviados por empresas</h2>
             </div>
-            <a class="ghost-button compact-button" href="panel.html">Abrir panel empresa demo</a>
+            <a class="ghost-button compact-button" href="panel.html">Abrir panel empresa</a>
           </div>
           <p class="admin-note">
-            Esta vista es solo de revision. Las empresas crean y editan servicios desde `panel.html`.
+            Esta vista conserva el demo legacy. Las empresas crean y editan servicios reales desde `panel.html`.
           </p>
           <div class="services-list" data-services-list></div>
         </section>
       </section>
     </main>
-    <script src="admin.js?v=8"></script>
+    <script src="admin.js?v=9"></script>
   </body>
 </html>

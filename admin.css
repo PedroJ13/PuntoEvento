@@ -309,6 +309,61 @@
   color: var(--muted);
 }
 
+.blocked-callout {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid rgba(204, 92, 70, 0.32);
+  border-radius: 8px;
+  background: #fff7f4;
+  color: #6e2f24;
+}
+
+.blocked-callout strong {
+  color: var(--terracotta);
+  font-size: 1.05rem;
+}
+
+.blocked-callout span {
+  max-width: 760px;
+}
+
+.endpoint-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.endpoint-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.endpoint-card.is-ready {
+  grid-column: 1 / -1;
+}
+
+.endpoint-card strong {
+  color: var(--ink);
+}
+
+.endpoint-card code {
+  overflow-wrap: anywhere;
+  border-radius: 8px;
+  background: var(--soft);
+  color: #24423d;
+  padding: 8px 10px;
+  font-size: 0.86rem;
+}
+
+.endpoint-card span {
+  color: var(--muted);
+}
+
 .services-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
@@ -551,6 +606,7 @@
   .admin-meta,
   .admin-actions,
   .company-grid,
+  .endpoint-grid,
   .services-layout,
   .service-meta,
   .form-actions {

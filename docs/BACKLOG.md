@@ -148,9 +148,15 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Validacion manual en navegador normal del submit visible de `#empresas`.
 - [x] Conectar `panel.html` a auth/API real de empresa.
 - [x] QA local de `panel.html` conectado a auth/API real de empresa.
-- [ ] Deploy y QA Azure de `panel.html` conectado a auth/API real de empresa.
+- [x] Deploy y QA Azure de `panel.html` conectado a auth/API real de empresa.
+- [x] Crear endpoints internos de listado para moderacion nueva:
+  - `GET /api/internal/companies/pending`.
+  - `GET /api/internal/services/pending`.
+  - `GET /api/internal/uploads/pending`.
+- [x] QA local/estructural de endpoints internos de listado para moderacion nueva.
+- [ ] Deploy y QA Azure de endpoints internos de listado para moderacion nueva.
 - [ ] Definir si MVP necesita endpoint explicito para enviar servicio a revision.
-- [ ] Crear UI admin para moderar Companies, Services y Uploads del modelo nuevo.
+- [ ] Conectar UI admin para moderar Companies, Services y Uploads del modelo nuevo.
 - [ ] Notificacion por email al registrarse o pasar a revision.
 
 Entregable:
@@ -190,6 +196,6 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product/Architect: commitear y pushear `panel.html` conectado a auth/API real.
-2. QA / Infra Azure: validar `panel.html` post-deploy con sesion real.
-3. Web Dev: crear UI admin interna para aprobar/rechazar Companies, Services y Uploads nuevos.
+1. Product/Architect: commitear y pushear endpoints internos de listado para moderacion nueva.
+2. QA / Infra Azure: validar endpoints internos de listado despues del deploy.
+3. Web Dev: conectar la pestana `Modelo nuevo` de `admin.html` a los listados reales despues de QA Azure.

@@ -53,3 +53,7 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-090-HANDOFF.md` | Aprobado | Se reactiva `TASK-084` para conectar `panel.html` a sesion real, servicios propios y uploads. |
 | `tasks/TASK-084-HANDOFF.md` | Completado Web Dev | Se creo `TASK-091` para QA local de `panel.html` conectado a auth/API real. |
 | `tasks/TASK-091-HANDOFF.md` | Aprobado QA local | Se creo `TASK-092` para QA Azure de `panel.html` post-deploy. |
+| `tasks/TASK-092-HANDOFF.md` | Aprobado QA Azure | Se reactiva `TASK-085` para crear UI admin interna de moderacion del modelo nuevo. |
+| `tasks/TASK-085-HANDOFF.md` | Bloqueado parcialmente | Se creo `TASK-093` para Backend/API: listados internos de Companies, Services y Uploads pendientes. |
+| `tasks/TASK-093-HANDOFF.md` | Completado Backend/API | Se creo `TASK-094` para QA local/estructural de los endpoints internos de listado. |
+| `tasks/TASK-094-HANDOFF.md` | Aprobado QA local/estructural | Se creo `TASK-095` para QA Azure de endpoints internos de listado post-deploy. |
