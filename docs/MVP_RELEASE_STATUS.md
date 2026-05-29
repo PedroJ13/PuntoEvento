@@ -68,8 +68,6 @@ Validado segun backlog:
 Pendiente:
 
 - Implementar decisiones P1 de `docs/PRODUCT_DECISIONS_PO_FINDINGS_2026-05-29.md`.
-- Publicar y ejecutar QA Azure de panel empresa con `Enviar a revision` explicito.
-- Definir limpieza de datos QA creados durante smoke Azure antes de demo owner.
 - Ejecutar re-prueba Product Owner despues de correcciones P0/P1.
 
 ## Ultimo deploy validado
@@ -113,9 +111,9 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Ahora
 
-- Product / Architect / Release: commit/push de `TASK-116` para activar deploy del panel.
-- QA: ejecutar `TASK-117` despues del deploy.
-- Product / Architect / Release: definir limpieza de datos QA antes de demo owner.
+- Product Owner: ejecutar prueba con guion enfocado en `docs/PRODUCT_OWNER_TEST_SCRIPT.md`.
+- QA/Product: registrar hallazgos nuevos de la prueba owner, si aparecen.
+- Product/Data: definir catalogo compartido final de categorias/tipos de evento.
 
 ### Siguiente
 
@@ -165,7 +163,13 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 - QA aprobo `TASK-113` local/estructural de `submit-review`; queda pendiente deploy y smoke Azure.
 - QA Azure aprobo `TASK-114`: registro publico con `app.js?v=21` y `styles.css?v=16` resuelve `PO-001`, evita doble submit y no crea duplicados visibles.
 - QA Azure aprobo `TASK-115`: `submit-review` funciona en Azure real con sesion de empresa, Azure Table Storage y negativos `409/400/401/404`.
-- Web Dev completo `TASK-116`: panel empresa separa `Guardar borrador -> Enviar a revision`, remueve estado editable y cantidad manual de fotos; queda pendiente QA Azure post-deploy.
+- Web Dev completo `TASK-116`: panel empresa separa `Guardar borrador -> Enviar a revision`, remueve estado editable y cantidad manual de fotos.
+- QA Azure aprobo `TASK-117`: panel empresa desplegado usa `Guardar borrador -> Enviar a revision` con sesion real, requests reales y responsive basico OK.
+- Product / Architect decidio en `TASK-118` crear una empresa demo limpia para Product Owner y no borrar datos QA sin tarea Infra/API dedicada.
+- Product / Architect completo `TASK-119`: guion demo owner limpio actualizado con empresa `Demo Owner Jardines del Sol` y flujo `Guardar borrador -> Enviar a revision`.
+- Infra/API completo `TASK-120` como inventario/propuesta: encontro 3 empresas QA y 6 servicios QA, recomendo soft cleanup sin ejecutar cambios.
+- QA completo `TASK-121`: ambiente listo para Product Owner con guion enfocado; admin global limpio queda condicionado a soft cleanup.
+- Infra/API completo `TASK-122`: soft cleanup aprobado y ejecutado; 4 empresas y 7 servicios QA/pre-demo fueron rechazados sin hard delete, y ya no quedan objetivos `QA TASK-*` en colas.
 
 ## Como actualizar este documento
 

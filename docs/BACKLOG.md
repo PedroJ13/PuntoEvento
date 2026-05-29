@@ -161,7 +161,7 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] QA local/estructural de `POST /api/companies/me/services/{serviceId}/submit-review`.
 - [x] Deploy y QA Azure de `POST /api/companies/me/services/{serviceId}/submit-review`.
 - [x] Ajustar panel empresa para usar `Enviar a revision` explicito.
-- [ ] Deploy y QA Azure de panel empresa con `Enviar a revision`.
+- [x] Deploy y QA Azure de panel empresa con `Enviar a revision`.
 - [x] Conectar UI admin para moderar Companies, Services y Uploads del modelo nuevo.
 - [x] QA local de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
 - [x] Deploy y QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
@@ -200,6 +200,12 @@ Objetivo: validar que el flujo puede usarse por empresas reales.
 - [ ] Implementar alcance de imagenes por servicio: cover + galeria.
 - [ ] Disenar moderacion admin por expediente de empresa.
 - [x] Definir reglas de cascada para aprobar/rechazar empresa, servicios e imagenes.
+- [x] Definir estrategia de datos QA antes de demo owner.
+- [x] Crear guion demo owner limpio con empresa demo dedicada.
+- [x] Limpieza controlada de datos QA Azure.
+- [x] Inventariar datos QA Azure y proponer soft cleanup.
+- [x] Ejecutar soft cleanup de datos QA Azure si Product/Release lo aprueba.
+- [x] Verificacion pre-demo owner con limitacion aceptada.
 
 Entregable:
 
@@ -219,6 +225,6 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product / Architect / Release: commit/push de `TASK-116` para activar deploy del panel.
-2. QA: ejecutar `TASK-117` despues del deploy.
-3. Product / Architect / Release: definir limpieza de datos QA antes de demo owner.
+1. Product Owner: ejecutar prueba con guion enfocado en `docs/PRODUCT_OWNER_TEST_SCRIPT.md`.
+2. QA/Product: registrar hallazgos nuevos de la prueba owner, si aparecen.
+3. Product/Data: definir catalogo compartido final de categorias/tipos de evento.

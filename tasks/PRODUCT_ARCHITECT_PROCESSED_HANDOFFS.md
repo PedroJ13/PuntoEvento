@@ -80,3 +80,9 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-114-HANDOFF.md` | Aprobado QA Azure | `PO-001` queda resuelto en deploy actual; continuar con panel empresa. |
 | `tasks/TASK-115-HANDOFF.md` | Aprobado QA Azure | `submit-review` aprobado en Azure real; continuar integracion en panel empresa y decidir limpieza de datos QA. |
 | `tasks/TASK-116-HANDOFF.md` | Completado Web Dev | Se crea `TASK-117` para QA Azure post-deploy de panel empresa con `Enviar a revision`. |
+| `tasks/TASK-117-HANDOFF.md` | Aprobado QA Azure | Panel empresa validado en Azure; se crea `TASK-118` para decision de limpieza de datos QA antes de demo owner. |
+| `tasks/TASK-118-HANDOFF.md` | Decision Product/Architect | Se crean `TASK-119`, `TASK-120` y `TASK-121`: guion demo limpio, limpieza QA controlada y verificacion pre-demo. |
+| `tasks/TASK-119-HANDOFF.md` | Completado Product/Architect | Guion demo owner limpio actualizado; siguen `TASK-120` Infra/API y `TASK-121` QA pre-demo. |
+| `tasks/TASK-120-HANDOFF.md` | Aprobado como inventario/propuesta | No se ejecuto limpieza; se crea `TASK-122` para soft cleanup solo si Product/Release lo aprueba. |
+| `tasks/TASK-121-HANDOFF.md` | Aprobado condicionado QA | Product Owner puede probar con guion enfocado; admin global limpio requiere soft cleanup. |
+| `tasks/TASK-122-HANDOFF.md` | Aprobado Infra/API | Soft cleanup ejecutado; datos objetivo QA/pre-demo salieron de colas sin hard delete. Product Owner puede probar con guion enfocado. |
