@@ -1,4 +1,4 @@
-const SERVICES_KEY = "puntoEventoDemoServices";
+const API_BASE = "/api";
 const SERVICE_STATUSES = ["draft", "pending", "published", "rejected", "inactive"];
 const FALLBACK_CATEGORIES = ["Bodas", "Salones", "Catering", "Corporativos", "Fiestas infantiles", "Decoracion"];
 const FALLBACK_EVENT_TYPES = [
@@ -9,54 +9,46 @@ const FALLBACK_EVENT_TYPES = [
   "Graduaciones",
   "Fiestas infantiles",
 ];
-
-const DEFAULT_SERVICES = [
+const DEMO_SERVICES = [
   {
     id: "service-queques",
+    slug: "queques-personalizados",
     name: "Queques personalizados",
     category: "Catering",
-    eventTypes: ["Bodas", "Cumpleanos", "Baby Shower"],
+    eventTypes: ["Bodas", "Cumpleanos"],
     priceFrom: "CRC 85000",
     status: "published",
-    photos: [
-      { name: "queque-boda.jpg", size: 0, type: "image/jpeg" },
-      { name: "queque-flores.jpg", size: 0, type: "image/jpeg" },
-    ],
-    updatedAt: "2026-05-27",
     description: "Queques decorados para eventos sociales con entrega coordinada.",
-  },
-  {
-    id: "service-wedding-planner",
-    name: "Wedding planner",
-    category: "Bodas",
-    eventTypes: ["Bodas"],
-    priceFrom: "CRC 250000",
-    status: "pending",
-    photos: [{ name: "ceremonia.jpg", size: 0, type: "image/jpeg" }],
+    coverUrl: "",
+    gallery: [],
     updatedAt: "2026-05-27",
-    description: "Planificacion, proveedores y coordinacion del dia del evento.",
   },
   {
     id: "service-mesa-dulce",
+    slug: "mesa-dulce",
     name: "Mesa dulce",
     category: "Catering",
-    eventTypes: ["Bodas", "Eventos corporativos", "Cumpleanos"],
+    eventTypes: ["Bodas", "Eventos corporativos"],
     priceFrom: "CRC 120000",
     status: "draft",
-    photos: [{ name: "mesa-dulce.jpg", size: 0, type: "image/jpeg" }],
-    updatedAt: "2026-05-27",
     description: "Mesa dulce personalizada con bocadillos, montaje y decoracion.",
+    coverUrl: "",
+    gallery: [],
+    updatedAt: "2026-05-27",
   },
 ];
 
 const state = {
+  company: null,
+  services: [],
   categories: FALLBACK_CATEGORIES,
   eventTypes: FALLBACK_EVENT_TYPES,
-  pendingPhotos: [],
-  services: loadServices(),
+  mode: new URLSearchParams(window.location.search).get("demo") === "local" ? "demo" : "real",
+  pendingCoverFile: null,
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
 function escapeHtml(value) {
   return String(value || "").replace(/[&<>"']/g, (char) => {
@@ -71,57 +63,94 @@ function escapeHtml(value) {
   });
 }
 
-function loadServices() {
-  try {
-    const stored = localStorage.getItem(SERVICES_KEY);
-    if (!stored) return defaultServices();
-    const services = JSON.parse(stored);
-    return Array.isArray(services) ? services : defaultServices();
-  } catch {
-    return defaultServices();
-  }
+function setPanelMessage(message, tone = "") {
+  const node = $("[data-panel-message]");
+  if (!node) return;
+  node.textContent = message;
+  node.dataset.tone = tone;
 }
 
-function defaultServices() {
-  return JSON.parse(JSON.stringify(DEFAULT_SERVICES));
-}
-
-function saveServices() {
-  localStorage.setItem(SERVICES_KEY, JSON.stringify(state.services));
-}
-
-function setPanelMessage(message) {
-  const messageNode = $("[data-panel-message]");
-  if (messageNode) messageNode.textContent = message;
-}
-
-function todayStamp() {
-  return new Date().toISOString().slice(0, 10);
+function setFormMessage(message, tone = "") {
+  const node = $("[data-form-message]");
+  if (!node) return;
+  node.textContent = message;
+  node.dataset.tone = tone;
 }
 
 function normalizeStatus(status) {
   return SERVICE_STATUSES.includes(status) ? status : "draft";
 }
 
-function normalizeCategory(category) {
-  return state.categories.includes(category) ? category : state.categories[0];
+function parseArray(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(String(value));
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+  } catch {
+    return [];
+  }
 }
 
-function normalizeEventTypes(eventTypes) {
-  const values = Array.isArray(eventTypes) ? eventTypes : [];
-  return values
-    .map((value) => (value === "Corporativo" ? "Eventos corporativos" : value))
-    .filter((value) => state.eventTypes.includes(value));
+function serviceImageCount(service) {
+  return Number(Boolean(service.coverUrl)) + parseArray(service.gallery).length;
 }
 
-function photoList(service) {
-  if (Array.isArray(service?.photos)) return service.photos;
-  const count = Number(service?.photoCount || 0);
-  return Array.from({ length: count }, (_, index) => ({
-    name: `Foto demo ${index + 1}`,
-    size: 0,
-    type: "image/*",
-  }));
+function serviceStatusLabel(status) {
+  const labels = {
+    draft: "Borrador",
+    pending: "Pendiente",
+    published: "Publicado",
+    rejected: "Rechazado",
+    inactive: "Inactivo",
+  };
+  return labels[normalizeStatus(status)];
+}
+
+function publicCompanyHref(service = null) {
+  if (!state.company?.slug) return "index.html#inicio";
+  const serviceSlug = service?.slug ? `/${encodeURIComponent(service.slug)}` : "";
+  return `index.html#proveedor/${encodeURIComponent(state.company.slug)}${serviceSlug}`;
+}
+
+async function apiJson(path, options = {}) {
+  const response = await fetch(`${API_BASE}${path}`, {
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    },
+    ...options,
+  });
+
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    const error = new Error(data?.error || "No se pudo completar la accion.");
+    error.status = response.status;
+    error.data = data;
+    throw error;
+  }
+  return data;
+}
+
+async function acceptInviteIfPresent() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("invite") || params.get("token");
+  if (!token || state.mode === "demo") return false;
+
+  setPanelMessage("Validando invitacion...");
+  await apiJson("/company-auth/accept-invite", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+
+  params.delete("invite");
+  params.delete("token");
+  const cleanUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
+  window.history.replaceState({}, "", cleanUrl);
+  setPanelMessage("Invitacion aceptada. Sesion iniciada.", "success");
+  return true;
 }
 
 async function loadCatalogs() {
@@ -165,20 +194,38 @@ function renderCatalogControls() {
   }
 }
 
-function serviceStatusLabel(status) {
-  const labels = {
-    draft: "Borrador",
-    pending: "Pendiente",
-    published: "Publicado",
-    rejected: "Rechazado",
-    inactive: "Inactivo",
-  };
-  return labels[status] || labels.draft;
+function renderCompany() {
+  const company = state.company || {};
+  $("[data-panel-mode]").textContent = state.mode === "demo" ? "Panel empresa demo" : "Panel empresa";
+  $("[data-company-name]").textContent = company.name || "Empresa sin sesion";
+  $("[data-company-description]").textContent =
+    company.description || "Necesitas abrir el enlace de invitacion para entrar al panel.";
+  $("[data-plan]").textContent = company.plan || "-";
+  $("[data-company-status]").textContent = serviceStatusLabel(company.status || "draft");
+  $("[data-service-count]").textContent = String(state.services.length);
+}
+
+function renderAuthRequired() {
+  state.company = null;
+  state.services = [];
+  renderCompany();
+  const list = $("[data-services-list]");
+  list.innerHTML = `
+    <div class="panel-empty">
+      <strong>Necesitas abrir el enlace de invitacion para entrar al panel.</strong>
+      <p>Si ya recibiste acceso, abre el enlace completo de invitacion. Si no lo tienes, contacta al equipo de Punto Evento.</p>
+      <a class="primary-button compact-button" href="index.html#empresas">Registrar empresa</a>
+    </div>
+  `;
+  $("[data-service-form]")?.classList.add("is-hidden");
 }
 
 function serviceMarkup(service) {
-  const eventTypes = normalizeEventTypes(service.eventTypes);
-  const photos = photoList(service);
+  const eventTypes = parseArray(service.eventTypes);
+  const publicLink =
+    normalizeStatus(service.status) === "published"
+      ? `<a class="ghost-button compact-button" href="${escapeHtml(publicCompanyHref(service))}">Ver publico</a>`
+      : `<span class="review-note">Visible cuando sea publicado.</span>`;
   return `
     <article class="service-card" data-service-id="${escapeHtml(service.id)}">
       <div class="service-card-header">
@@ -188,165 +235,288 @@ function serviceMarkup(service) {
           </span>
           <h3>${escapeHtml(service.name)}</h3>
         </div>
-        <button class="ghost-button compact-button" type="button" data-edit-service>Editar</button>
+        <div class="service-actions">
+          ${publicLink}
+          <button class="ghost-button compact-button" type="button" data-edit-service>Editar</button>
+          <button class="secondary-button compact-button" type="button" data-delete-service>Desactivar</button>
+        </div>
       </div>
       <p>${escapeHtml(service.description)}</p>
       <div class="service-meta">
         <div><strong>Categoria</strong><span>${escapeHtml(service.category)}</span></div>
-        <div><strong>Eventos</strong><span>${escapeHtml(eventTypes.join(", "))}</span></div>
-        <div><strong>Precio desde</strong><span>${escapeHtml(service.priceFrom)}</span></div>
-        <div><strong>Fotos</strong><span>${photos.length} archivo(s)</span></div>
-        <div><strong>Actualizado</strong><span>${escapeHtml(service.updatedAt)}</span></div>
+        <div><strong>Eventos</strong><span>${escapeHtml(eventTypes.join(", ") || "Sin eventos")}</span></div>
+        <div><strong>Precio desde</strong><span>${escapeHtml(service.priceFrom || "Consultar")}</span></div>
+        <div><strong>Fotos</strong><span>${serviceImageCount(service)} archivo(s)</span></div>
+        <div><strong>Actualizado</strong><span>${escapeHtml(String(service.updatedAt || "").slice(0, 10))}</span></div>
       </div>
     </article>
   `;
 }
 
 function renderServices() {
+  renderCompany();
   const list = $("[data-services-list]");
-  $("[data-service-count]").textContent = String(state.services.length);
   if (!state.services.length) {
-    list.innerHTML = '<div class="panel-empty">Todavia no hay servicios demo.</div>';
+    list.innerHTML = '<div class="panel-empty">Todavia no hay servicios. Agrega el primero para iniciar la revision.</div>';
     return;
   }
   list.innerHTML = state.services.map(serviceMarkup).join("");
 }
 
-function renderPhotoPreview(photos = []) {
+function setActionsDisabled(isDisabled) {
+  $$("[data-add-service], [data-logout]").forEach((button) => {
+    button.disabled = isDisabled;
+  });
+}
+
+async function loadRealPanel() {
+  setActionsDisabled(true);
+  try {
+    await acceptInviteIfPresent();
+    const [company, services] = await Promise.all([
+      apiJson("/companies/me"),
+      apiJson("/companies/me/services"),
+    ]);
+    state.company = company;
+    state.services = Array.isArray(services) ? services : [];
+    setPanelMessage("");
+    renderServices();
+  } catch (error) {
+    if (error.status === 401) {
+      renderAuthRequired();
+      setPanelMessage("Necesitas abrir el enlace de invitacion para entrar al panel.", "error");
+    } else {
+      renderAuthRequired();
+      setPanelMessage("No pudimos cargar el panel. Intentalo de nuevo en unos minutos.", "error");
+      console.warn(error);
+    }
+  } finally {
+    setActionsDisabled(false);
+  }
+}
+
+function loadDemoPanel() {
+  state.company = {
+    name: "Aurisbel Eventos",
+    slug: "aurisbel-eventos",
+    description: "Demo local explicita. No guarda en Azure.",
+    plan: "free",
+    status: "pending",
+  };
+  state.services = JSON.parse(JSON.stringify(DEMO_SERVICES));
+  setPanelMessage("Modo demo local activo. No guarda en Azure.");
+  renderServices();
+}
+
+function renderPhotoPreview(file = null, service = null) {
   const preview = $("[data-photo-preview]");
   if (!preview) return;
-  if (!photos.length) {
-    preview.innerHTML = '<div class="photo-preview-empty">Sin fotos seleccionadas.</div>';
+
+  if (file) {
+    const url = URL.createObjectURL(file);
+    preview.innerHTML = `
+      <article class="photo-preview-item">
+        <img src="${escapeHtml(url)}" alt="${escapeHtml(file.name)}">
+        <span>${escapeHtml(file.name)}</span>
+      </article>
+    `;
     return;
   }
-  preview.innerHTML = photos
-    .map((photo) => {
-      const previewMarkup = photo.previewUrl
-        ? `<img src="${escapeHtml(photo.previewUrl)}" alt="${escapeHtml(photo.name)}">`
-        : '<div class="photo-file-placeholder">IMG</div>';
-      return `
-        <article class="photo-preview-item">
-          ${previewMarkup}
-          <span>${escapeHtml(photo.name)}</span>
-        </article>
-      `;
-    })
-    .join("");
+
+  if (service?.coverUrl) {
+    preview.innerHTML = `
+      <article class="photo-preview-item">
+        <img src="${escapeHtml(service.coverUrl)}" alt="${escapeHtml(service.name)}">
+        <span>Cover publicado o en revision</span>
+      </article>
+    `;
+    return;
+  }
+
+  preview.innerHTML = '<div class="photo-preview-empty">Sin cover seleccionado.</div>';
 }
 
 function resetServiceForm(service = null) {
   const form = $("[data-service-form]");
   form.reset();
   form.classList.remove("is-hidden");
-  state.pendingPhotos = service ? photoList(service) : [];
+  state.pendingCoverFile = null;
   $("[data-service-form-mode]").textContent = service ? "Editar servicio" : "Nuevo servicio";
-  $("[data-form-message]").textContent = "";
+  setFormMessage("");
   form.elements.id.value = service?.id || "";
   form.elements.name.value = service?.name || "";
-  form.elements.category.value = normalizeCategory(service?.category);
-  const selectedEventTypes = normalizeEventTypes(service?.eventTypes);
-  form.querySelectorAll('input[name="eventTypes"]').forEach((input) => {
+  form.elements.category.value = service?.category || state.categories[0] || "";
+  const selectedEventTypes = parseArray(service?.eventTypes);
+  $$('input[name="eventTypes"]', form).forEach((input) => {
     input.checked = selectedEventTypes.includes(input.value);
   });
   form.elements.priceFrom.value = service?.priceFrom || "";
   form.elements.status.value = normalizeStatus(service?.status);
-  form.elements.photoCount.value = state.pendingPhotos.length;
+  form.elements.status.disabled = true;
+  form.elements.photoCount.value = serviceImageCount(service || {});
   form.elements.description.value = service?.description || "";
-  renderPhotoPreview(state.pendingPhotos);
+  renderPhotoPreview(null, service);
   form.elements.name.focus();
 }
 
 function closeServiceForm() {
   const form = $("[data-service-form]");
-  state.pendingPhotos.forEach((photo) => {
-    if (photo.previewUrl) URL.revokeObjectURL(photo.previewUrl);
-  });
-  state.pendingPhotos = [];
+  state.pendingCoverFile = null;
   form.reset();
   form.classList.add("is-hidden");
   renderPhotoPreview();
 }
 
-function restoreDemoServices() {
-  state.services = defaultServices();
-  saveServices();
-  closeServiceForm();
-  renderServices();
-  setPanelMessage("Demo restaurada. Se volvieron a cargar los servicios base.");
-}
-
-function photoMetadataFromFiles(files) {
-  return [...files].map((file) => ({
-    name: file.name,
-    size: file.size,
-    type: file.type || "image/*",
-    previewUrl: URL.createObjectURL(file),
-  }));
-}
-
-function serviceFromForm(form, forcedStatus = null) {
+function servicePayloadFromForm(form) {
   const formData = new FormData(form);
-  const id = String(formData.get("id") || "").trim() || `service-${Date.now()}`;
-  const selectedEventTypes = [...form.querySelectorAll('input[name="eventTypes"]:checked')].map(
-    (input) => input.value,
-  );
-  const photos = state.pendingPhotos.map(({ name, size, type }) => ({ name, size, type }));
+  const eventTypes = $$('input[name="eventTypes"]:checked', form).map((input) => input.value);
   return {
-    id,
     name: String(formData.get("name") || "").trim(),
-    category: normalizeCategory(String(formData.get("category") || "")),
-    eventTypes: selectedEventTypes,
+    category: String(formData.get("category") || "").trim(),
+    eventTypes,
     priceFrom: String(formData.get("priceFrom") || "").trim(),
-    status: normalizeStatus(forcedStatus || String(formData.get("status") || "")),
-    photoCount: photos.length,
-    photos,
-    updatedAt: todayStamp(),
     description: String(formData.get("description") || "").trim(),
+    coverUrl: "",
+    gallery: [],
   };
 }
 
-function saveService(service) {
-  const existingIndex = state.services.findIndex((item) => item.id === service.id);
-  if (existingIndex >= 0) {
-    state.services.splice(existingIndex, 1, service);
-  } else {
-    state.services.unshift(service);
+function validateServicePayload(payload) {
+  if (!payload.name || !payload.category || !payload.description) {
+    return "Completa nombre, categoria y descripcion.";
   }
-  saveServices();
-  renderServices();
-}
-
-function validateService(service) {
-  if (!service.eventTypes.length) return "Selecciona al menos un tipo de evento.";
-  if (!service.name || !service.category || !service.priceFrom || !service.description) {
-    return "Completa los campos requeridos.";
+  if (!payload.eventTypes.length) {
+    return "Selecciona al menos un tipo de evento.";
   }
   return "";
 }
 
-document.addEventListener("submit", (event) => {
-  if (!event.target.matches("[data-service-form]")) return;
-  event.preventDefault();
-  const service = serviceFromForm(event.target);
-  const error = validateService(service);
+async function saveService(form) {
+  const id = form.elements.id.value;
+  const existing = state.services.find((service) => service.id === id);
+  const payload = servicePayloadFromForm(form);
+  if (existing) {
+    payload.coverUrl = existing.coverUrl || "";
+    payload.gallery = parseArray(existing.gallery);
+  }
+  const error = validateServicePayload(payload);
   if (error) {
-    $("[data-form-message]").textContent = error;
+    setFormMessage(error, "error");
     return;
   }
-  saveService(service);
-  closeServiceForm();
-});
 
-document.addEventListener("click", (event) => {
-  if (event.target.matches("[data-add-service]")) {
-    setPanelMessage("");
-    resetServiceForm();
+  setFormMessage("Guardando servicio...");
+  const saved =
+    state.mode === "demo"
+      ? { ...existing, ...payload, id: existing?.id || `demo_${Date.now()}`, slug: existing?.slug || "", status: existing?.status || "draft", updatedAt: new Date().toISOString() }
+      : id
+        ? await apiJson(`/companies/me/services/${encodeURIComponent(id)}`, {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          })
+        : await apiJson("/companies/me/services", {
+            method: "POST",
+            body: JSON.stringify(payload),
+          });
+
+  if (state.pendingCoverFile) {
+    await uploadCover(saved.id, state.pendingCoverFile);
+    setPanelMessage("Servicio guardado. Cover enviado a revision.", "success");
+  } else {
+    setPanelMessage("Servicio guardado.", "success");
   }
 
-  if (event.target.matches("[data-reset-demo]")) {
-    const confirmed = window.confirm("Esto borrara los servicios demo creados en este navegador. Deseas continuar?");
-    if (!confirmed) return;
-    restoreDemoServices();
+  closeServiceForm();
+  if (state.mode === "demo") {
+    const index = state.services.findIndex((service) => service.id === saved.id);
+    if (index >= 0) state.services.splice(index, 1, saved);
+    else state.services.unshift(saved);
+    renderServices();
+  } else {
+    await loadRealPanel();
+  }
+}
+
+async function deleteService(serviceId) {
+  const service = state.services.find((item) => item.id === serviceId);
+  if (!service) return;
+  const confirmed = window.confirm(`Desactivar "${service.name}"?`);
+  if (!confirmed) return;
+
+  if (state.mode === "demo") {
+    service.status = "inactive";
+    service.updatedAt = new Date().toISOString();
+    renderServices();
+    setPanelMessage("Servicio demo desactivado.", "success");
+    return;
+  }
+
+  await apiJson(`/companies/me/services/${encodeURIComponent(serviceId)}`, { method: "DELETE" });
+  setPanelMessage("Servicio desactivado.", "success");
+  await loadRealPanel();
+}
+
+async function uploadCover(serviceId, file) {
+  if (state.mode === "demo") return;
+  if (!file) return;
+
+  const signed = await apiJson("/uploads/sign", {
+    method: "POST",
+    body: JSON.stringify({
+      scope: "service",
+      serviceId,
+      imageType: "cover",
+      fileName: file.name,
+      contentType: file.type,
+      size: file.size,
+    }),
+  });
+
+  const uploadResponse = await fetch(signed.uploadUrl, {
+    method: "PUT",
+    headers: {
+      "x-ms-blob-type": "BlockBlob",
+      "Content-Type": file.type,
+    },
+    body: file,
+  });
+  if (!uploadResponse.ok) {
+    throw new Error("No se pudo subir la imagen.");
+  }
+
+  await apiJson("/uploads/confirm", {
+    method: "POST",
+    body: JSON.stringify({ uploadId: signed.uploadId }),
+  });
+}
+
+async function logout() {
+  if (state.mode === "demo") {
+    window.location.href = "index.html#empresas";
+    return;
+  }
+  try {
+    await apiJson("/company-auth/logout", { method: "POST", body: "{}" });
+  } finally {
+    renderAuthRequired();
+    setPanelMessage("Sesion cerrada.");
+  }
+}
+
+document.addEventListener("submit", async (event) => {
+  if (!event.target.matches("[data-service-form]")) return;
+  event.preventDefault();
+  try {
+    await saveService(event.target);
+  } catch (error) {
+    console.warn(error);
+    setFormMessage("No se pudo guardar el servicio. Revisa los datos e intentalo de nuevo.", "error");
+  }
+});
+
+document.addEventListener("click", async (event) => {
+  if (event.target.matches("[data-add-service]")) {
+    resetServiceForm();
   }
 
   if (event.target.matches("[data-cancel-service]")) {
@@ -354,43 +524,53 @@ document.addEventListener("click", (event) => {
   }
 
   if (event.target.matches("[data-send-review]")) {
-    const form = event.target.closest("[data-service-form]");
-    const service = serviceFromForm(form, "pending");
-    const error = validateService(service);
-    if (error) {
-      $("[data-form-message]").textContent = error;
-      return;
-    }
-    saveService(service);
-    closeServiceForm();
+    setFormMessage("Guarda el servicio y el equipo podra revisarlo desde admin interno.");
+  }
+
+  if (event.target.matches("[data-logout]")) {
+    await logout();
   }
 
   const editButton = event.target.closest("[data-edit-service]");
   if (editButton) {
-    const card = editButton.closest("[data-service-id]");
-    const service = state.services.find((item) => item.id === card?.dataset.serviceId);
+    const serviceId = editButton.closest("[data-service-id]")?.dataset.serviceId;
+    const service = state.services.find((item) => item.id === serviceId);
     if (service) resetServiceForm(service);
+  }
+
+  const deleteButton = event.target.closest("[data-delete-service]");
+  if (deleteButton) {
+    const serviceId = deleteButton.closest("[data-service-id]")?.dataset.serviceId;
+    try {
+      await deleteService(serviceId);
+    } catch (error) {
+      console.warn(error);
+      setPanelMessage("No se pudo desactivar el servicio.", "error");
+    }
   }
 });
 
 document.addEventListener("change", (event) => {
   if (!event.target.matches("[data-service-photos]")) return;
-  state.pendingPhotos.forEach((photo) => {
-    if (photo.previewUrl) URL.revokeObjectURL(photo.previewUrl);
-  });
-  state.pendingPhotos = photoMetadataFromFiles(event.target.files || []);
+  const [file] = event.target.files || [];
+  state.pendingCoverFile = file || null;
   const form = event.target.closest("[data-service-form]");
   if (form?.elements.photoCount) {
-    form.elements.photoCount.value = state.pendingPhotos.length;
+    const currentCount = Number(form.elements.photoCount.value || 0);
+    form.elements.photoCount.value = file ? Math.max(currentCount, 1) : currentCount;
   }
-  renderPhotoPreview(state.pendingPhotos);
+  renderPhotoPreview(file || null);
 });
 
 async function init() {
   await loadCatalogs();
   renderCatalogControls();
-  renderServices();
   renderPhotoPreview();
+  if (state.mode === "demo") {
+    loadDemoPanel();
+  } else {
+    await loadRealPanel();
+  }
 }
 
 init();

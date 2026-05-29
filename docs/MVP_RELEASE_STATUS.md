@@ -43,8 +43,7 @@ Fuera del MVP inicial:
 
 ## Bloqueadores actuales
 
-- `#empresas` fue ajustado y aprobado localmente para usar `companies/register`; falta commit/deploy y QA Azure.
-- `panel.html` sigue en demo/localStorage y no usa API real ni sesion de empresa.
+- `panel.html` fue conectado a API real y aprobado por QA local, pero falta commit/deploy y QA Azure.
 - `admin.html` modera proveedores legacy; no modera Companies, Services ni Uploads del modelo nuevo.
 - Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
 
@@ -65,8 +64,9 @@ Validado segun backlog:
 
 Pendiente:
 
-- Commit/deploy y QA Azure de UI de registro publico conectada al modelo nuevo.
-- Conectar UI para panel empresa y admin del modelo nuevo.
+- Commit/deploy y QA Azure de `panel.html` conectado al modelo nuevo.
+- Conectar UI admin del modelo nuevo.
+- Decidir si MVP necesita endpoint explicito para enviar servicios a revision.
 - Ejecutar QA Azure post-integracion UI.
 
 ## Ultimo deploy validado
@@ -91,8 +91,8 @@ Riesgos aceptados:
 - [x] Pagina publica carga en Azure sin errores criticos.
 - [x] Registro de empresa validado en Azure por API.
 - [x] Invitacion/login empresa validado en Azure por API.
-- [ ] Panel empresa permite ver perfil propio.
-- [ ] Panel empresa permite crear/editar/desactivar servicios propios.
+- [ ] Panel empresa permite ver perfil propio desde UI desplegada.
+- [ ] Panel empresa permite crear/editar/desactivar servicios propios desde UI desplegada.
 - [x] Upload de imagenes validado con archivo real por API.
 - [x] Admin interno aprueba/rechaza empresa, servicio e imagenes por API.
 - [x] Servicio aprobado aparece en busqueda publica.
@@ -110,9 +110,9 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Ahora
 
-- Product / Architect / Release: commitear y pushear registro publico `#empresas` conectado al modelo nuevo.
-- QA / Infra Azure: validar `#empresas` en Azure despues del deploy.
-- Web Dev: conectar `panel.html` a sesion real, servicios propios y uploads.
+- Product / Architect / Release: commitear y pushear `panel.html` conectado a auth/API real.
+- QA / Infra Azure: validar `panel.html` en Azure despues del deploy.
+- Web Dev: crear UI admin para moderar Companies, Services y Uploads nuevos.
 
 ### Siguiente
 
@@ -135,7 +135,9 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 - `ADMIN_PASSWORD` rotado despues de pruebas controladas.
 - Galeria QA limpiada para demo visual.
 - Matriz MVP enfocada contra Azure: flujo completo funciona por API/manual; UI completa aun pendiente.
-- Registro publico `#empresas` conectado al modelo nuevo y aprobado por QA local.
+- Registro publico `#empresas` conectado al modelo nuevo, aprobado por QA local y desplegado en Azure con validacion parcial.
+- Submit visible de `#empresas` aprobado en Chrome normal contra Azure.
+- `panel.html` conectado localmente a API real y aprobado por QA local.
 
 ## Como actualizar este documento
 

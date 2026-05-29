@@ -144,8 +144,12 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] Conectar registro publico `#empresas` al modelo nuevo `Company`.
 - [x] Ajustar confirmacion y error local del registro publico `#empresas`.
 - [x] Reintento QA local de registro publico `#empresas` conectado a `companies/register`.
-- [ ] Deploy y QA Azure de registro publico `#empresas` conectado a `companies/register`.
-- [ ] Conectar `panel.html` a auth/API real de empresa.
+- [x] Deploy y QA Azure de registro publico `#empresas` conectado a `companies/register`.
+- [x] Validacion manual en navegador normal del submit visible de `#empresas`.
+- [x] Conectar `panel.html` a auth/API real de empresa.
+- [x] QA local de `panel.html` conectado a auth/API real de empresa.
+- [ ] Deploy y QA Azure de `panel.html` conectado a auth/API real de empresa.
+- [ ] Definir si MVP necesita endpoint explicito para enviar servicio a revision.
 - [ ] Crear UI admin para moderar Companies, Services y Uploads del modelo nuevo.
 - [ ] Notificacion por email al registrarse o pasar a revision.
 
@@ -186,6 +190,6 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product/Architect: commitear y pushear registro publico `#empresas` conectado a `companies/register`.
-2. QA / Infra Azure: validar registro publico `#empresas` post-deploy en Azure.
-3. Web Dev: conectar `panel.html` a sesion real, servicios propios y uploads.
+1. Product/Architect: commitear y pushear `panel.html` conectado a auth/API real.
+2. QA / Infra Azure: validar `panel.html` post-deploy con sesion real.
+3. Web Dev: crear UI admin interna para aprobar/rechazar Companies, Services y Uploads nuevos.

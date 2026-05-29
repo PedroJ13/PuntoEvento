@@ -49,3 +49,7 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-086-HANDOFF.md` | Requiere cambios | Se creo `TASK-087` para ajustar confirmacion exacta y manejo de error local en `#empresas`. |
 | `tasks/TASK-087-HANDOFF.md` | Completado Web Dev | Se creo `TASK-088` para reintento QA local del registro publico `#empresas`. |
 | `tasks/TASK-088-HANDOFF.md` | Aprobado QA local | Se creo `TASK-089` para QA Azure de `#empresas` post-deploy. |
+| `tasks/TASK-089-HANDOFF.md` | Bloqueado parcial | Se creo `TASK-090` para validar manualmente el submit visible de `#empresas` en navegador normal. |
+| `tasks/TASK-090-HANDOFF.md` | Aprobado | Se reactiva `TASK-084` para conectar `panel.html` a sesion real, servicios propios y uploads. |
+| `tasks/TASK-084-HANDOFF.md` | Completado Web Dev | Se creo `TASK-091` para QA local de `panel.html` conectado a auth/API real. |
+| `tasks/TASK-091-HANDOFF.md` | Aprobado QA local | Se creo `TASK-092` para QA Azure de `panel.html` post-deploy. |

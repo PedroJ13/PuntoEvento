@@ -31,6 +31,13 @@
   justify-content: flex-end;
 }
 
+.service-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .panel-header {
   margin-bottom: 24px;
 }
@@ -148,6 +155,13 @@
   color: #31514d;
   font-size: 0.76rem;
   font-weight: 850;
+}
+
+.review-note {
+  align-self: center;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 750;
 }
 
 .status-draft {
@@ -307,6 +321,29 @@
   background: #fff;
 }
 
+.panel-empty {
+  display: grid;
+  gap: 10px;
+}
+
+.panel-empty strong {
+  color: var(--ink);
+}
+
+.panel-empty .primary-button {
+  width: fit-content;
+}
+
+.panel-message[data-tone="success"] {
+  color: #176347;
+  font-weight: 800;
+}
+
+.panel-message[data-tone="error"] {
+  color: var(--terracotta);
+  font-weight: 850;
+}
+
 .full-field {
   grid-column: 1 / -1;
 }
@@ -333,6 +370,11 @@
   }
 
   .panel-actions {
+    display: grid;
+    justify-content: stretch;
+  }
+
+  .service-actions {
     display: grid;
     justify-content: stretch;
   }

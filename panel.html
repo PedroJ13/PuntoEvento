@@ -3,27 +3,30 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Panel empresa demo | Punto Evento</title>
+    <title>Panel empresa | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=14" />
-    <link rel="stylesheet" href="panel.css?v=2" />
+    <link rel="stylesheet" href="panel.css?v=3" />
   </head>
   <body class="panel-body">
     <main class="panel-shell">
       <header class="panel-header">
         <div>
-          <p class="eyebrow">Panel empresa demo</p>
+          <p class="eyebrow" data-panel-mode>Panel empresa</p>
           <h1>Gestiona tus servicios</h1>
-          <p>Demo local para crear, editar y enviar servicios a revision. Esta demo no guarda en Azure todavia.</p>
+          <p>Crea, edita y prepara los servicios que se mostraran en Punto Evento despues de la revision interna.</p>
         </div>
-        <a class="ghost-button" href="admin.html?demo=local">Ver revision interna</a>
+        <div class="panel-actions">
+          <a class="ghost-button compact-button" href="index.html#inicio">Volver a la pagina publica</a>
+          <button class="secondary-button compact-button" type="button" data-logout>Cerrar sesion</button>
+        </div>
       </header>
 
       <section class="company-summary">
         <div>
-          <p class="eyebrow">Empresa demo</p>
-          <h2>Aurisbel Eventos</h2>
-          <p>Reposteria, coordinacion y mesas dulces para eventos en Costa Rica.</p>
+          <p class="eyebrow">Empresa</p>
+          <h2 data-company-name>Cargando empresa...</h2>
+          <p data-company-description>Validando sesion de invitacion.</p>
         </div>
         <div class="summary-grid">
           <article>
@@ -31,11 +34,11 @@
             <span>servicios</span>
           </article>
           <article>
-            <strong>Free</strong>
+            <strong data-plan>-</strong>
             <span>plan actual</span>
           </article>
           <article>
-            <strong>Pendiente</strong>
+            <strong data-company-status>-</strong>
             <span>perfil empresa</span>
           </article>
         </div>
@@ -48,7 +51,6 @@
             <h2>Catalogo de la empresa</h2>
           </div>
           <div class="panel-actions">
-            <button class="secondary-button compact-button" type="button" data-reset-demo>Restaurar demo</button>
             <button class="primary-button compact-button" type="button" data-add-service>Agregar servicio</button>
           </div>
         </div>
@@ -60,7 +62,7 @@
             <div>
               <p class="eyebrow" data-service-form-mode>Nuevo servicio</p>
               <h3>Datos del servicio</h3>
-              <p>Esta demo no guarda en Azure todavia.</p>
+              <p>Los cambios se guardan en Azure para la empresa autenticada.</p>
             </div>
             <input name="id" type="hidden" />
             <label>
@@ -94,9 +96,9 @@
               <input name="photoCount" type="number" min="0" max="20" readonly required />
             </label>
             <label class="file-field full-field">
-              <span>Fotos del servicio</span>
-              <input name="photos" type="file" accept="image/*" multiple data-service-photos />
-              <small>Preview local para demo. Las fotos no se suben a Azure todavia.</small>
+              <span>Cover del servicio</span>
+              <input name="photos" type="file" accept="image/*" data-service-photos />
+              <small>La imagen se sube como pendiente y queda sujeta a revision.</small>
             </label>
             <div class="photo-preview-grid full-field" data-photo-preview></div>
             <label class="full-field">
@@ -105,7 +107,7 @@
             </label>
             <div class="form-actions">
               <button class="primary-button" type="submit">Guardar servicio</button>
-              <button class="secondary-button" type="button" data-send-review>Enviar a revision</button>
+              <button class="secondary-button" type="button" data-send-review>Como se revisa</button>
               <button class="ghost-button" type="button" data-cancel-service>Cancelar</button>
             </div>
             <p class="panel-message" data-form-message></p>
@@ -113,6 +115,6 @@
         </div>
       </section>
     </main>
-    <script src="panel.js?v=2"></script>
+    <script src="panel.js?v=3"></script>
   </body>
 </html>
