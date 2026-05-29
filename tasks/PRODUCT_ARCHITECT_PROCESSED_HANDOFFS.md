@@ -66,3 +66,5 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-101-HANDOFF.md` | Aprobado Infra Azure / Product | Se creo `TASK-102` para reintento QA Azure de admin UI con credencial corregida. |
 | `tasks/TASK-102-HANDOFF.md` | Bloqueado por header UI | Se creo `TASK-103` para Web Dev: usar `X-Punto-Admin-Credential` en `admin.js` y subir cache busting. |
 | `tasks/TASK-103-HANDOFF.md` | Completado Web Dev | Se creo `TASK-104` para QA Azure post-deploy de `admin.js?v=11`. |
+| `tasks/TASK-104-HANDOFF.md` | Requiere cambios por `sig=` legacy | Se creo `TASK-105` para Web Dev: remover SAS del DOM legacy de `Revision`. |
+| `tasks/TASK-105-HANDOFF.md` | Completado Web Dev | Se creo `TASK-106` para QA Azure post-deploy de `admin.js?v=12` sin `sig=` en DOM. |

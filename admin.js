@@ -334,13 +334,14 @@ function imageMarkup(provider) {
       ${provider.images
         .map((image) => {
           const checked = image.status === "pending" ? "checked" : "";
+          const label = image.originalFileName || image.type || "Imagen legacy";
           return `
             <article class="admin-image">
-              ${
-                image.previewUrl
-                  ? `<img src="${escapeHtml(image.previewUrl)}" alt="${escapeHtml(image.originalFileName || image.type)}">`
-                  : ""
-              }
+              <div class="admin-image-placeholder">
+                <strong>${escapeHtml(image.type || "Imagen")}</strong>
+                <span>${escapeHtml(label)}</span>
+                <span>${escapeHtml(image.status || "Sin estado")}</span>
+              </div>
               <label>
                 <input type="checkbox" data-image-id="${escapeHtml(image.id)}" ${checked}>
                 Aprobar ${escapeHtml(image.type)}

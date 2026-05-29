@@ -162,7 +162,8 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [ ] Deploy y QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
 - [x] Corregir/rotar credencial admin usada por QA Azure para `admin.html`.
 - [x] Alinear `admin.js` para enviar credencial admin con `X-Punto-Admin-Credential` en Azure.
-- [ ] Reintentar QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
+- [x] Remover render de SAS `sig=` en imagenes legacy de `admin.html`.
+- [ ] Reintentar QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo sin `sig=` en DOM.
 - [ ] Notificacion por email al registrarse o pasar a revision.
 
 Entregable:
@@ -202,6 +203,6 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product/Architect: commitear/pushear el fix de UI admin `admin.js?v=11`.
-2. QA / Infra Azure: ejecutar `TASK-104` despues del deploy.
+1. Product/Architect: commitear/pushear el fix `admin.js?v=12`.
+2. QA / Infra Azure: ejecutar `TASK-106` despues del deploy.
 3. Product/Architect: despues de QA Azure, decidir si el owner ya puede probar flujo completo o falta `submit-review`.
