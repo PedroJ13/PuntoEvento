@@ -59,3 +59,6 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-094-HANDOFF.md` | Aprobado QA local/estructural | Se creo `TASK-095` para QA Azure de endpoints internos de listado post-deploy. |
 | `tasks/TASK-095-HANDOFF.md` | Requiere cambios | Se creo `TASK-096` para Backend/API: enrutar metodos no GET y devolver `405` en Azure. |
 | `tasks/TASK-096-HANDOFF.md` | Completado Backend/API | Se creo `TASK-097` para re-smoke Azure de listados internos post-deploy. |
+| `tasks/TASK-097-HANDOFF.md` | Aprobado QA Azure | Se creo `TASK-098` para Web Dev: conectar `admin.html` a listados internos reales. |
+| `tasks/TASK-098-HANDOFF.md` | Completado Web Dev | Se creo `TASK-099` para QA local de admin UI conectada al modelo nuevo. |
+| `tasks/TASK-099-HANDOFF.md` | Aprobado QA local | Se creo `TASK-100` para QA Azure de admin UI conectada post-deploy. |

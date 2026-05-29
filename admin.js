@@ -12,6 +12,20 @@ const EVENT_TYPE_OPTIONS = [
   "Graduaciones",
   "Fiestas infantiles",
 ];
+const INTERNAL_MODERATION = {
+  companies: {
+    endpoint: "/internal/companies/pending",
+    label: "empresas",
+  },
+  services: {
+    endpoint: "/internal/services/pending",
+    label: "servicios",
+  },
+  uploads: {
+    endpoint: "/internal/uploads/pending",
+    label: "uploads",
+  },
+};
 
 const DEFAULT_SERVICES = [
   {
@@ -75,6 +89,11 @@ const state = {
   demoMode: false,
   pendingPhotos: [],
   services: loadServices(),
+  internal: {
+    companies: { items: [], loading: false, loaded: false, error: "" },
+    services: { items: [], loading: false, loaded: false, error: "" },
+    uploads: { items: [], loading: false, loaded: false, error: "" },
+  },
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -90,6 +109,27 @@ function escapeHtml(value) {
     };
     return map[char];
   });
+}
+
+function truncateText(value, maxLength = 180) {
+  const text = String(value || "").trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1)}...`;
+}
+
+function formatDate(value) {
+  return value ? String(value).slice(0, 10) : "-";
+}
+
+function parseList(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(String(value));
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+  } catch {
+    return [];
+  }
 }
 
 function setStatus(message) {
@@ -353,6 +393,241 @@ function renderProviders() {
   list.innerHTML = state.providers.map(providerMarkup).join("");
 }
 
+function internalStatusLabel(status) {
+  const labels = {
+    draft: "Borrador",
+    pending: "Pendiente",
+    published: "Publicado",
+    rejected: "Rechazado",
+    inactive: "Inactivo",
+    suspended: "Suspendido",
+  };
+  return labels[status] || status || "-";
+}
+
+function statusClass(status) {
+  return ["draft", "pending", "published", "rejected", "inactive"].includes(status) ? status : "draft";
+}
+
+function setInternalState(type, message, status = "pending") {
+  const node = $(`[data-internal-state="${type}"]`);
+  if (!node) return;
+  node.textContent = message;
+  node.className = `status-pill status-${statusClass(status)}`;
+}
+
+function internalActionsMarkup(type, ids) {
+  const attrs = Object.entries(ids)
+    .map(([key, value]) => `data-${key}="${escapeHtml(value)}"`)
+    .join(" ");
+  return `
+    <div class="internal-item-actions">
+      <button class="primary-button compact-button" type="button" data-internal-action="approve" data-internal-type="${type}" ${attrs}>Aprobar</button>
+      <button class="secondary-button compact-button" type="button" data-internal-action="reject" data-internal-type="${type}" ${attrs}>Rechazar</button>
+    </div>
+  `;
+}
+
+function companyItemMarkup(company) {
+  const companyId = company.companyId || company.id || "";
+  const location = [company.province, company.canton].filter(Boolean).join(", ") || "-";
+  return `
+    <article class="internal-item">
+      <div class="internal-item-header">
+        <div>
+          <span class="status-pill status-${statusClass(company.status)}">${escapeHtml(internalStatusLabel(company.status))}</span>
+          <h4>${escapeHtml(company.name || "Empresa sin nombre")}</h4>
+        </div>
+      </div>
+      <p>${escapeHtml(truncateText(company.description))}</p>
+      <div class="internal-item-meta">
+        <div><strong>ID</strong><span>${escapeHtml(companyId)}</span></div>
+        <div><strong>Email</strong><span>${escapeHtml(company.email || "-")}</span></div>
+        <div><strong>Telefono</strong><span>${escapeHtml(company.whatsapp || "-")}</span></div>
+        <div><strong>Zona</strong><span>${escapeHtml(location)}</span></div>
+        <div><strong>Plan</strong><span>${escapeHtml(company.plan || "-")}</span></div>
+        <div><strong>Creado</strong><span>${escapeHtml(formatDate(company.createdAt))}</span></div>
+      </div>
+      ${internalActionsMarkup("companies", { "company-id": companyId })}
+    </article>
+  `;
+}
+
+function serviceItemMarkup(service) {
+  const companyId = service.companyId || "";
+  const serviceId = service.serviceId || service.id || "";
+  const eventTypes = parseList(service.eventTypes);
+  const gallery = parseList(service.gallery);
+  const imageCount = Number(Boolean(service.coverUrl)) + gallery.length;
+  return `
+    <article class="internal-item">
+      <div class="internal-item-header">
+        <div>
+          <span class="status-pill status-${statusClass(service.status)}">${escapeHtml(internalStatusLabel(service.status))}</span>
+          <h4>${escapeHtml(service.name || "Servicio sin nombre")}</h4>
+        </div>
+      </div>
+      <p>${escapeHtml(truncateText(service.description))}</p>
+      <div class="internal-item-meta">
+        <div><strong>Empresa</strong><span>${escapeHtml(service.companyName || companyId || "-")}</span></div>
+        <div><strong>Servicio ID</strong><span>${escapeHtml(serviceId)}</span></div>
+        <div><strong>Categoria</strong><span>${escapeHtml(service.category || "-")}</span></div>
+        <div><strong>Eventos</strong><span>${escapeHtml(eventTypes.join(", ") || "-")}</span></div>
+        <div><strong>Precio</strong><span>${escapeHtml(service.priceFrom || "-")}</span></div>
+        <div><strong>Imagenes</strong><span>${imageCount} archivo(s)</span></div>
+      </div>
+      ${internalActionsMarkup("services", { "company-id": companyId, "service-id": serviceId })}
+    </article>
+  `;
+}
+
+function uploadItemMarkup(upload) {
+  const companyId = upload.companyId || "";
+  const uploadId = upload.uploadId || upload.id || "";
+  return `
+    <article class="internal-item">
+      <div class="internal-item-header">
+        <div>
+          <span class="status-pill status-${statusClass(upload.status)}">${escapeHtml(internalStatusLabel(upload.status))}</span>
+          <h4>${escapeHtml(upload.fileName || uploadId || "Upload pendiente")}</h4>
+        </div>
+      </div>
+      <div class="internal-item-meta">
+        <div><strong>Upload ID</strong><span>${escapeHtml(uploadId)}</span></div>
+        <div><strong>Empresa ID</strong><span>${escapeHtml(companyId)}</span></div>
+        <div><strong>Scope</strong><span>${escapeHtml(upload.scope || "-")}</span></div>
+        <div><strong>Servicio ID</strong><span>${escapeHtml(upload.serviceId || "-")}</span></div>
+        <div><strong>Tipo</strong><span>${escapeHtml(upload.imageType || "-")}</span></div>
+        <div><strong>Archivo</strong><span>${escapeHtml(upload.contentType || "-")} - ${escapeHtml(String(upload.size || "-"))} bytes</span></div>
+      </div>
+      ${internalActionsMarkup("uploads", { "company-id": companyId, "upload-id": uploadId })}
+    </article>
+  `;
+}
+
+function renderInternalList(type) {
+  const section = state.internal[type];
+  const list = $(`[data-internal-list="${type}"]`);
+  const count = $(`[data-internal-count="${type}"]`);
+  if (!section || !list) return;
+
+  if (count) count.textContent = String(section.items.length);
+  if (section.loading) {
+    setInternalState(type, "Cargando", "pending");
+    list.innerHTML = '<div class="admin-empty">Cargando pendientes...</div>';
+    return;
+  }
+  if (section.error) {
+    setInternalState(type, "Error", "rejected");
+    list.innerHTML = `<div class="admin-empty internal-error">${escapeHtml(section.error)}</div>`;
+    return;
+  }
+  if (!section.items.length) {
+    setInternalState(type, "Vacio", "published");
+    list.innerHTML = '<div class="admin-empty">No hay items pendientes.</div>';
+    return;
+  }
+
+  setInternalState(type, `${section.items.length} item(s)`, "pending");
+  const renderers = {
+    companies: companyItemMarkup,
+    services: serviceItemMarkup,
+    uploads: uploadItemMarkup,
+  };
+  list.innerHTML = section.items.map(renderers[type]).join("");
+}
+
+function renderInternalModeration() {
+  Object.keys(INTERNAL_MODERATION).forEach(renderInternalList);
+  if (state.activeTab === "modelo") {
+    const total = Object.values(state.internal).reduce((sum, section) => sum + section.items.length, 0);
+    const count = $("[data-count]");
+    if (count) count.textContent = `${total} item(s) modelo nuevo`;
+  }
+}
+
+async function loadInternalList(type) {
+  const section = state.internal[type];
+  if (!section) return;
+  section.loading = true;
+  section.error = "";
+  renderInternalList(type);
+  try {
+    const response = await adminFetch(INTERNAL_MODERATION[type].endpoint);
+    section.items = Array.isArray(response) ? response : Array.isArray(response?.items) ? response.items : [];
+    section.loaded = true;
+  } catch (error) {
+    section.error = error.message;
+  } finally {
+    section.loading = false;
+    renderInternalModeration();
+  }
+}
+
+async function loadInternalModeration() {
+  setStatus("Cargando modelo nuevo...");
+  await Promise.all(Object.keys(INTERNAL_MODERATION).map(loadInternalList));
+  const hasErrors = Object.values(state.internal).some((section) => section.error);
+  setStatus(hasErrors ? "Modelo nuevo actualizado con errores." : "Modelo nuevo actualizado.");
+}
+
+function internalActionPath(type, action, ids) {
+  if (type === "companies") {
+    if (!ids.companyId) return "";
+    return `/internal/companies/${encodeURIComponent(ids.companyId)}/${action}`;
+  }
+  if (type === "services") {
+    if (!ids.companyId || !ids.serviceId) return "";
+    return `/internal/services/${encodeURIComponent(ids.companyId)}/${encodeURIComponent(ids.serviceId)}/${action}`;
+  }
+  if (type === "uploads") {
+    if (!ids.companyId || !ids.uploadId) return "";
+    return `/internal/uploads/${encodeURIComponent(ids.companyId)}/${encodeURIComponent(ids.uploadId)}/${action}`;
+  }
+  return "";
+}
+
+async function handleInternalAction(button) {
+  if (state.demoMode) {
+    setStatus("La moderacion nueva requiere login admin real.");
+    return;
+  }
+  const type = button.dataset.internalType;
+  const action = button.dataset.internalAction;
+  const ids = {
+    companyId: button.dataset.companyId || "",
+    serviceId: button.dataset.serviceId || "",
+    uploadId: button.dataset.uploadId || "",
+  };
+  const path = internalActionPath(type, action, ids);
+  if (!path) {
+    setStatus("No se pudo ejecutar la accion: faltan IDs.");
+    return;
+  }
+
+  let reason = "";
+  if (action === "reject") {
+    const promptedReason = window.prompt("Motivo de rechazo");
+    if (promptedReason === null) return;
+    reason = promptedReason;
+    if (reason === "" && !window.confirm("Rechazar sin motivo?")) return;
+  }
+
+  button.disabled = true;
+  setStatus(action === "approve" ? "Aprobando item..." : "Rechazando item...");
+  try {
+    await adminFetch(path, {
+      method: "POST",
+      body: action === "reject" ? JSON.stringify({ reason }) : "{}",
+    });
+    setStatus(action === "approve" ? "Item aprobado." : "Item rechazado.");
+    await loadInternalList(type);
+  } catch (error) {
+    setStatus(error.message);
+    button.disabled = false;
+  }
+}
+
 function setActiveTab(tabName) {
   state.activeTab = tabName;
   document.querySelectorAll("[data-tab-target]").forEach((button) => {
@@ -367,6 +642,12 @@ function setActiveTab(tabName) {
     const count = $("[data-count]");
     if (count) count.textContent = "Modo demo local";
     setStatus("Empresa demo y Servicios disponibles sin API.");
+  } else if (tabName === "modelo" && state.auth) {
+    const needsLoad = Object.values(state.internal).some((section) => !section.loaded && !section.loading);
+    renderInternalModeration();
+    if (needsLoad) {
+      loadInternalModeration().catch((error) => setStatus(error.message));
+    }
   }
 }
 
@@ -548,6 +829,7 @@ document.addEventListener("click", async (event) => {
   const rejectButton = event.target.closest("[data-reject]");
   const tabButton = event.target.closest("[data-tab-target]");
   const editServiceButton = event.target.closest("[data-edit-service]");
+  const internalButton = event.target.closest("[data-internal-action]");
 
   if (event.target.matches("[data-demo-login]")) {
     showDemo();
@@ -585,6 +867,10 @@ document.addEventListener("click", async (event) => {
       setLoginMessage("Ingresa credenciales para actualizar.", true);
       return;
     }
+    if (state.activeTab === "modelo") {
+      await loadInternalModeration().catch((error) => setStatus(error.message));
+      return;
+    }
     await loadProviders().catch((error) => setStatus(error.message));
   }
 
@@ -592,8 +878,18 @@ document.addEventListener("click", async (event) => {
     sessionStorage.removeItem(AUTH_KEY);
     state.auth = "";
     state.providers = [];
+    Object.values(state.internal).forEach((section) => {
+      section.items = [];
+      section.loading = false;
+      section.loaded = false;
+      section.error = "";
+    });
     state.activeTab = "revision";
     showLogin();
+  }
+
+  if (internalButton) {
+    await handleInternalAction(internalButton);
   }
 
   if (approveButton) {

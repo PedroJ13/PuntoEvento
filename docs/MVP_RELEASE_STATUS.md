@@ -43,7 +43,7 @@ Fuera del MVP inicial:
 
 ## Bloqueadores actuales
 
-- `admin.html` ya muestra el bloqueo del modelo nuevo; Backend/API agrego endpoints internos de listado, QA local los aprobo y la correccion `405` esta lista para commit/deploy.
+- `admin.html` ya fue conectado a los listados internos reales y aprobado por QA local; falta commit/deploy y QA Azure.
 - Decidir si el MVP acepta el flujo temporal de revision al guardar servicio o si necesita endpoint explicito `submit-review`.
 - Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
 
@@ -64,8 +64,7 @@ Validado segun backlog:
 
 Pendiente:
 
-- Deploy y QA Azure final de endpoints internos de listado para Companies, Services y Uploads pendientes.
-- Conectar UI admin del modelo nuevo a esos listados.
+- Deploy y QA Azure de UI admin conectada al modelo nuevo.
 - Decidir si MVP necesita endpoint explicito para enviar servicios a revision.
 - Ejecutar QA Azure post-integracion UI.
 
@@ -110,10 +109,9 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Ahora
 
-- Product / Architect / Release: commitear y pushear correccion `405` de listados internos.
-- QA / Infra Azure: ejecutar `TASK-097` despues del deploy.
-- Web Dev: esperar QA Azure aprobada antes de conectar la pestana `Modelo nuevo` de `admin.html`.
-- Product / Architect / Release: decidir despues de admin UI si hace falta endpoint explicito `submit-review`.
+- Product / Architect / Release: commitear y pushear admin UI conectada al modelo nuevo.
+- QA / Infra Azure: ejecutar `TASK-100` despues del deploy.
+- Product / Architect / Release: mantener decision abierta sobre endpoint explicito `submit-review` hasta validar admin UI.
 
 ### Siguiente
 
@@ -124,7 +122,6 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 ### Bloqueado
 
 - Product Owner no puede probar flujo completo desde navegador hasta conectar admin al modelo nuevo.
-- UI admin nueva espera aprobacion Azure completa de listados internos.
 - Invitar primeras empresas reales hasta cerrar QA Azure completo y bloqueadores P0/P1.
 
 ### Hecho
@@ -145,6 +142,9 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 - Backend/API implemento listados internos de Companies, Services y Uploads pendientes para moderacion nueva.
 - QA local/estructural aprobo endpoints internos de listado para moderacion nueva.
 - Backend/API corrigio enrutamiento de `POST` para que Azure pueda devolver `405` en listados internos.
+- QA Azure aprobo endpoints internos de listado para moderacion nueva, incluyendo `POST -> 405`.
+- Web Dev conecto `admin.html` a listados y acciones reales de Companies, Services y Uploads del modelo nuevo.
+- QA local aprobo admin UI conectada al modelo nuevo con mocks, acciones y responsive basico.
 
 ## Como actualizar este documento
 

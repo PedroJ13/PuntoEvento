@@ -154,10 +154,12 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
   - `GET /api/internal/services/pending`.
   - `GET /api/internal/uploads/pending`.
 - [x] QA local/estructural de endpoints internos de listado para moderacion nueva.
-- [ ] Deploy y QA Azure de endpoints internos de listado para moderacion nueva.
+- [x] Deploy y QA Azure de endpoints internos de listado para moderacion nueva.
 - [x] Corregir metodo no permitido en listados internos de moderacion para que Azure devuelva `405` en vez de `404`.
 - [ ] Definir si MVP necesita endpoint explicito para enviar servicio a revision.
-- [ ] Conectar UI admin para moderar Companies, Services y Uploads del modelo nuevo.
+- [x] Conectar UI admin para moderar Companies, Services y Uploads del modelo nuevo.
+- [x] QA local de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
+- [ ] Deploy y QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
 - [ ] Notificacion por email al registrarse o pasar a revision.
 
 Entregable:
@@ -197,6 +199,6 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product/Architect: commitear y pushear correccion `405` de listados internos.
-2. QA / Infra Azure: ejecutar `TASK-097` para re-smoke Azure de listados internos despues del deploy.
-3. Web Dev: conectar la pestana `Modelo nuevo` de `admin.html` a los listados reales despues de QA Azure aprobada.
+1. Product/Architect: commitear y pushear admin UI conectada al modelo nuevo.
+2. QA / Infra Azure: ejecutar `TASK-100` para validar admin UI conectada despues del deploy.
+3. Product/Architect: despues de QA Azure, decidir si el owner ya puede probar flujo completo o falta `submit-review`.

@@ -6,7 +6,7 @@
     <title>Admin | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=14" />
-    <link rel="stylesheet" href="admin.css?v=6" />
+    <link rel="stylesheet" href="admin.css?v=7" />
   </head>
   <body class="admin-body">
     <main class="admin-shell">
@@ -81,44 +81,54 @@
               <p class="eyebrow">Company -> Services</p>
               <h2>Moderacion nueva</h2>
             </div>
-            <p>Las acciones internas existen por API, pero aun falta un endpoint para listar pendientes.</p>
+            <p>Revisa empresas, servicios y uploads reales antes de publicarlos.</p>
           </div>
 
-          <div class="blocked-callout">
-            <strong>Bloqueado por falta de endpoint de listado.</strong>
-            <span>
-              El admin no puede aprobar o rechazar Companies, Services ni Uploads desde UI sin recibir los IDs
-              pendientes desde backend.
-            </span>
-          </div>
-
-          <div class="endpoint-grid" aria-label="Endpoints minimos recomendados">
-            <article class="endpoint-card">
-              <strong>Empresas pendientes</strong>
-              <code>GET /api/internal/companies/pending</code>
-              <span>Debe devolver `companyId`, nombre, email, estado y fechas seguras.</span>
+          <div class="internal-summary" aria-live="polite">
+            <article>
+              <strong data-internal-count="companies">0</strong>
+              <span>empresas pendientes</span>
             </article>
-            <article class="endpoint-card">
-              <strong>Servicios pendientes</strong>
-              <code>GET /api/internal/services/pending</code>
-              <span>Debe devolver `companyId`, `serviceId`, empresa, nombre, categoria y estado.</span>
+            <article>
+              <strong data-internal-count="services">0</strong>
+              <span>servicios revisables</span>
             </article>
-            <article class="endpoint-card">
-              <strong>Uploads pendientes</strong>
-              <code>GET /api/internal/uploads/pending</code>
-              <span>Debe devolver `companyId`, `uploadId`, scope, tipo, preview seguro y estado.</span>
+            <article>
+              <strong data-internal-count="uploads">0</strong>
+              <span>uploads pendientes</span>
             </article>
           </div>
 
-          <div class="endpoint-grid" aria-label="Acciones ya disponibles">
-            <article class="endpoint-card is-ready">
-              <strong>Acciones disponibles con IDs</strong>
-              <code>POST /api/internal/companies/{companyId}/approve</code>
-              <code>POST /api/internal/companies/{companyId}/reject</code>
-              <code>POST /api/internal/services/{companyId}/{serviceId}/approve</code>
-              <code>POST /api/internal/services/{companyId}/{serviceId}/reject</code>
-              <code>POST /api/internal/uploads/{companyId}/{uploadId}/approve</code>
-              <code>POST /api/internal/uploads/{companyId}/{uploadId}/reject</code>
+          <div class="internal-grid">
+            <article class="internal-panel">
+              <div class="internal-panel-header">
+                <div>
+                  <p class="eyebrow">Companies</p>
+                  <h3>Empresas pendientes</h3>
+                </div>
+                <span class="status-pill status-pending" data-internal-state="companies">Sin cargar</span>
+              </div>
+              <div class="internal-list" data-internal-list="companies"></div>
+            </article>
+            <article class="internal-panel">
+              <div class="internal-panel-header">
+                <div>
+                  <p class="eyebrow">Services</p>
+                  <h3>Servicios revisables</h3>
+                </div>
+                <span class="status-pill status-pending" data-internal-state="services">Sin cargar</span>
+              </div>
+              <div class="internal-list" data-internal-list="services"></div>
+            </article>
+            <article class="internal-panel">
+              <div class="internal-panel-header">
+                <div>
+                  <p class="eyebrow">Uploads</p>
+                  <h3>Imagenes pendientes</h3>
+                </div>
+                <span class="status-pill status-pending" data-internal-state="uploads">Sin cargar</span>
+              </div>
+              <div class="internal-list" data-internal-list="uploads"></div>
             </article>
           </div>
         </section>
@@ -169,6 +179,6 @@
         </section>
       </section>
     </main>
-    <script src="admin.js?v=9"></script>
+    <script src="admin.js?v=10"></script>
   </body>
 </html>

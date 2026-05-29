@@ -309,32 +309,16 @@
   color: var(--muted);
 }
 
-.blocked-callout {
-  display: grid;
-  gap: 8px;
-  padding: 18px;
-  border: 1px solid rgba(204, 92, 70, 0.32);
-  border-radius: 8px;
-  background: #fff7f4;
-  color: #6e2f24;
-}
-
-.blocked-callout strong {
-  color: var(--terracotta);
-  font-size: 1.05rem;
-}
-
-.blocked-callout span {
-  max-width: 760px;
-}
-
-.endpoint-grid {
+.internal-summary,
+.internal-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
-.endpoint-card {
+.internal-summary article,
+.internal-panel,
+.internal-item {
   display: grid;
   gap: 10px;
   padding: 16px;
@@ -343,25 +327,84 @@
   background: #fff;
 }
 
-.endpoint-card.is-ready {
-  grid-column: 1 / -1;
+.internal-summary strong {
+  color: var(--teal-dark);
+  font-size: 1.55rem;
 }
 
-.endpoint-card strong {
-  color: var(--ink);
+.internal-summary span,
+.internal-item p,
+.internal-item-meta span {
+  color: var(--muted);
 }
 
-.endpoint-card code {
-  overflow-wrap: anywhere;
+.internal-panel {
+  align-content: start;
+}
+
+.internal-panel-header,
+.internal-item-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.internal-panel h3,
+.internal-item h4 {
+  margin: 0;
+}
+
+.internal-list {
+  display: grid;
+  gap: 12px;
+}
+
+.internal-item {
+  background: #fdfefd;
+}
+
+.internal-item p {
+  margin: 0;
+}
+
+.internal-item-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.internal-item-meta div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  padding: 10px;
   border-radius: 8px;
   background: var(--soft);
-  color: #24423d;
-  padding: 8px 10px;
-  font-size: 0.86rem;
 }
 
-.endpoint-card span {
-  color: var(--muted);
+.internal-item-meta strong {
+  font-size: 0.78rem;
+}
+
+.internal-item-meta span {
+  overflow-wrap: anywhere;
+}
+
+.internal-item-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.internal-item-actions button {
+  min-height: 40px;
+}
+
+.internal-error {
+  border-color: rgba(204, 92, 70, 0.28);
+  background: #fff7f4;
+  color: var(--terracotta);
 }
 
 .services-layout {
@@ -606,9 +649,12 @@
   .admin-meta,
   .admin-actions,
   .company-grid,
-  .endpoint-grid,
+  .internal-summary,
+  .internal-grid,
   .services-layout,
   .service-meta,
+  .internal-item-meta,
+  .internal-item-actions,
   .form-actions {
     grid-template-columns: 1fr;
   }
