@@ -34,6 +34,8 @@ Servicios:
   "phone": "50622222222",
   "website": "https://...",
   "instagram": "https://...",
+  "facebook": "https://...",
+  "tiktok": "https://...",
   "province": "Heredia",
   "canton": "San Francisco",
   "district": "Heredia",
@@ -45,6 +47,14 @@ Servicios:
   "updatedAt": "2026-05-27T00:00:00Z"
 }
 ```
+
+Reglas de contacto MVP:
+
+- Obligatorios para registro: `name`, `email`, `whatsapp`, `province` o zona equivalente, y `description`.
+- Opcionales: `phone`, `website`, `instagram`, `facebook`, `tiktok`.
+- Publicos por defecto: `whatsapp`, `website`, `instagram`, `facebook`, `tiktok` si existen.
+- Interno por defecto: `email`; no publicarlo salvo decision explicita futura.
+- Una empresa no deberia pasar a `published` sin al menos un canal publico util.
 
 ## Service
 
@@ -70,6 +80,15 @@ Servicios:
 }
 ```
 
+Reglas de servicio MVP:
+
+- La empresa no edita `status` directamente.
+- Crear o editar guarda como `draft`.
+- Un boton/accion explicita `Enviar a revision` cambia el servicio a `pending`.
+- Si un servicio `published` cambia campos publicos, vuelve a `draft` hasta enviarse de nuevo a revision.
+- `coverUrl` representa una sola imagen principal.
+- `gallery` representa hasta 6 imagenes publicas aprobadas.
+
 ## Catalogos
 
 Las categorias y tipos de evento deben manejarse como catalogos compartidos.
@@ -88,6 +107,13 @@ Catalogos recomendados:
 Category
 EventType
 ```
+
+Definicion de negocio:
+
+- `Category` es lo que se vende u ofrece: catering, fotografia, salon, mesa dulce, queques, wedding planner, decoracion, musica y DJ, mobiliario.
+- `EventType` es la ocasion donde aplica: bodas, cumpleanos, eventos corporativos, baby shower, graduaciones, fiestas infantiles.
+- `Category` no debe contener ocasiones como `Bodas`.
+- `EventType` no debe contener servicios como `Catering`.
 
 En demo local pueden vivir en:
 
@@ -238,6 +264,13 @@ Reglas:
 - Al aprobar internamente, el estado pasa a `published`, se guarda `publicBlobUrl` y la URL se aplica a `Service.coverUrl`, `Service.gallery`, `Company.coverUrl` o `Company.logoUrl` segun `scope` e `imageType`.
 - Si `scope=company` e `imageType=gallery`, el upload queda publicado pero no se aplica a la empresa porque el modelo MVP no define `Company.gallery`.
 - Publicar o asociar la imagen al perfil/servicio requiere validacion posterior.
+
+Limites MVP:
+
+- Cover de servicio: maximo 1 imagen activa.
+- Galeria de servicio: maximo 6 imagenes activas.
+- Formatos permitidos: JPG, PNG, WEBP.
+- Tamano maximo: 5 MB por imagen.
 
 ## Estados
 

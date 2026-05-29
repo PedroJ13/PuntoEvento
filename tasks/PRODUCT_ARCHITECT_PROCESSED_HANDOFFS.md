@@ -68,3 +68,12 @@ Nota de baseline: los handoffs `TASK-002` a `TASK-044` son historicos y fueron p
 | `tasks/TASK-103-HANDOFF.md` | Completado Web Dev | Se creo `TASK-104` para QA Azure post-deploy de `admin.js?v=11`. |
 | `tasks/TASK-104-HANDOFF.md` | Requiere cambios por `sig=` legacy | Se creo `TASK-105` para Web Dev: remover SAS del DOM legacy de `Revision`. |
 | `tasks/TASK-105-HANDOFF.md` | Completado Web Dev | Se creo `TASK-106` para QA Azure post-deploy de `admin.js?v=12` sin `sig=` en DOM. |
+| `tasks/TASK-106-HANDOFF.md` | Aprobado QA Azure | Se creo `TASK-107` para Product/Architect: guion de prueba Product Owner y riesgos MVP. |
+| `tasks/TASK-107-HANDOFF.md` | Completado Product/Architect | Se creo `docs/PRODUCT_OWNER_TEST_SCRIPT.md`; siguiente paso: Product Owner ejecuta prueba controlada. |
+| `docs/PRODUCT_OWNER_TEST_FINDINGS_2026-05-29.md` | Aprobacion pendiente con hallazgos | Se crearon `TASK-108`, `TASK-109` y `TASK-110` para seguridad P0, decisiones P1 y registro UX. |
+| `tasks/TASK-109-HANDOFF.md` | Completado Product/Architect | Se creo `docs/PRODUCT_DECISIONS_PO_FINDINGS_2026-05-29.md`; siguientes tareas: Panel/Admin/API implementan decisiones. |
+| `tasks/TASK-108-HANDOFF.md` | Aprobado Infra Azure / Product | Se creo `TASK-111` para Backend/API: `submit-review` y reglas de status de servicio. |
+| `tasks/TASK-110-HANDOFF.md` | Completado Web Dev | Se creo `TASK-112` para QA Azure post-deploy del registro exitoso y prevencion de doble submit. |
+| `tasks/TASK-111-HANDOFF.md` | Completado Backend/API | Se creo `TASK-113` para QA local/estructural de `submit-review` y reglas de status. |
+| `tasks/TASK-112-HANDOFF.md` | Bloqueado por deploy pendiente | Se crea `TASK-114` para reintento QA Azure despues del proximo deploy. |
+| `tasks/TASK-113-HANDOFF.md` | Aprobado QA local/estructural | Se crea `TASK-115` para QA Azure de `submit-review` post-deploy y `TASK-116` para panel empresa. |

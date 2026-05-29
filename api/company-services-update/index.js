@@ -19,6 +19,7 @@ const EDITABLE_FIELDS = new Set([
   "coverUrl",
   "gallery",
 ]);
+const CONTENT_EDIT_RESETS_TO_DRAFT = new Set(["pending", "published", "rejected"]);
 
 function parseStoredArray(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
@@ -189,6 +190,10 @@ module.exports = async function updateCurrentCompanyService(context, req) {
     if (hasOwn(updates, "description")) patch.description = updates.description;
     if (hasOwn(updates, "coverUrl")) patch.coverUrl = updates.coverUrl;
     if (hasOwn(updates, "gallery")) patch.gallery = JSON.stringify(updates.gallery);
+    if (CONTENT_EDIT_RESETS_TO_DRAFT.has(existing.status)) {
+      patch.status = "draft";
+      patch.rejectionReason = "";
+    }
 
     await table.updateEntity(patch, "Merge");
 

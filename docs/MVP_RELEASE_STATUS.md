@@ -6,7 +6,7 @@ Responsable: `Product / Architect / Release`.
 
 ## Estado actual
 
-Estado: `bloqueado para prueba owner completa desde navegador`.
+Estado: `aprobacion pendiente con hallazgos Product Owner`.
 
 Resumen:
 
@@ -16,7 +16,9 @@ Resumen:
 - API MVP con registro, autenticacion por invitacion, servicios propios, uploads y aprobacion/rechazo mayormente implementada.
 - Bloqueadores operativos recientes cerrados: `ADMIN_PASSWORD` rotado y galeria QA visual limpiada.
 - QA Azure enfocado confirmo que el flujo completo funciona por API/manual.
-- `admin.html` tiene fix local para no renderizar `sig=` en legacy `Revision`; falta deploy y QA Azure de `admin.js?v=12`.
+- `admin.html` desplegado con `admin.js?v=12` fue aprobado por QA Azure: login, moderacion real, responsive y sin campos prohibidos en DOM.
+- Guion Product Owner creado en `docs/PRODUCT_OWNER_TEST_SCRIPT.md`.
+- Product Owner ejecuto prueba controlada y documento hallazgos en `docs/PRODUCT_OWNER_TEST_FINDINGS_2026-05-29.md`.
 
 ## Alcance congelado MVP
 
@@ -43,9 +45,9 @@ Fuera del MVP inicial:
 
 ## Bloqueadores actuales
 
-- `admin.html` ya fue conectado a los listados internos reales, aprobado por QA local y visible en Azure.
-- QA Azure de `admin.html` aprobo login, listados y acciones reales; falta revalidar despues del fix anti-SAS en DOM legacy.
-- Decidir si el MVP acepta el flujo temporal de revision al guardar servicio o si necesita endpoint explicito `submit-review`.
+- P0 operacional cerrado: `ADMIN_PASSWORD` expuesto durante la prueba Product Owner fue rotado en `TASK-108`.
+- P1 producto/datos: decisiones cerradas en `docs/PRODUCT_DECISIONS_PO_FINDINGS_2026-05-29.md`; falta implementarlas en Panel/Admin/API.
+- P1 admin/producto: definir si moderacion sigue por listas globales o pasa a expediente de empresa.
 - Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
 
 ## Ambiente Azure
@@ -65,10 +67,11 @@ Validado segun backlog:
 
 Pendiente:
 
-- Deploy de `admin.js?v=12` con placeholder legacy sin SAS.
-- Reintentar QA Azure de UI admin conectada al modelo nuevo sin campos prohibidos.
-- Decidir si MVP necesita endpoint explicito para enviar servicios a revision.
-- Ejecutar QA Azure post-integracion UI.
+- Implementar decisiones P1 de `docs/PRODUCT_DECISIONS_PO_FINDINGS_2026-05-29.md`.
+- Publicar y ejecutar QA Azure del endpoint explicito para enviar servicios a revision.
+- Publicar y ejecutar QA Azure de la mejora de registro exitoso/doble submit de `TASK-110`.
+- Ajustar panel empresa para usar `Enviar a revision` explicito.
+- Ejecutar re-prueba Product Owner despues de correcciones P0/P1.
 
 ## Ultimo deploy validado
 
@@ -111,19 +114,19 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Ahora
 
-- Product / Architect / Release: commitear/pushear el fix `admin.js?v=12`.
-- QA / Infra Azure: ejecutar `TASK-106` despues del deploy.
+- Product / Architect / Release: commit/push del bloque `TASK-110` y `TASK-111`.
+- QA: ejecutar `TASK-114` y `TASK-115` despues del deploy.
+- Web Dev: ejecutar `TASK-116` para panel empresa.
 
 ### Siguiente
 
-- QA / Infra Azure: validar flujo completo desde navegador cuando las tres UI esten conectadas.
-- Product / Architect / Release: crear guion final para Product Owner despues de QA UI.
+- Web Dev / Panel empresa: ajustar estado, cantidad de fotos, revision y galeria segun decisiones.
+- Admin / API: disenar moderacion por expediente de empresa y reglas de cascada segun decisiones.
 - Product / Architect / Release: documentar mapa de rutas publicas, admin y API.
 
 ### Bloqueado
 
-- Product Owner no puede probar flujo completo desde navegador hasta aprobar QA Azure de `admin.html` sin `sig=` en DOM.
-- Invitar primeras empresas reales hasta cerrar QA Azure completo y bloqueadores P0/P1.
+- Invitar primeras empresas reales hasta resolver/aceptar hallazgos P1 y definir limpieza de datos QA.
 
 ### Hecho
 
@@ -152,6 +155,15 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 - Web Dev corrigio `admin.js` para enviar `X-Punto-Admin-Credential` y subio cache busting a `admin.js?v=11`.
 - QA Azure con `admin.js?v=11` aprobo login, legacy, modelo nuevo, approve real de Company/Service/Upload y responsive; queda pendiente remover `sig=` legacy.
 - Web Dev removio render de `image.previewUrl` legacy y subio cache busting a `admin.js?v=12`.
+- QA Azure aprobo `admin.html` con `admin.js?v=12`: sin `sig=`, sin campos prohibidos, acciones reales y responsive.
+- Product / Architect creo guion de prueba Product Owner.
+- Product Owner ejecuto prueba controlada y documento hallazgos P0/P1/P2.
+- Product / Architect cerro decisiones P1 de contacto, taxonomia, revision, imagenes, moderacion y cascadas.
+- Infra Azure / Product roto `ADMIN_PASSWORD` expuesto y valido credencial nueva contra Azure.
+- Web Dev completo `TASK-110`: registro publico evita doble submit, muestra estado de envio y confirma exito con `Registrar otra empresa`; queda pendiente QA Azure post-deploy.
+- Backend/API completo `TASK-111`: endpoint `submit-review` y reglas de status de servicio implementadas.
+- QA bloqueo `TASK-112` porque Azure aun sirve `index.html` con `app.js?v=20` y `styles.css?v=15`.
+- QA aprobo `TASK-113` local/estructural de `submit-review`; queda pendiente deploy y smoke Azure.
 
 ## Como actualizar este documento
 

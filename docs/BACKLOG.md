@@ -156,14 +156,18 @@ Objetivo: convertir demo admin en flujo funcional con Azure serverless/managed.
 - [x] QA local/estructural de endpoints internos de listado para moderacion nueva.
 - [x] Deploy y QA Azure de endpoints internos de listado para moderacion nueva.
 - [x] Corregir metodo no permitido en listados internos de moderacion para que Azure devuelva `405` en vez de `404`.
-- [ ] Definir si MVP necesita endpoint explicito para enviar servicio a revision.
+- [x] Definir si MVP necesita endpoint explicito para enviar servicio a revision.
+- [x] Implementar endpoint explicito para enviar servicio a revision.
+- [x] QA local/estructural de `POST /api/companies/me/services/{serviceId}/submit-review`.
+- [ ] Deploy y QA Azure de `POST /api/companies/me/services/{serviceId}/submit-review`.
+- [ ] Ajustar panel empresa para usar `Enviar a revision` explicito.
 - [x] Conectar UI admin para moderar Companies, Services y Uploads del modelo nuevo.
 - [x] QA local de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
-- [ ] Deploy y QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
+- [x] Deploy y QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo.
 - [x] Corregir/rotar credencial admin usada por QA Azure para `admin.html`.
 - [x] Alinear `admin.js` para enviar credencial admin con `X-Punto-Admin-Credential` en Azure.
 - [x] Remover render de SAS `sig=` en imagenes legacy de `admin.html`.
-- [ ] Reintentar QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo sin `sig=` en DOM.
+- [x] Reintentar QA Azure de UI admin conectada a Companies, Services y Uploads del modelo nuevo sin `sig=` en DOM.
 - [ ] Notificacion por email al registrarse o pasar a revision.
 
 Entregable:
@@ -183,7 +187,18 @@ Objetivo: validar que el flujo puede usarse por empresas reales.
 - [x] Pruebas responsive documentadas.
 - [x] Checklist de release documentado.
 - [ ] Ejecutar matriz QA contra ambiente Azure.
-- [ ] Crear guion de prueba para Product Owner del flujo completo MVP.
+- [x] Crear guion de prueba para Product Owner del flujo completo MVP.
+- [x] Ejecutar prueba Product Owner controlada y documentar findings.
+- [x] Rotar `ADMIN_PASSWORD` expuesto durante prueba Product Owner.
+- [x] Triar hallazgos Product Owner y cerrar decisiones P1 de producto/datos.
+- [x] Ajustar registro publico despues de exito: limpiar/ocultar formulario y prevenir doble submit.
+- [ ] QA Azure de registro publico despues de exito y prevencion de doble submit.
+- [x] Definir campos de contacto/sociales de empresa y separar publicos vs internos.
+- [x] Cerrar taxonomia MVP: `Categoria` como servicio y `Tipos de evento` como ocasiones.
+- [ ] Ajustar formulario de servicio: quitar estado editable, quitar cantidad manual de fotos y resolver `Como se revisa`.
+- [ ] Implementar alcance de imagenes por servicio: cover + galeria.
+- [ ] Disenar moderacion admin por expediente de empresa.
+- [x] Definir reglas de cascada para aprobar/rechazar empresa, servicios e imagenes.
 
 Entregable:
 
@@ -203,6 +218,6 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product/Architect: commitear/pushear el fix `admin.js?v=12`.
-2. QA / Infra Azure: ejecutar `TASK-106` despues del deploy.
-3. Product/Architect: despues de QA Azure, decidir si el owner ya puede probar flujo completo o falta `submit-review`.
+1. Product / Architect / Release: commit/push del bloque `TASK-110` y `TASK-111` para activar deploy.
+2. QA: ejecutar `TASK-114` y `TASK-115` despues del deploy.
+3. Web Dev: ejecutar `TASK-116` para ajustar panel empresa con `Enviar a revision`.

@@ -52,6 +52,10 @@ Request:
   "email": "empresa@email.com",
   "password": "password-temporal-o-flujo-auth",
   "whatsapp": "50688888888",
+  "website": "https://...",
+  "instagram": "https://...",
+  "facebook": "https://...",
+  "tiktok": "https://...",
   "province": "Heredia",
   "canton": "San Francisco",
   "description": "Reposteria y servicios para eventos."
@@ -72,6 +76,8 @@ Response `201`:
 Validaciones:
 
 - `companyName`, `email`, `whatsapp`, `province` y `description` requeridos.
+- `website`, `instagram`, `facebook` y `tiktok` son opcionales.
+- `email` es dato interno por defecto; no publicarlo en endpoints publicos.
 - Email valido y normalizado.
 - Slug unico.
 - `status` inicial `pending` o `draft` segun flujo de producto.
@@ -93,6 +99,10 @@ Response `200`:
   "plan": "free",
   "email": "empresa@email.com",
   "whatsapp": "50688888888",
+  "website": "https://...",
+  "instagram": "https://...",
+  "facebook": "https://...",
+  "tiktok": "https://...",
   "province": "Heredia",
   "canton": "San Francisco",
   "description": "..."
@@ -224,6 +234,7 @@ Reglas:
 - Actualiza `Companies.status` a `published`.
 - Actualiza `updatedAt`.
 - Limpia `rejectionReason`.
+- No publica automaticamente servicios ni uploads relacionados.
 
 ### GET `/api/internal/companies/pending`
 
@@ -285,6 +296,7 @@ Reglas:
 - Actualiza `Companies.status` a `rejected`.
 - Guarda `rejectionReason` si se envia.
 - Actualiza `updatedAt`.
+- No rechaza automaticamente servicios ni uploads relacionados salvo accion futura explicita con confirmacion.
 
 ### GET `/api/internal/services/pending`
 
@@ -343,6 +355,7 @@ Reglas:
 - Actualiza `Services.status` a `published`.
 - Actualiza `updatedAt`.
 - Limpia `rejectionReason`.
+- No aprueba uploads pendientes automaticamente; los uploads deben aprobarse por accion explicita.
 
 ### POST `/api/internal/services/{companyId}/{serviceId}/reject`
 
@@ -372,6 +385,7 @@ Reglas:
 - Actualiza `Services.status` a `rejected`.
 - Guarda `rejectionReason` si se envia.
 - Actualiza `updatedAt`.
+- No rechaza uploads pendientes automaticamente salvo accion futura explicita con confirmacion.
 
 ### POST `/api/internal/uploads/{companyId}/{uploadId}/approve`
 
@@ -476,6 +490,8 @@ Campos editables:
   "phone": "50622222222",
   "website": "https://...",
   "instagram": "https://...",
+  "facebook": "https://...",
+  "tiktok": "https://...",
   "province": "Heredia",
   "canton": "San Francisco",
   "district": "Heredia",
@@ -490,6 +506,7 @@ Validaciones:
 
 - No permitir cambiar `plan`, `status`, `id`, `createdAt` desde este endpoint.
 - Cambios relevantes pueden volver el perfil a `pending` si producto decide revision manual.
+- `email` sigue siendo dato interno por defecto; no debe aparecer en endpoints publicos.
 
 ### GET `/api/companies/me/services`
 
@@ -554,7 +571,9 @@ Validaciones:
 
 - `name` y `category` requeridos.
 - `eventTypes` debe ser arreglo; puede estar vacio mientras se define catalogo final.
-- `status` inicial `draft`; al enviar a revision puede pasar a `pending`.
+- `status` inicial `draft`.
+- La empresa no puede enviar `status` en create/update.
+- Para MVP, una accion explicita `submit-review` debe cambiar `draft` a `pending`.
 - `sortBoost`, `isFeatured` y `featuredUntil` no son editables por empresa en MVP.
 
 ### PATCH `/api/companies/me/services/{serviceId}`
@@ -603,7 +622,32 @@ Validaciones:
 - Si cambia `name`, regenerar `slug`.
 - Si el nuevo `slug` ya existe en otro servicio de la misma empresa, responder `409`.
 - `eventTypes` y `gallery` deben ser arreglos si vienen presentes.
-- Si un servicio `published` cambia contenido publico, puede volver a `pending`.
+- Si un servicio `published` cambia contenido publico, debe volver a `draft` y requerir `submit-review`.
+
+### POST `/api/companies/me/services/{serviceId}/submit-review`
+
+Envia un servicio propio a revision.
+
+Response `200`:
+
+```json
+{
+  "id": "service_123",
+  "companyId": "company_123",
+  "status": "pending",
+  "updatedAt": "2026-05-28T00:00:00Z"
+}
+```
+
+Reglas:
+
+- Requiere autenticacion de empresa.
+- `serviceId` debe pertenecer a la empresa autenticada.
+- Solo servicios `draft` o `rejected` pueden enviarse a revision.
+- Debe validar campos minimos antes de pasar a `pending`: `name`, `category`, `eventTypes`, `description` y `priceFrom`.
+- No publica el servicio.
+- No aprueba imagenes.
+- No permite enviar servicios `inactive`.
 
 ### DELETE `/api/companies/me/services/{serviceId}`
 
@@ -827,6 +871,17 @@ Upload/Image:
 - `pending`
 - `published`
 - `rejected`
+
+## Decisiones de moderacion MVP
+
+- La moderacion operativa debe orientarse a expediente de empresa: empresa, servicios y uploads relacionados en un solo contexto.
+- Las listas globales pueden mantenerse como resumen, pero no deben ser el unico flujo de decision cuando haya volumen real.
+- No hay cascadas silenciosas:
+  - aprobar empresa no publica servicios/uploads;
+  - aprobar servicio no aprueba uploads;
+  - rechazar empresa no rechaza servicios/uploads;
+  - rechazar servicio no rechaza uploads.
+- Las cascadas futuras deben ser acciones explicitas con resumen y confirmacion.
 
 Errores comunes de endpoints internos:
 

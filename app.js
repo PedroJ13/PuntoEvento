@@ -1270,6 +1270,7 @@ function companiesPageNew() {
             Confirmo que tengo permiso para registrar esta empresa y compartir esta informacion.
           </label>
           <button class="primary-button" type="submit">Enviar registro gratis</button>
+          <p class="form-help company-submit-status" data-company-submit-status aria-live="polite"></p>
         </div>
       </form>
       <div class="company-confirmation is-hidden" id="companyConfirmation" tabindex="-1" aria-live="polite"></div>
@@ -1402,6 +1403,8 @@ function bindCompanyRegistration() {
   const photoInput = document.querySelector("#companyPhotos");
   const preview = document.querySelector("#companyPhotoPreview");
   const confirmation = document.querySelector("#companyConfirmation");
+  const submitStatus = document.querySelector("[data-company-submit-status]");
+  let isSubmitting = false;
   let previewUrls = [];
 
   const clearPreviewUrls = () => {
@@ -1455,23 +1458,30 @@ function bindCompanyRegistration() {
       if (isAzure) {
         form.reset();
         resetPreview();
+        form.classList.remove("is-hidden");
+        if (submitStatus) submitStatus.textContent = "";
         confirmation.classList.add("is-hidden");
         confirmation.innerHTML = "";
       }
-      document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
+      const firstField = form.querySelector("input, select, textarea, button");
+      firstField?.focus({ preventScroll: true });
       form.scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
     confirmation.querySelector("[data-reset-company]")?.addEventListener("click", () => {
         form.reset();
         resetPreview();
+        form.classList.remove("is-hidden");
+        if (submitStatus) submitStatus.textContent = "";
         confirmation.classList.add("is-hidden");
         confirmation.innerHTML = "";
-        document.querySelector("#registroEmpresaTitle")?.focus({ preventScroll: true });
+        const firstField = form.querySelector("input, select, textarea, button");
+        firstField?.focus({ preventScroll: true });
       });
   };
 
   const renderCompanyError = (message) => {
+    form.classList.remove("is-hidden");
     confirmation.innerHTML = `
       <div class="form-panel">
         <p class="eyebrow">Registro no enviado</p>
@@ -1544,6 +1554,10 @@ function bindCompanyRegistration() {
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     if (!form.reportValidity()) {
       return;
     }
@@ -1556,6 +1570,12 @@ function bindCompanyRegistration() {
       return;
     }
 
+    isSubmitting = true;
+    if (submitStatus) {
+      submitStatus.textContent = "Enviando registro. Espera un momento...";
+    }
+    confirmation.classList.add("is-hidden");
+    confirmation.innerHTML = "";
     setButtonLoading(submitButton, true, "Enviando registro...");
     const companyName = formData.get("companyName") || "Empresa demo";
     const province = formData.get("province") || "Provincia pendiente";
@@ -1563,6 +1583,12 @@ function bindCompanyRegistration() {
 
     try {
       const result = await registerCompanyInAzure(formData);
+      form.reset();
+      resetPreview();
+      form.classList.add("is-hidden");
+      if (submitStatus) {
+        submitStatus.textContent = "";
+      }
       renderCompanyConfirmation({
         companyName,
         category: "Registro empresa",
@@ -1573,9 +1599,13 @@ function bindCompanyRegistration() {
       showToast("Datos recibidos. Validaremos la informacion.");
     } catch (error) {
       console.warn(error);
+      if (submitStatus) {
+        submitStatus.textContent = "No se pudo completar el registro. Los datos siguen en el formulario.";
+      }
       renderCompanyError("El registro no pudo completarse. Revisa los datos e intentalo de nuevo en unos minutos.");
       showToast("No se pudo enviar el registro.");
     } finally {
+      isSubmitting = false;
       setButtonLoading(submitButton, false);
     }
   });

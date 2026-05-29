@@ -997,6 +997,10 @@ button:focus-visible,
   align-items: start;
 }
 
+.company-form.is-hidden {
+  display: none;
+}
+
 .form-panel {
   display: grid;
   gap: 16px;
@@ -1162,6 +1166,20 @@ button:focus-visible,
 
 .company-confirmation.is-hidden {
   display: none;
+}
+
+.company-submit-status {
+  min-height: 1.35em;
+  font-weight: 800;
+}
+
+button:disabled,
+.primary-button:disabled,
+.secondary-button:disabled,
+.ghost-button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+  box-shadow: none;
 }
 
 .plan-card {

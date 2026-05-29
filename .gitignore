@@ -1,3 +1,4 @@
 tasks/generated/
 local-secrets/
+node_modules/
 *.local.secrets.ps1
