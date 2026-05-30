@@ -329,8 +329,7 @@
   color: var(--muted);
 }
 
-.internal-summary,
-.internal-grid {
+.internal-summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
@@ -789,7 +788,6 @@
   .admin-actions,
   .company-grid,
   .internal-summary,
-  .internal-grid,
   .case-layout,
   .case-columns,
   .services-layout,

@@ -705,10 +705,35 @@ function caseCompanyCard(company) {
   `;
 }
 
+function safeCompanyContactValue(value) {
+  const text = String(value ?? "").trim();
+  if (!text || text === "undefined" || text === "null") return "";
+  if (/sig=|tokenHash|sessionHash|pendingBlobName|uploadUrl/i.test(text)) return "";
+  return text;
+}
+
+function companyMetaRow(label, value) {
+  const cleanValue = safeCompanyContactValue(value);
+  if (!cleanValue) return "";
+  return `<div><strong>${escapeHtml(label)}</strong><span>${escapeHtml(cleanValue)}</span></div>`;
+}
+
 function caseCompanyDetail(company) {
   if (!company) return '<div class="admin-empty">Selecciona una empresa para revisar su expediente.</div>';
   const companyId = companyIdOf(company);
-  const location = [company.province, company.canton].filter(Boolean).join(", ") || "-";
+  const location = [company.province, company.canton].map(safeCompanyContactValue).filter(Boolean).join(", ");
+  const description = safeCompanyContactValue(company.description);
+  const contactRows = [
+    companyMetaRow("ID", companyId),
+    companyMetaRow("Email", company.email),
+    companyMetaRow("WhatsApp", company.whatsapp),
+    companyMetaRow("Telefono local", company.phone),
+    companyMetaRow("Instagram", company.instagram),
+    companyMetaRow("Facebook", company.facebook),
+    companyMetaRow("Sitio web", company.website),
+    companyMetaRow("TikTok", company.tiktok),
+    companyMetaRow("Zona", location),
+  ].join("");
   return `
     <article class="internal-item">
       <div class="internal-item-header">
@@ -717,12 +742,9 @@ function caseCompanyDetail(company) {
           <h4>${escapeHtml(company.name || "Empresa sin nombre")}</h4>
         </div>
       </div>
-      <p>${escapeHtml(truncateText(company.description, 240))}</p>
+      ${description ? `<p>${escapeHtml(truncateText(description, 240))}</p>` : ""}
       <div class="internal-item-meta">
-        <div><strong>ID</strong><span>${escapeHtml(companyId)}</span></div>
-        <div><strong>Email</strong><span>${escapeHtml(company.email || "-")}</span></div>
-        <div><strong>Telefono</strong><span>${escapeHtml(company.whatsapp || "-")}</span></div>
-        <div><strong>Zona</strong><span>${escapeHtml(location)}</span></div>
+        ${contactRows}
       </div>
       ${scopedInternalActionsMarkup("companies", { "company-id": companyId })}
     </article>
