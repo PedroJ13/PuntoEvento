@@ -13,6 +13,13 @@ const { cleanText } = require("./validation");
 
 const REVIEWABLE_SERVICE_STATUSES = new Set(["draft", "pending"]);
 
+function internalUploadPreviewUrl(upload) {
+  const companyId = cleanText(upload.partitionKey || upload.companyId, 160);
+  const uploadId = cleanText(upload.id || upload.rowKey, 160);
+  if (!companyId || !uploadId) return "";
+  return `/api/internal/uploads/${encodeURIComponent(companyId)}/${encodeURIComponent(uploadId)}/preview`;
+}
+
 function parseArray(value) {
   if (Array.isArray(value)) return value.filter(Boolean);
   if (!value) return [];
@@ -53,6 +60,11 @@ function companyPendingPayload(company) {
     name: company.name || "",
     email: company.email || "",
     whatsapp: company.whatsapp || "",
+    phone: company.phone || "",
+    website: company.website || "",
+    instagram: company.instagram || "",
+    facebook: company.facebook || "",
+    tiktok: company.tiktok || "",
     province: company.province || "",
     canton: company.canton || "",
     description: cleanText(company.description, 1200),
@@ -63,7 +75,7 @@ function companyPendingPayload(company) {
   };
 }
 
-function servicePendingPayload(service, company = null) {
+function servicePendingPayload(service, company = null, uploads = []) {
   return {
     companyId: service.partitionKey || service.companyId || "",
     companyName: company?.name || "",
@@ -78,6 +90,7 @@ function servicePendingPayload(service, company = null) {
     status: service.status || "",
     coverUrl: service.coverUrl || "",
     gallery: parseArray(service.gallery),
+    images: uploads.map(uploadPendingPayload),
     createdAt: service.createdAt || "",
     updatedAt: service.updatedAt || "",
   };
@@ -94,6 +107,7 @@ function uploadPendingPayload(upload) {
     contentType: upload.contentType || "",
     size: Number(upload.size || 0),
     status: upload.status || "",
+    previewUrl: internalUploadPreviewUrl(upload),
     createdAt: upload.createdAt || "",
     updatedAt: upload.updatedAt || "",
   };
@@ -110,6 +124,20 @@ async function listEntities(table, filter) {
   }
 
   return items.sort((a, b) => timestamp(b) - timestamp(a));
+}
+
+async function listPendingUploadsForService(uploadsTable, companyId, serviceId) {
+  const uploads = await listEntities(
+    uploadsTable,
+    odata`PartitionKey eq ${companyId} and scope eq ${"service"} and serviceId eq ${serviceId} and status eq ${"pending"}`,
+  );
+
+  return uploads.filter(
+    (upload) =>
+      upload.status === "pending" &&
+      upload.scope === "service" &&
+      upload.serviceId === serviceId,
+  );
 }
 
 async function requireInternalAccess(context, req, config) {
@@ -168,9 +196,11 @@ async function handlePendingServices(context, req) {
 
     await ensureCompaniesTable(config);
     await ensureServicesTable(config);
+    await ensureUploadsTable(config);
 
     const servicesTable = getTableClient(config.servicesTable, config);
     const companiesTable = getTableClient(config.companiesTable, config);
+    const uploadsTable = getTableClient(config.uploadsTable, config);
     const services = await listEntities(
       servicesTable,
       odata`status eq ${"draft"} or status eq ${"pending"}`,
@@ -185,7 +215,12 @@ async function handlePendingServices(context, req) {
       if (!companyCache.has(companyId)) {
         companyCache.set(companyId, await getCompany(companyId, companiesTable));
       }
-      items.push(servicePendingPayload(service, companyCache.get(companyId)));
+      const uploads = await listPendingUploadsForService(
+        uploadsTable,
+        companyId,
+        service.id || service.rowKey || "",
+      );
+      items.push(servicePendingPayload(service, companyCache.get(companyId), uploads));
     }
 
     context.res = json(200, { items });

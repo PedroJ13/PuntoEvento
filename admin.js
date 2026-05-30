@@ -97,6 +97,7 @@ const state = {
     services: { items: [], loading: false, loaded: false, error: "" },
     uploads: { items: [], loading: false, loaded: false, error: "" },
     selectedCompanyId: "",
+    previewUrls: new Map(),
   },
 };
 
@@ -300,6 +301,17 @@ async function adminFetchWithFallback(primaryPath, fallbackPath, options = {}) {
   }
 }
 
+async function adminFetchBlob(path) {
+  const response = await fetch(path, {
+    headers: authHeaders(),
+  });
+
+  if (!response.ok) {
+    throw new Error(`No se pudo cargar preview. HTTP ${response.status}`);
+  }
+  return response.blob();
+}
+
 function showLogin() {
   $("[data-login-panel]").classList.remove("is-hidden");
   $("[data-admin-panel]").classList.add("is-hidden");
@@ -433,19 +445,19 @@ function internalActionsMarkup(type, ids) {
   `;
 }
 
-function internalActionButton(type, action, ids, disabledReason = "") {
+function internalActionButton(type, action, ids, disabledReason = "", customLabel = "") {
   const attrs = Object.entries(ids)
     .map(([key, value]) => `data-${key}="${escapeHtml(value)}"`)
     .join(" ");
-  const label = action === "approve" ? "Aprobar" : "Rechazar";
+  const label = customLabel || (action === "approve" ? "Aprobar" : "Rechazar");
   return `<button class="${action === "approve" ? "primary-button" : "secondary-button"} compact-button" type="button" data-internal-action="${action}" data-internal-type="${type}" ${attrs} ${disabledReason ? "disabled" : ""} title="${escapeHtml(disabledReason)}">${label}</button>`;
 }
 
-function scopedInternalActionsMarkup(type, ids, disabledApproveReason = "") {
+function scopedInternalActionsMarkup(type, ids, disabledApproveReason = "", approveLabel = "", rejectLabel = "") {
   return `
     <div class="internal-item-actions">
-      ${internalActionButton(type, "approve", ids, disabledApproveReason)}
-      ${internalActionButton(type, "reject", ids)}
+      ${internalActionButton(type, "approve", ids, disabledApproveReason, approveLabel)}
+      ${internalActionButton(type, "reject", ids, "", rejectLabel)}
     </div>
     ${disabledApproveReason ? `<p class="dependency-note">${escapeHtml(disabledApproveReason)}</p>` : ""}
   `;
@@ -587,11 +599,99 @@ function uploadsForCompany(companyId) {
   return state.internal.uploads.items.filter((upload) => companyIdOf(upload) === companyId);
 }
 
-function serviceForUpload(upload) {
-  if (!upload?.serviceId) return null;
-  return state.internal.services.items.find(
-    (service) => companyIdOf(service) === companyIdOf(upload) && (service.serviceId || service.id) === upload.serviceId,
-  );
+function serviceIdOf(service) {
+  return service?.serviceId || service?.id || "";
+}
+
+function serviceImages(service) {
+  const companyId = companyIdOf(service);
+  const serviceId = serviceIdOf(service);
+  const imagesById = new Map();
+  const addImage = (image) => {
+    const uploadId = image?.uploadId || image?.id || image?.previewUrl || image?.fileName || "";
+    if (!uploadId) return;
+    imagesById.set(uploadId, {
+      ...image,
+      companyId: image.companyId || companyId,
+      serviceId: image.serviceId || serviceId,
+      uploadId,
+    });
+  };
+
+  if (Array.isArray(service?.images)) {
+    service.images.forEach(addImage);
+  }
+  uploadsForCompany(companyId)
+    .filter((upload) => upload.scope === "service" && upload.serviceId === serviceId)
+    .forEach(addImage);
+
+  return [...imagesById.values()].sort((a, b) => {
+    const rank = (image) => (image.imageType === "cover" ? 0 : 1);
+    return rank(a) - rank(b);
+  });
+}
+
+function imageRoleLabel(image) {
+  if (image.imageType === "cover") return "Cover";
+  if (image.imageType === "gallery") return "Galeria";
+  return image.imageType || "Imagen";
+}
+
+function serviceImagesMarkup(service) {
+  const images = serviceImages(service);
+  if (!images.length) {
+    return '<div class="admin-empty compact-empty">Este servicio no tiene imagenes pendientes asociadas.</div>';
+  }
+
+  return `
+    <div class="service-image-grid">
+      ${images
+        .map((image) => {
+          const uploadId = image.uploadId || image.id || "";
+          const previewUrl = image.previewUrl || "";
+          const label = image.fileName || uploadId || "Imagen pendiente";
+          const previewMarkup = previewUrl
+            ? `<img alt="${escapeHtml(label)}" data-internal-preview-src="${escapeHtml(previewUrl)}">`
+            : '<div class="service-image-placeholder">Sin preview</div>';
+          return `
+            <figure class="service-image-card" data-service-image="${escapeHtml(uploadId)}">
+              ${previewMarkup}
+              <figcaption>
+                <span class="status-pill status-${statusClass(image.status)}">${escapeHtml(internalStatusLabel(image.status))}</span>
+                <strong>${escapeHtml(imageRoleLabel(image))}</strong>
+                <small>${escapeHtml(label)}</small>
+              </figcaption>
+            </figure>
+          `;
+        })
+        .join("")}
+    </div>
+  `;
+}
+
+function loadInternalPreviews() {
+  document.querySelectorAll("[data-internal-preview-src]").forEach((image) => {
+    const src = image.dataset.internalPreviewSrc;
+    if (!src || image.dataset.previewLoaded === "true") return;
+    image.dataset.previewLoaded = "true";
+    if (state.internal.previewUrls.has(src)) {
+      image.src = state.internal.previewUrls.get(src);
+      return;
+    }
+
+    adminFetchBlob(src)
+      .then((blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        state.internal.previewUrls.set(src, objectUrl);
+        image.src = objectUrl;
+      })
+      .catch(() => {
+        image.replaceWith(Object.assign(document.createElement("div"), {
+          className: "service-image-placeholder",
+          textContent: "Preview no disponible",
+        }));
+      });
+  });
 }
 
 function caseCompanyCard(company) {
@@ -632,8 +732,10 @@ function caseCompanyDetail(company) {
 function caseServiceMarkup(service, company) {
   const companyPublished = company?.status === "published" || service.companyStatus === "published";
   const companyId = companyIdOf(service);
-  const serviceId = service.serviceId || service.id || "";
+  const serviceId = serviceIdOf(service);
   const disabledReason = companyPublished ? "" : "Publica la empresa antes de aprobar servicios.";
+  const images = serviceImages(service);
+  const approveLabel = images.length ? "Aprobar servicio e imagenes" : "Aprobar servicio";
   return `
     <article class="internal-item">
       <div class="internal-item-header">
@@ -649,37 +751,14 @@ function caseServiceMarkup(service, company) {
         <div><strong>Precio</strong><span>${escapeHtml(service.priceFrom || "-")}</span></div>
         <div><strong>Empresa</strong><span>${escapeHtml(company?.name || service.companyName || companyId || "-")}</span></div>
       </div>
-      ${scopedInternalActionsMarkup("services", { "company-id": companyId, "service-id": serviceId }, disabledReason)}
-    </article>
-  `;
-}
-
-function caseUploadMarkup(upload, company) {
-  const companyPublished = company?.status === "published" || upload.companyStatus === "published";
-  const service = serviceForUpload(upload);
-  const servicePublished = upload.scope !== "service" || service?.status === "published" || upload.serviceStatus === "published";
-  const uploadId = upload.uploadId || upload.id || "";
-  const companyId = companyIdOf(upload);
-  const disabledReason = !companyPublished
-    ? "Publica la empresa antes de aprobar imagenes."
-    : !servicePublished
-      ? "Publica el servicio antes de aprobar imagenes de servicio."
-      : "";
-  return `
-    <article class="internal-item">
-      <div class="internal-item-header">
+      <div class="service-images-section">
         <div>
-          <span class="status-pill status-${statusClass(upload.status)}">${escapeHtml(internalStatusLabel(upload.status))}</span>
-          <h4>${escapeHtml(upload.fileName || uploadId || "Upload pendiente")}</h4>
+          <strong>Imagenes del servicio</strong>
+          <p>Se publican junto con el servicio aprobado.</p>
         </div>
+        ${serviceImagesMarkup(service)}
       </div>
-      <div class="internal-item-meta">
-        <div><strong>Upload ID</strong><span>${escapeHtml(uploadId)}</span></div>
-        <div><strong>Scope</strong><span>${escapeHtml(upload.scope || "-")}</span></div>
-        <div><strong>Servicio</strong><span>${escapeHtml(upload.serviceId || "-")}</span></div>
-        <div><strong>Tipo</strong><span>${escapeHtml(upload.imageType || "-")}</span></div>
-      </div>
-      ${scopedInternalActionsMarkup("uploads", { "company-id": companyId, "upload-id": uploadId }, disabledReason)}
+      ${scopedInternalActionsMarkup("services", { "company-id": companyId, "service-id": serviceId }, disabledReason, approveLabel, "Rechazar servicio")}
     </article>
   `;
 }
@@ -688,37 +767,33 @@ function renderCompanyCase() {
   const list = $("[data-case-company-list]");
   const detail = $("[data-case-detail]");
   const servicesNode = $("[data-case-services]");
-  const uploadsNode = $("[data-case-uploads]");
-  if (!list || !detail || !servicesNode || !uploadsNode) return;
+  if (!list || !detail || !servicesNode) return;
   const companies = getCaseCompanies();
   const company = selectedCaseCompany();
   if (!companies.length || !company) {
     list.innerHTML = '<div class="admin-empty">No hay expedientes con actividad.</div>';
     detail.innerHTML = '<div class="admin-empty">Carga el modelo nuevo para seleccionar una empresa.</div>';
     servicesNode.innerHTML = '<div class="admin-empty">Sin servicios.</div>';
-    uploadsNode.innerHTML = '<div class="admin-empty">Sin imagenes.</div>';
     return;
   }
   const companyId = companyIdOf(company);
   const scopedServices = servicesForCompany(companyId);
-  const scopedUploads = uploadsForCompany(companyId);
   list.innerHTML = companies.map(caseCompanyCard).join("");
   detail.innerHTML = caseCompanyDetail(company);
   servicesNode.innerHTML = scopedServices.length
     ? scopedServices.map((service) => caseServiceMarkup(service, company)).join("")
     : '<div class="admin-empty">Esta empresa no tiene servicios revisables en el listado actual.</div>';
-  uploadsNode.innerHTML = scopedUploads.length
-    ? scopedUploads.map((upload) => caseUploadMarkup(upload, company)).join("")
-    : '<div class="admin-empty">Esta empresa no tiene imagenes pendientes en el listado actual.</div>';
+  loadInternalPreviews();
 }
 
 function renderInternalList(type) {
   const section = state.internal[type];
   const list = $(`[data-internal-list="${type}"]`);
   const count = $(`[data-internal-count="${type}"]`);
-  if (!section || !list) return;
+  if (!section) return;
 
   if (count) count.textContent = String(section.items.length);
+  if (!list) return;
   if (section.loading) {
     setInternalState(type, "Cargando", "pending");
     list.innerHTML = '<div class="admin-empty">Cargando pendientes...</div>';
@@ -1116,6 +1191,8 @@ document.addEventListener("click", async (event) => {
       section.loaded = false;
       section.error = "";
     });
+    state.internal.previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    state.internal.previewUrls.clear();
     state.activeTab = "revision";
     showLogin();
   }

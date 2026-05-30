@@ -12,6 +12,15 @@ const CONFIG = {
   maxProviderImages: 6,
   maxProviderImageSize: 5 * 1024 * 1024,
 };
+const PROVINCE_OPTIONS = [
+  "San Jose",
+  "Alajuela",
+  "Cartago",
+  "Heredia",
+  "Guanacaste",
+  "Puntarenas",
+  "Limon",
+];
 
 let providers = [];
 let providerGallery = [];
@@ -489,6 +498,18 @@ function selectedOption(currentValue, optionValue) {
   return normalizeFilterValue(currentValue) === normalizeFilterValue(optionValue) ? "selected" : "";
 }
 
+function provinceOptionsMarkup(currentValue = "", includeAll = false) {
+  const allOption = includeAll
+    ? `<option value="Todos" ${selectedOption(currentValue || "Todos", "Todos")}>Todos</option>`
+    : '<option value="">Seleccionar provincia</option>';
+  return `
+    ${allOption}
+    ${PROVINCE_OPTIONS.map(
+      (province) => `<option value="${safeText(province)}" ${selectedOption(currentValue, province)}>${safeText(province)}</option>`,
+    ).join("")}
+  `;
+}
+
 function homePage() {
   return `
     <section class="hero" style="--hero-image: url('${image("photo-1511795409834-ef04bbd61622")}')">
@@ -516,11 +537,7 @@ function homePage() {
           <div class="field">
             <label for="location">Ubicacion</label>
             <select id="location" name="location">
-              <option value="Todos">Todos</option>
-              <option>San Jose</option>
-              <option>Heredia</option>
-              <option>Alajuela</option>
-              <option>Guanacaste</option>
+              ${provinceOptionsMarkup("Todos", true)}
             </select>
           </div>
           <button class="primary-button" type="submit">Encontrar proveedores</button>
@@ -652,10 +669,7 @@ function weddingsPage() {
         <div class="field">
           <label>Provincia</label>
           <select name="province">
-            <option value="Todos" ${selectedOption(currentSearchFilters.province || "Todos", "Todos")}>Todos</option>
-            <option value="San Jose" ${selectedOption(currentSearchFilters.province, "San Jose")}>San Jose</option>
-            <option value="Heredia" ${selectedOption(currentSearchFilters.province, "Heredia")}>Heredia</option>
-            <option value="Alajuela" ${selectedOption(currentSearchFilters.province, "Alajuela")}>Alajuela</option>
+            ${provinceOptionsMarkup(currentSearchFilters.province || "Todos", true)}
           </select>
         </div>
         <button class="primary-button" type="submit">Aplicar filtros</button>
@@ -1197,7 +1211,9 @@ function companiesPageNew() {
             </label>
             <label>
               Provincia
-              <input name="province" type="text" placeholder="Ej. San Jose" autocomplete="address-level1" required>
+              <select name="province" autocomplete="address-level1" required>
+                ${provinceOptionsMarkup()}
+              </select>
             </label>
             <label>
               Canton
@@ -1210,6 +1226,26 @@ function companiesPageNew() {
             <label>
               Email de contacto
               <input name="email" type="email" placeholder="contacto@empresa.com" autocomplete="email" required>
+            </label>
+            <label>
+              Telefono local
+              <input name="phone" type="tel" placeholder="50622222222" inputmode="tel" autocomplete="tel">
+            </label>
+            <label>
+              Instagram
+              <input name="instagram" type="text" placeholder="@tuempresa o https://instagram.com/tuempresa">
+            </label>
+            <label>
+              Facebook
+              <input name="facebook" type="text" placeholder="https://facebook.com/tuempresa">
+            </label>
+            <label>
+              Pagina web
+              <input name="website" type="url" placeholder="https://tuempresa.com" autocomplete="url">
+            </label>
+            <label>
+              TikTok
+              <input name="tiktok" type="text" placeholder="@tuempresa o https://tiktok.com/@tuempresa">
             </label>
             <label class="full">
               Descripcion de la empresa
@@ -1495,6 +1531,11 @@ function bindCompanyRegistration() {
         companyName: formData.get("companyName"),
         email: formData.get("email"),
         whatsapp: formData.get("whatsapp"),
+        phone: formData.get("phone"),
+        website: formData.get("website"),
+        instagram: formData.get("instagram"),
+        facebook: formData.get("facebook"),
+        tiktok: formData.get("tiktok"),
         province: formData.get("province"),
         canton: formData.get("canton"),
         description: formData.get("description"),

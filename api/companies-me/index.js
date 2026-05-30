@@ -20,6 +20,8 @@ function publicCompanyPayload(company) {
     phone: company.phone || "",
     website: company.website || "",
     instagram: company.instagram || "",
+    facebook: company.facebook || "",
+    tiktok: company.tiktok || "",
     province: company.province || "",
     canton: company.canton || "",
     district: company.district || "",

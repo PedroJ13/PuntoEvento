@@ -6,7 +6,7 @@
     <title>Admin | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=14" />
-    <link rel="stylesheet" href="admin.css?v=8" />
+    <link rel="stylesheet" href="admin.css?v=9" />
   </head>
   <body class="admin-body">
     <main class="admin-shell">
@@ -81,7 +81,7 @@
               <p class="eyebrow">Company -> Services</p>
               <h2>Moderacion nueva</h2>
             </div>
-            <p>Revisa empresas, servicios y uploads reales antes de publicarlos.</p>
+            <p>Revisa empresas y servicios. Las imagenes pendientes se validan dentro de cada servicio.</p>
           </div>
 
           <div class="internal-summary" aria-live="polite">
@@ -112,49 +112,12 @@
             <section class="case-detail">
               <div data-case-detail></div>
               <div class="case-columns">
-                <div>
+                <div class="full-field">
                   <h3>Servicios de la empresa</h3>
                   <div class="internal-list" data-case-services></div>
                 </div>
-                <div>
-                  <h3>Imagenes relacionadas</h3>
-                  <div class="internal-list" data-case-uploads></div>
-                </div>
               </div>
             </section>
-          </div>
-
-          <div class="internal-grid">
-            <article class="internal-panel">
-              <div class="internal-panel-header">
-                <div>
-                  <p class="eyebrow">Companies</p>
-                  <h3>Empresas pendientes</h3>
-                </div>
-                <span class="status-pill status-pending" data-internal-state="companies">Sin cargar</span>
-              </div>
-              <div class="internal-list" data-internal-list="companies"></div>
-            </article>
-            <article class="internal-panel">
-              <div class="internal-panel-header">
-                <div>
-                  <p class="eyebrow">Services</p>
-                  <h3>Servicios revisables</h3>
-                </div>
-                <span class="status-pill status-pending" data-internal-state="services">Sin cargar</span>
-              </div>
-              <div class="internal-list" data-internal-list="services"></div>
-            </article>
-            <article class="internal-panel">
-              <div class="internal-panel-header">
-                <div>
-                  <p class="eyebrow">Uploads</p>
-                  <h3>Imagenes pendientes</h3>
-                </div>
-                <span class="status-pill status-pending" data-internal-state="uploads">Sin cargar</span>
-              </div>
-              <div class="internal-list" data-internal-list="uploads"></div>
-            </article>
           </div>
         </section>
 
@@ -204,6 +167,6 @@
         </section>
       </section>
     </main>
-    <script src="admin.js?v=14"></script>
+    <script src="admin.js?v=15"></script>
   </body>
 </html>

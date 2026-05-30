@@ -62,10 +62,22 @@ function validateProviderPayload(body) {
 }
 
 function validateCompanyRegistrationPayload(body) {
+  const phone = cleanText(
+    body.phone || body.telephone || body.localPhone || body.phoneLocal || body.telefono,
+    40,
+  );
   const company = {
     name: cleanText(body.companyName || body.name, 120),
     email: cleanText(body.email, 160).toLowerCase(),
-    whatsapp: cleanText(body.whatsapp || body.phone, 40),
+    whatsapp: cleanText(
+      body.whatsapp || body.whatsApp || body.whatsappNumber || body.whatsappPhone || body.phone,
+      40,
+    ),
+    phone,
+    website: cleanText(body.website || body.web || body.webpage || body.url, 240),
+    instagram: cleanText(body.instagram || body.instagramUrl || body.instagramHandle, 240),
+    facebook: cleanText(body.facebook || body.facebookUrl || body.facebookPage, 240),
+    tiktok: cleanText(body.tiktok || body.tikTok || body.tiktokUrl || body.tikTokUrl, 240),
     province: cleanText(body.province, 80),
     canton: cleanText(body.canton, 120),
     description: cleanText(body.description, 900),
