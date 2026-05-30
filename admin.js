@@ -16,14 +16,17 @@ const INTERNAL_MODERATION = {
   companies: {
     endpoint: "/internal/companies/pending",
     label: "empresas",
+    responseKey: "companies",
   },
   services: {
     endpoint: "/internal/services/pending",
     label: "servicios",
+    responseKey: "services",
   },
   uploads: {
     endpoint: "/internal/uploads/pending",
     label: "uploads",
+    responseKey: "uploads",
   },
 };
 
@@ -745,10 +748,34 @@ function renderInternalModeration() {
   Object.keys(INTERNAL_MODERATION).forEach(renderInternalList);
   renderCompanyCase();
   if (state.activeTab === "modelo") {
-    const total = Object.values(state.internal).reduce((sum, section) => sum + section.items.length, 0);
+    const total = internalSections().reduce((sum, section) => sum + section.items.length, 0);
     const count = $("[data-count]");
     if (count) count.textContent = `${total} item(s) modelo nuevo`;
   }
+}
+
+function internalSections() {
+  return Object.keys(INTERNAL_MODERATION).map((type) => state.internal[type]);
+}
+
+function internalItemsFromResponse(type, response) {
+  const key = INTERNAL_MODERATION[type]?.responseKey;
+  const candidates = [
+    response,
+    response?.items,
+    key ? response?.[key] : null,
+    response?.data,
+    response?.result,
+    response?.result?.items,
+    key ? response?.result?.[key] : null,
+  ];
+  const items = candidates.find(Array.isArray);
+
+  if (items) return items;
+  if (response && typeof response === "object" && Object.keys(response).length) {
+    throw new Error(`Respuesta invalida de ${INTERNAL_MODERATION[type].label}.`);
+  }
+  return [];
 }
 
 async function loadInternalList(type) {
@@ -759,7 +786,7 @@ async function loadInternalList(type) {
   renderInternalList(type);
   try {
     const response = await adminFetch(INTERNAL_MODERATION[type].endpoint);
-    section.items = Array.isArray(response) ? response : Array.isArray(response?.items) ? response.items : [];
+    section.items = internalItemsFromResponse(type, response);
     section.loaded = true;
   } catch (error) {
     section.error = error.message;
@@ -772,7 +799,7 @@ async function loadInternalList(type) {
 async function loadInternalModeration() {
   setStatus("Cargando modelo nuevo...");
   await Promise.all(Object.keys(INTERNAL_MODERATION).map(loadInternalList));
-  const hasErrors = Object.values(state.internal).some((section) => section.error);
+  const hasErrors = internalSections().some((section) => section.error);
   setStatus(hasErrors ? "Modelo nuevo actualizado con errores." : "Modelo nuevo actualizado.");
 }
 
@@ -848,7 +875,7 @@ function setActiveTab(tabName) {
     if (count) count.textContent = "Modo demo local";
     setStatus("Empresa demo y Servicios disponibles sin API.");
   } else if (tabName === "modelo" && state.auth) {
-    const needsLoad = Object.values(state.internal).some((section) => !section.loaded && !section.loading);
+    const needsLoad = internalSections().some((section) => !section.loaded && !section.loading);
     renderInternalModeration();
     if (needsLoad) {
       loadInternalModeration().catch((error) => setStatus(error.message));
@@ -1083,7 +1110,7 @@ document.addEventListener("click", async (event) => {
     sessionStorage.removeItem(AUTH_KEY);
     state.auth = "";
     state.providers = [];
-    Object.values(state.internal).forEach((section) => {
+    internalSections().forEach((section) => {
       section.items = [];
       section.loading = false;
       section.loaded = false;
