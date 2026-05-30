@@ -12,6 +12,7 @@ const {
 const { requireAdminAuth } = require("./adminAuth");
 const { enforceAllowedOrigin } = require("./guard");
 const { badRequest, json, serverError } = require("./http");
+const { validateServiceUploadCapacity } = require("./serviceUploadRules");
 const { cleanText } = require("./validation");
 
 function notFound(message = "Not found") {
@@ -140,6 +141,13 @@ async function updateCompanyImage(upload, publicBlobUrl, config, now) {
 }
 
 async function validateUploadTarget(upload, config) {
+  await ensureCompaniesTable(config);
+  const companiesTable = getTableClient(config.companiesTable, config);
+  const company = await getEntity(companiesTable, "company", upload.partitionKey);
+  if (!company || company.status !== "published") {
+    return { error: conflict("Company must be published before approving uploads") };
+  }
+
   if (upload.scope === "service") {
     const serviceId = cleanText(upload.serviceId, 160);
     if (!serviceId || !["cover", "gallery"].includes(upload.imageType)) {
@@ -150,6 +158,9 @@ async function validateUploadTarget(upload, config) {
     const servicesTable = getTableClient(config.servicesTable, config);
     const service = await getEntity(servicesTable, upload.partitionKey, serviceId);
     if (!service) return { error: notFound("Not found") };
+    if (service.status !== "published") {
+      return { error: conflict("Service must be published before approving service uploads") };
+    }
     return {};
   }
 
@@ -157,11 +168,6 @@ async function validateUploadTarget(upload, config) {
     if (!["cover", "logo", "gallery"].includes(upload.imageType)) {
       return { error: conflict("Invalid state") };
     }
-
-    await ensureCompaniesTable(config);
-    const companiesTable = getTableClient(config.companiesTable, config);
-    const company = await getEntity(companiesTable, "company", upload.partitionKey);
-    if (!company) return { error: notFound("Not found") };
     return {};
   }
 
@@ -214,6 +220,15 @@ async function moderateService(context, action, req, config) {
     context.res = notFound("Not found");
     return;
   }
+  if (action === "approve") {
+    await ensureCompaniesTable(config);
+    const companiesTable = getTableClient(config.companiesTable, config);
+    const company = await getEntity(companiesTable, "company", companyId);
+    if (!company || company.status !== "published") {
+      context.res = conflict("Company must be published before approving services");
+      return;
+    }
+  }
 
   const now = new Date().toISOString();
   const status = action === "approve" ? "published" : "rejected";
@@ -257,6 +272,19 @@ async function approveUpload(context, req, config) {
   if (targetValidation.error) {
     context.res = targetValidation.error;
     return;
+  }
+  if (upload.scope === "service") {
+    const capacity = await validateServiceUploadCapacity(
+      uploadsTable,
+      companyId,
+      upload.serviceId,
+      upload.imageType,
+      { uploadId },
+    );
+    if (capacity.error) {
+      context.res = json(capacity.status, { error: capacity.error });
+      return;
+    }
   }
 
   const publishedBlob = await publishUploadBlob(upload, companyId, config);

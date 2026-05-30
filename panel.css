@@ -311,6 +311,11 @@
   background: #fff;
 }
 
+.photo-preview-item.is-cover {
+  border-color: rgba(0, 127, 122, 0.55);
+  box-shadow: 0 0 0 3px rgba(0, 127, 122, 0.12);
+}
+
 .photo-preview-item img,
 .photo-file-placeholder {
   width: 100%;
@@ -334,6 +339,12 @@
   font-size: 0.82rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.photo-actions {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
 }
 
 .photo-preview-empty,

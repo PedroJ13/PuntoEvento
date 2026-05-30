@@ -45,7 +45,7 @@ function serviceTimestamp(service) {
   return Date.parse(service.updatedAt || service.createdAt || "") || 0;
 }
 
-function serviceMatchesText(service, q) {
+function serviceMatchesText(service, company, q) {
   if (!q) return true;
 
   const eventTypes = parseArray(service.eventTypes).join(" ");
@@ -54,6 +54,8 @@ function serviceMatchesText(service, q) {
     service.description,
     service.category,
     eventTypes,
+    company?.name,
+    company?.slug,
   ]
     .join(" ")
     .toLowerCase();
@@ -203,7 +205,6 @@ async function handlePublicServices(context, req) {
     const companyCache = new Map();
 
     for (const service of services) {
-      if (!serviceMatchesText(service, q)) continue;
       if (!serviceMatchesFilter(service, "category", category)) continue;
       if (!serviceMatchesFilter(service, "eventType", eventType)) continue;
 
@@ -213,6 +214,7 @@ async function handlePublicServices(context, req) {
       }
       const company = companyCache.get(companyId);
       if (!company || !companyMatchesProvince(company, province)) continue;
+      if (!serviceMatchesText(service, company, q)) continue;
 
       items.push(serviceListPayload(service, company));
       if (items.length >= limit) break;

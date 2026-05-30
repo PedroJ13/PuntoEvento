@@ -336,6 +336,63 @@
   gap: 12px;
 }
 
+.case-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.34fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.case-selector,
+.case-detail {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.case-company-list,
+.case-columns {
+  display: grid;
+  gap: 12px;
+}
+
+.case-columns {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.case-company-button {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.case-company-button.is-active {
+  border-color: rgba(0, 127, 122, 0.45);
+  background: #eef8f5;
+}
+
+.case-company-button small {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.dependency-note {
+  margin: 0;
+  color: var(--coral);
+  font-size: 0.85rem;
+  font-weight: 750;
+}
+
 .internal-summary article,
 .internal-panel,
 .internal-item {
@@ -671,6 +728,8 @@
   .company-grid,
   .internal-summary,
   .internal-grid,
+  .case-layout,
+  .case-columns,
   .services-layout,
   .service-meta,
   .internal-item-meta,

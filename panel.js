@@ -1,5 +1,8 @@
 const API_BASE = "/api";
 const SERVICE_STATUSES = ["draft", "pending", "published", "rejected", "inactive"];
+const MAX_SERVICE_IMAGES = 10;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const FALLBACK_CATEGORIES = [
   "Salon y jardin",
   "Catering",
@@ -29,7 +32,7 @@ const DEMO_SERVICES = [
     slug: "queques-personalizados",
     name: "Queques personalizados",
     category: "Catering",
-    eventTypes: ["Bodas", "Cumpleanos"],
+  eventTypes: ["Bodas", "Cumpleanos"],
     priceFrom: "CRC 85000",
     status: "published",
     description: "Queques decorados para eventos sociales con entrega coordinada.",
@@ -58,7 +61,7 @@ const state = {
   categories: FALLBACK_CATEGORIES,
   eventTypes: FALLBACK_EVENT_TYPES,
   mode: new URLSearchParams(window.location.search).get("demo") === "local" ? "demo" : "real",
-  pendingCoverFile: null,
+  pendingImages: [],
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -108,6 +111,10 @@ function parseArray(value) {
 
 function serviceImageCount(service) {
   return Number(Boolean(service.coverUrl)) + parseArray(service.gallery).length;
+}
+
+function isAllowedServiceImage(file) {
+  return ALLOWED_IMAGE_TYPES.includes(file.type) && file.size <= MAX_IMAGE_SIZE;
 }
 
 function serviceStatusLabel(status) {
@@ -345,32 +352,63 @@ function loadDemoPanel() {
   renderServices();
 }
 
-function renderPhotoPreview(file = null, service = null) {
+function revokePendingImageUrls() {
+  state.pendingImages.forEach((image) => {
+    if (image.previewUrl) URL.revokeObjectURL(image.previewUrl);
+  });
+}
+
+function setDefaultCoverImage() {
+  if (!state.pendingImages.length) return;
+  if (!state.pendingImages.some((image) => image.isCover)) {
+    state.pendingImages[0].isCover = true;
+  }
+}
+
+function currentServiceImages(service = null) {
+  const images = [];
+  if (service?.coverUrl) {
+    images.push({ name: "Cover aprobado", src: service.coverUrl, type: "cover" });
+  }
+  parseArray(service?.gallery).forEach((src, index) => {
+    images.push({ name: `Galeria aprobada ${index + 1}`, src, type: "gallery" });
+  });
+  return images;
+}
+
+function renderPhotoPreview(service = null) {
   const preview = $("[data-photo-preview]");
   if (!preview) return;
-
-  if (file) {
-    const url = URL.createObjectURL(file);
-    preview.innerHTML = `
-      <article class="photo-preview-item">
-        <img src="${escapeHtml(url)}" alt="${escapeHtml(file.name)}">
-        <span>${escapeHtml(file.name)}</span>
-      </article>
-    `;
+  const approvedImages = currentServiceImages(service);
+  if (!approvedImages.length && !state.pendingImages.length) {
+    preview.innerHTML = '<div class="photo-preview-empty">Sin imagenes seleccionadas.</div>';
     return;
   }
-
-  if (service?.coverUrl) {
-    preview.innerHTML = `
-      <article class="photo-preview-item">
-        <img src="${escapeHtml(service.coverUrl)}" alt="${escapeHtml(service.name)}">
-        <span>Cover publicado o en revision</span>
-      </article>
-    `;
-    return;
-  }
-
-  preview.innerHTML = '<div class="photo-preview-empty">Sin cover seleccionado.</div>';
+  const approvedMarkup = approvedImages
+    .map(
+      (image) => `
+        <article class="photo-preview-item">
+          <img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.name)}">
+          <span>${escapeHtml(image.type === "cover" ? "Cover aprobado" : image.name)}</span>
+        </article>
+      `,
+    )
+    .join("");
+  const pendingMarkup = state.pendingImages
+    .map(
+      (image, index) => `
+        <article class="photo-preview-item ${image.isCover ? "is-cover" : ""}">
+          <img src="${escapeHtml(image.previewUrl)}" alt="${escapeHtml(image.name)}">
+          <span>${escapeHtml(image.name)}</span>
+          <div class="photo-actions">
+            <button class="ghost-button compact-button" type="button" data-set-cover="${index}">${image.isCover ? "Cover" : "Usar como cover"}</button>
+            <button class="secondary-button compact-button" type="button" data-remove-photo="${index}">Quitar</button>
+          </div>
+        </article>
+      `,
+    )
+    .join("");
+  preview.innerHTML = `${approvedMarkup}${pendingMarkup}`;
 }
 
 function renderReadonlySummary(service = null) {
@@ -380,8 +418,9 @@ function renderReadonlySummary(service = null) {
     statusNode.textContent = service ? serviceStatusLabel(service.status) : "Borrador nuevo";
   }
   if (photoCountNode) {
-    const count = serviceImageCount(service || {});
-    photoCountNode.textContent = `${count} archivo(s)`;
+  const count = serviceImageCount(service || {});
+    const pendingCount = state.pendingImages.length;
+    photoCountNode.textContent = pendingCount ? `${count} aprobado(s), ${pendingCount} pendiente(s)` : `${count} archivo(s)`;
   }
 }
 
@@ -389,7 +428,8 @@ function resetServiceForm(service = null) {
   const form = $("[data-service-form]");
   form.reset();
   form.classList.remove("is-hidden");
-  state.pendingCoverFile = null;
+  revokePendingImageUrls();
+  state.pendingImages = [];
   $("[data-service-form-mode]").textContent = service ? "Editar servicio" : "Nuevo servicio";
   setFormMessage("");
   form.elements.id.value = service?.id || "";
@@ -412,13 +452,14 @@ function resetServiceForm(service = null) {
         : submitReviewStatusMessage(service.status)
       : "Guarda el borrador antes de enviarlo a revision.";
   }
-  renderPhotoPreview(null, service);
+  renderPhotoPreview(service);
   form.elements.name.focus();
 }
 
 function closeServiceForm() {
   const form = $("[data-service-form]");
-  state.pendingCoverFile = null;
+  revokePendingImageUrls();
+  state.pendingImages = [];
   form.reset();
   form.classList.add("is-hidden");
   renderPhotoPreview();
@@ -502,9 +543,9 @@ async function saveService(form) {
             body: JSON.stringify(payload),
           });
 
-  if (state.pendingCoverFile) {
-    await uploadCover(saved.id, state.pendingCoverFile);
-    setPanelMessage("Borrador guardado. Cover enviado a revision de imagenes.", "success");
+  if (state.pendingImages.length) {
+    await uploadServiceImages(saved.id);
+    setPanelMessage("Borrador guardado. Imagenes enviadas a revision.", "success");
   } else {
     setPanelMessage("Borrador guardado. Cuando este completo, envialo a revision.", "success");
   }
@@ -611,19 +652,19 @@ async function deleteService(serviceId) {
   await loadRealPanel();
 }
 
-async function uploadCover(serviceId, file) {
+async function uploadOneServiceImage(serviceId, image) {
   if (state.mode === "demo") return;
-  if (!file) return;
+  if (!image?.file) return;
 
   const signed = await apiJson("/uploads/sign", {
     method: "POST",
     body: JSON.stringify({
       scope: "service",
       serviceId,
-      imageType: "cover",
-      fileName: file.name,
-      contentType: file.type,
-      size: file.size,
+      imageType: image.isCover ? "cover" : "gallery",
+      fileName: image.file.name,
+      contentType: image.file.type,
+      size: image.file.size,
     }),
   });
 
@@ -631,9 +672,9 @@ async function uploadCover(serviceId, file) {
     method: "PUT",
     headers: {
       "x-ms-blob-type": "BlockBlob",
-      "Content-Type": file.type,
+      "Content-Type": image.file.type,
     },
-    body: file,
+    body: image.file,
   });
   if (!uploadResponse.ok) {
     throw new Error("No se pudo subir la imagen.");
@@ -643,6 +684,13 @@ async function uploadCover(serviceId, file) {
     method: "POST",
     body: JSON.stringify({ uploadId: signed.uploadId }),
   });
+}
+
+async function uploadServiceImages(serviceId) {
+  setDefaultCoverImage();
+  for (const image of state.pendingImages) {
+    await uploadOneServiceImage(serviceId, image);
+  }
 }
 
 async function logout() {
@@ -718,9 +766,61 @@ document.addEventListener("click", async (event) => {
 
 document.addEventListener("change", (event) => {
   if (!event.target.matches("[data-service-photos]")) return;
-  const [file] = event.target.files || [];
-  state.pendingCoverFile = file || null;
-  renderPhotoPreview(file || null);
+  const form = event.target.closest("[data-service-form]");
+  const service = state.services.find((item) => item.id === form?.elements.id.value);
+  const existingCount = serviceImageCount(service || {});
+  const files = [...(event.target.files || [])];
+  const invalid = files.filter((file) => !isAllowedServiceImage(file));
+  if (invalid.length) {
+    setFormMessage("Usa solo JPG, PNG o WEBP de hasta 5 MB por imagen.", "error");
+    event.target.value = "";
+    return;
+  }
+  if (existingCount + state.pendingImages.length + files.length > MAX_SERVICE_IMAGES) {
+    setFormMessage(`Maximo ${MAX_SERVICE_IMAGES} imagenes por servicio, incluyendo el cover.`, "error");
+    event.target.value = "";
+    return;
+  }
+  files.forEach((file) => {
+    state.pendingImages.push({
+      file,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      previewUrl: URL.createObjectURL(file),
+      isCover: false,
+    });
+  });
+  setDefaultCoverImage();
+  setFormMessage("Imagenes listas. Marca una como cover antes de guardar.");
+  renderReadonlySummary(service);
+  renderPhotoPreview(service);
+  event.target.value = "";
+});
+
+document.addEventListener("click", (event) => {
+  const coverButton = event.target.closest("[data-set-cover]");
+  if (coverButton) {
+    const index = Number(coverButton.dataset.setCover);
+    state.pendingImages.forEach((image, imageIndex) => {
+      image.isCover = imageIndex === index;
+    });
+    const form = coverButton.closest("[data-service-form]");
+    const service = state.services.find((item) => item.id === form?.elements.id.value);
+    renderPhotoPreview(service);
+  }
+
+  const removeButton = event.target.closest("[data-remove-photo]");
+  if (removeButton) {
+    const index = Number(removeButton.dataset.removePhoto);
+    const [removed] = state.pendingImages.splice(index, 1);
+    if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+    setDefaultCoverImage();
+    const form = removeButton.closest("[data-service-form]");
+    const service = state.services.find((item) => item.id === form?.elements.id.value);
+    renderReadonlySummary(service);
+    renderPhotoPreview(service);
+  }
 });
 
 async function init() {

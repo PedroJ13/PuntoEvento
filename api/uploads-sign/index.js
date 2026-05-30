@@ -11,6 +11,7 @@ const {
 const { getCurrentCompanySession } = require("../shared/companyAuth");
 const { enforceAllowedOrigin } = require("../shared/guard");
 const { badRequest, json, serverError } = require("../shared/http");
+const { validateServiceUploadCapacity } = require("../shared/serviceUploadRules");
 const {
   ALLOWED_CONTENT_TYPES,
   MAX_IMAGE_SIZE_BYTES,
@@ -129,6 +130,7 @@ module.exports = async function signUpload(context, req) {
     const upload = validation.payload;
     await ensureUploadsTable(config);
     await ensurePendingContainer(config);
+    const uploadsTable = getTableClient(config.uploadsTable, config);
 
     if (upload.scope === "service") {
       await ensureServicesTable(config);
@@ -139,6 +141,17 @@ module.exports = async function signUpload(context, req) {
       );
       if (!exists) {
         context.res = json(404, { error: "Service not found" });
+        return;
+      }
+
+      const capacity = await validateServiceUploadCapacity(
+        uploadsTable,
+        companyId,
+        upload.serviceId,
+        upload.imageType,
+      );
+      if (capacity.error) {
+        context.res = json(capacity.status, { error: capacity.error });
         return;
       }
     }
@@ -164,7 +177,7 @@ module.exports = async function signUpload(context, req) {
       config,
     );
 
-    await getTableClient(config.uploadsTable, config).createEntity({
+    await uploadsTable.createEntity({
       partitionKey: companyId,
       rowKey: uploadId,
       id: uploadId,

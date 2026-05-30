@@ -93,6 +93,7 @@ const state = {
     companies: { items: [], loading: false, loaded: false, error: "" },
     services: { items: [], loading: false, loaded: false, error: "" },
     uploads: { items: [], loading: false, loaded: false, error: "" },
+    selectedCompanyId: "",
   },
 };
 
@@ -429,6 +430,24 @@ function internalActionsMarkup(type, ids) {
   `;
 }
 
+function internalActionButton(type, action, ids, disabledReason = "") {
+  const attrs = Object.entries(ids)
+    .map(([key, value]) => `data-${key}="${escapeHtml(value)}"`)
+    .join(" ");
+  const label = action === "approve" ? "Aprobar" : "Rechazar";
+  return `<button class="${action === "approve" ? "primary-button" : "secondary-button"} compact-button" type="button" data-internal-action="${action}" data-internal-type="${type}" ${attrs} ${disabledReason ? "disabled" : ""} title="${escapeHtml(disabledReason)}">${label}</button>`;
+}
+
+function scopedInternalActionsMarkup(type, ids, disabledApproveReason = "") {
+  return `
+    <div class="internal-item-actions">
+      ${internalActionButton(type, "approve", ids, disabledApproveReason)}
+      ${internalActionButton(type, "reject", ids)}
+    </div>
+    ${disabledApproveReason ? `<p class="dependency-note">${escapeHtml(disabledApproveReason)}</p>` : ""}
+  `;
+}
+
 function companyItemMarkup(company) {
   const companyId = company.companyId || company.id || "";
   const location = [company.province, company.canton].filter(Boolean).join(", ") || "-";
@@ -449,7 +468,9 @@ function companyItemMarkup(company) {
         <div><strong>Plan</strong><span>${escapeHtml(company.plan || "-")}</span></div>
         <div><strong>Creado</strong><span>${escapeHtml(formatDate(company.createdAt))}</span></div>
       </div>
-      ${internalActionsMarkup("companies", { "company-id": companyId })}
+      <div class="internal-item-actions">
+        <button class="ghost-button compact-button" type="button" data-select-company="${escapeHtml(companyId)}">Ver expediente</button>
+      </div>
     </article>
   `;
 }
@@ -477,7 +498,9 @@ function serviceItemMarkup(service) {
         <div><strong>Precio</strong><span>${escapeHtml(service.priceFrom || "-")}</span></div>
         <div><strong>Imagenes</strong><span>${imageCount} archivo(s)</span></div>
       </div>
-      ${internalActionsMarkup("services", { "company-id": companyId, "service-id": serviceId })}
+      <div class="internal-item-actions">
+        <button class="ghost-button compact-button" type="button" data-select-company="${escapeHtml(companyId)}">Ver expediente</button>
+      </div>
     </article>
   `;
 }
@@ -501,9 +524,189 @@ function uploadItemMarkup(upload) {
         <div><strong>Tipo</strong><span>${escapeHtml(upload.imageType || "-")}</span></div>
         <div><strong>Archivo</strong><span>${escapeHtml(upload.contentType || "-")} - ${escapeHtml(String(upload.size || "-"))} bytes</span></div>
       </div>
-      ${internalActionsMarkup("uploads", { "company-id": companyId, "upload-id": uploadId })}
+      <div class="internal-item-actions">
+        <button class="ghost-button compact-button" type="button" data-select-company="${escapeHtml(companyId)}">Ver expediente</button>
+      </div>
     </article>
   `;
+}
+
+function companyIdOf(item) {
+  return item?.companyId || item?.id || "";
+}
+
+function getCaseCompanies() {
+  const map = new Map();
+  state.internal.companies.items.forEach((company) => {
+    const companyId = companyIdOf(company);
+    if (companyId) map.set(companyId, { ...company, companyId });
+  });
+  state.internal.services.items.forEach((service) => {
+    const companyId = companyIdOf(service);
+    if (companyId && !map.has(companyId)) {
+      map.set(companyId, {
+        companyId,
+        name: service.companyName || companyId,
+        slug: service.companySlug || "",
+        status: service.companyStatus || "published",
+        description: "Empresa incluida por servicios revisables.",
+      });
+    }
+  });
+  state.internal.uploads.items.forEach((upload) => {
+    const companyId = companyIdOf(upload);
+    if (companyId && !map.has(companyId)) {
+      map.set(companyId, {
+        companyId,
+        name: upload.companyName || companyId,
+        status: upload.companyStatus || "",
+        description: "Empresa incluida por imagenes pendientes.",
+      });
+    }
+  });
+  return [...map.values()];
+}
+
+function selectedCaseCompany() {
+  const companies = getCaseCompanies();
+  if (!companies.length) return null;
+  if (!state.internal.selectedCompanyId || !companies.some((company) => companyIdOf(company) === state.internal.selectedCompanyId)) {
+    state.internal.selectedCompanyId = companyIdOf(companies[0]);
+  }
+  return companies.find((company) => companyIdOf(company) === state.internal.selectedCompanyId) || companies[0];
+}
+
+function servicesForCompany(companyId) {
+  return state.internal.services.items.filter((service) => companyIdOf(service) === companyId);
+}
+
+function uploadsForCompany(companyId) {
+  return state.internal.uploads.items.filter((upload) => companyIdOf(upload) === companyId);
+}
+
+function serviceForUpload(upload) {
+  if (!upload?.serviceId) return null;
+  return state.internal.services.items.find(
+    (service) => companyIdOf(service) === companyIdOf(upload) && (service.serviceId || service.id) === upload.serviceId,
+  );
+}
+
+function caseCompanyCard(company) {
+  const companyId = companyIdOf(company);
+  return `
+    <button class="case-company-button ${companyId === state.internal.selectedCompanyId ? "is-active" : ""}" type="button" data-select-company="${escapeHtml(companyId)}">
+      <span class="status-pill status-${statusClass(company.status)}">${escapeHtml(internalStatusLabel(company.status))}</span>
+      <strong>${escapeHtml(company.name || companyId)}</strong>
+      <small>${escapeHtml(companyId)}</small>
+    </button>
+  `;
+}
+
+function caseCompanyDetail(company) {
+  if (!company) return '<div class="admin-empty">Selecciona una empresa para revisar su expediente.</div>';
+  const companyId = companyIdOf(company);
+  const location = [company.province, company.canton].filter(Boolean).join(", ") || "-";
+  return `
+    <article class="internal-item">
+      <div class="internal-item-header">
+        <div>
+          <span class="status-pill status-${statusClass(company.status)}">${escapeHtml(internalStatusLabel(company.status))}</span>
+          <h4>${escapeHtml(company.name || "Empresa sin nombre")}</h4>
+        </div>
+      </div>
+      <p>${escapeHtml(truncateText(company.description, 240))}</p>
+      <div class="internal-item-meta">
+        <div><strong>ID</strong><span>${escapeHtml(companyId)}</span></div>
+        <div><strong>Email</strong><span>${escapeHtml(company.email || "-")}</span></div>
+        <div><strong>Telefono</strong><span>${escapeHtml(company.whatsapp || "-")}</span></div>
+        <div><strong>Zona</strong><span>${escapeHtml(location)}</span></div>
+      </div>
+      ${scopedInternalActionsMarkup("companies", { "company-id": companyId })}
+    </article>
+  `;
+}
+
+function caseServiceMarkup(service, company) {
+  const companyPublished = company?.status === "published" || service.companyStatus === "published";
+  const companyId = companyIdOf(service);
+  const serviceId = service.serviceId || service.id || "";
+  const disabledReason = companyPublished ? "" : "Publica la empresa antes de aprobar servicios.";
+  return `
+    <article class="internal-item">
+      <div class="internal-item-header">
+        <div>
+          <span class="status-pill status-${statusClass(service.status)}">${escapeHtml(internalStatusLabel(service.status))}</span>
+          <h4>${escapeHtml(service.name || "Servicio sin nombre")}</h4>
+        </div>
+      </div>
+      <p>${escapeHtml(truncateText(service.description))}</p>
+      <div class="internal-item-meta">
+        <div><strong>Servicio ID</strong><span>${escapeHtml(serviceId)}</span></div>
+        <div><strong>Categoria</strong><span>${escapeHtml(service.category || "-")}</span></div>
+        <div><strong>Precio</strong><span>${escapeHtml(service.priceFrom || "-")}</span></div>
+        <div><strong>Empresa</strong><span>${escapeHtml(company?.name || service.companyName || companyId || "-")}</span></div>
+      </div>
+      ${scopedInternalActionsMarkup("services", { "company-id": companyId, "service-id": serviceId }, disabledReason)}
+    </article>
+  `;
+}
+
+function caseUploadMarkup(upload, company) {
+  const companyPublished = company?.status === "published" || upload.companyStatus === "published";
+  const service = serviceForUpload(upload);
+  const servicePublished = upload.scope !== "service" || service?.status === "published" || upload.serviceStatus === "published";
+  const uploadId = upload.uploadId || upload.id || "";
+  const companyId = companyIdOf(upload);
+  const disabledReason = !companyPublished
+    ? "Publica la empresa antes de aprobar imagenes."
+    : !servicePublished
+      ? "Publica el servicio antes de aprobar imagenes de servicio."
+      : "";
+  return `
+    <article class="internal-item">
+      <div class="internal-item-header">
+        <div>
+          <span class="status-pill status-${statusClass(upload.status)}">${escapeHtml(internalStatusLabel(upload.status))}</span>
+          <h4>${escapeHtml(upload.fileName || uploadId || "Upload pendiente")}</h4>
+        </div>
+      </div>
+      <div class="internal-item-meta">
+        <div><strong>Upload ID</strong><span>${escapeHtml(uploadId)}</span></div>
+        <div><strong>Scope</strong><span>${escapeHtml(upload.scope || "-")}</span></div>
+        <div><strong>Servicio</strong><span>${escapeHtml(upload.serviceId || "-")}</span></div>
+        <div><strong>Tipo</strong><span>${escapeHtml(upload.imageType || "-")}</span></div>
+      </div>
+      ${scopedInternalActionsMarkup("uploads", { "company-id": companyId, "upload-id": uploadId }, disabledReason)}
+    </article>
+  `;
+}
+
+function renderCompanyCase() {
+  const list = $("[data-case-company-list]");
+  const detail = $("[data-case-detail]");
+  const servicesNode = $("[data-case-services]");
+  const uploadsNode = $("[data-case-uploads]");
+  if (!list || !detail || !servicesNode || !uploadsNode) return;
+  const companies = getCaseCompanies();
+  const company = selectedCaseCompany();
+  if (!companies.length || !company) {
+    list.innerHTML = '<div class="admin-empty">No hay expedientes con actividad.</div>';
+    detail.innerHTML = '<div class="admin-empty">Carga el modelo nuevo para seleccionar una empresa.</div>';
+    servicesNode.innerHTML = '<div class="admin-empty">Sin servicios.</div>';
+    uploadsNode.innerHTML = '<div class="admin-empty">Sin imagenes.</div>';
+    return;
+  }
+  const companyId = companyIdOf(company);
+  const scopedServices = servicesForCompany(companyId);
+  const scopedUploads = uploadsForCompany(companyId);
+  list.innerHTML = companies.map(caseCompanyCard).join("");
+  detail.innerHTML = caseCompanyDetail(company);
+  servicesNode.innerHTML = scopedServices.length
+    ? scopedServices.map((service) => caseServiceMarkup(service, company)).join("")
+    : '<div class="admin-empty">Esta empresa no tiene servicios revisables en el listado actual.</div>';
+  uploadsNode.innerHTML = scopedUploads.length
+    ? scopedUploads.map((upload) => caseUploadMarkup(upload, company)).join("")
+    : '<div class="admin-empty">Esta empresa no tiene imagenes pendientes en el listado actual.</div>';
 }
 
 function renderInternalList(type) {
@@ -540,6 +743,7 @@ function renderInternalList(type) {
 
 function renderInternalModeration() {
   Object.keys(INTERNAL_MODERATION).forEach(renderInternalList);
+  renderCompanyCase();
   if (state.activeTab === "modelo") {
     const total = Object.values(state.internal).reduce((sum, section) => sum + section.items.length, 0);
     const count = $("[data-count]");
@@ -891,6 +1095,12 @@ document.addEventListener("click", async (event) => {
 
   if (internalButton) {
     await handleInternalAction(internalButton);
+  }
+
+  const companySelectButton = event.target.closest("[data-select-company]");
+  if (companySelectButton) {
+    state.internal.selectedCompanyId = companySelectButton.dataset.selectCompany;
+    renderCompanyCase();
   }
 
   if (approveButton) {

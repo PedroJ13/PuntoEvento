@@ -244,7 +244,7 @@ h3 {
 
 .search-panel {
   display: grid;
-  grid-template-columns: 1.1fr 1fr 0.8fr auto;
+  grid-template-columns: minmax(220px, 1.35fr) repeat(2, minmax(150px, 1fr)) auto;
   gap: 10px;
   width: min(980px, 100%);
   margin-top: 34px;
@@ -624,6 +624,10 @@ button:focus-visible,
   display: grid;
   grid-template-columns: 270px 1fr;
   gap: 24px;
+}
+
+.results-layout.no-sidebar {
+  grid-template-columns: 1fr;
 }
 
 .side-panel {
@@ -1321,6 +1325,16 @@ button:disabled,
   .section-header,
   .cta-band .section {
     display: grid;
+  }
+
+  .subhero h1 {
+    max-width: 12ch;
+    font-size: 2rem;
+    line-height: 1.08;
+  }
+
+  .subhero p {
+    max-width: 34ch;
   }
 
   .wide-card {

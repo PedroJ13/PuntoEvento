@@ -444,6 +444,8 @@ function serviceMatchesFilters(service, filters = {}) {
       service.category,
       service.description,
       service.company?.name,
+      service.company?.slug,
+      service.company?.id,
       service.company?.province,
       ...(service.eventTypes || []),
     ].join(" "),
@@ -498,8 +500,13 @@ function homePage() {
         </div>
         <form class="search-panel" id="homeSearch">
           <div class="field">
+            <label for="homeQuery">Servicio o empresa</label>
+            <input id="homeQuery" name="q" type="search" placeholder="Ej. Jardines del Sol">
+          </div>
+          <div class="field">
             <label for="eventType">Tipo de evento</label>
             <select id="eventType" name="eventType">
+              <option value="Todos">Todos</option>
               <option>Boda</option>
               <option>Evento corporativo</option>
               <option>Fiesta infantil</option>
@@ -509,15 +516,12 @@ function homePage() {
           <div class="field">
             <label for="location">Ubicacion</label>
             <select id="location" name="location">
+              <option value="Todos">Todos</option>
               <option>San Jose</option>
               <option>Heredia</option>
               <option>Alajuela</option>
               <option>Guanacaste</option>
             </select>
-          </div>
-          <div class="field">
-            <label for="guests">Invitados</label>
-            <input id="guests" name="guests" type="number" value="80" min="10" max="1000">
           </div>
           <button class="primary-button" type="submit">Encontrar proveedores</button>
         </form>
@@ -632,51 +636,32 @@ function weddingsPage() {
     <section class="section">
       <form class="filter-bar" id="weddingFilters">
         <div class="field">
+          <label>Buscar</label>
+          <input name="q" type="search" value="${safeText(currentSearchFilters.q || "")}" placeholder="Servicio, categoria o empresa">
+        </div>
+        <div class="field">
           <label>Servicio</label>
           <select name="service">
-            <option ${selectedOption(currentSearchFilters.service, "Todos")}>Todos</option>
-            <option ${selectedOption(currentSearchFilters.service, "Salon y jardin")}>Salon y jardin</option>
-            <option ${selectedOption(currentSearchFilters.service, "Catering")}>Catering</option>
-            <option ${selectedOption(currentSearchFilters.service, "Musica y luces")}>Musica y luces</option>
-            <option ${selectedOption(currentSearchFilters.service, "Decoracion floral")}>Decoracion floral</option>
+            <option value="Todos" ${selectedOption(currentSearchFilters.service || "Todos", "Todos")}>Todos</option>
+            <option value="Salon y jardin" ${selectedOption(currentSearchFilters.service, "Salon y jardin")}>Salon y jardin</option>
+            <option value="Catering" ${selectedOption(currentSearchFilters.service, "Catering")}>Catering</option>
+            <option value="Musica y luces" ${selectedOption(currentSearchFilters.service, "Musica y luces")}>Musica y luces</option>
+            <option value="Decoracion floral" ${selectedOption(currentSearchFilters.service, "Decoracion floral")}>Decoracion floral</option>
           </select>
         </div>
         <div class="field">
           <label>Provincia</label>
           <select name="province">
-            <option ${selectedOption(currentSearchFilters.province, "Todos")}>Todos</option>
-            <option ${selectedOption(currentSearchFilters.province, "San Jose")}>San Jose</option>
-            <option ${selectedOption(currentSearchFilters.province, "Heredia")}>Heredia</option>
-            <option ${selectedOption(currentSearchFilters.province, "Alajuela")}>Alajuela</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Invitados</label>
-          <input name="guests" type="number" value="120" min="20">
-        </div>
-        <div class="field">
-          <label>Presupuesto</label>
-          <select name="budget">
-            <option>Medio</option>
-            <option>Economico</option>
-            <option>Premium</option>
+            <option value="Todos" ${selectedOption(currentSearchFilters.province || "Todos", "Todos")}>Todos</option>
+            <option value="San Jose" ${selectedOption(currentSearchFilters.province, "San Jose")}>San Jose</option>
+            <option value="Heredia" ${selectedOption(currentSearchFilters.province, "Heredia")}>Heredia</option>
+            <option value="Alajuela" ${selectedOption(currentSearchFilters.province, "Alajuela")}>Alajuela</option>
           </select>
         </div>
         <button class="primary-button" type="submit">Aplicar filtros</button>
       </form>
 
-      <div class="results-layout">
-        <aside class="side-panel">
-          <h3>Servicios para boda</h3>
-          <div class="checkbox-list">
-            <label><input type="checkbox" checked> Salones</label>
-            <label><input type="checkbox" checked> Catering</label>
-            <label><input type="checkbox"> Fotografia</label>
-            <label><input type="checkbox"> Decoracion</label>
-            <label><input type="checkbox"> Musica</label>
-            <label><input type="checkbox"> Wedding planner</label>
-          </div>
-        </aside>
+      <div class="results-layout no-sidebar">
         <div>
           <div class="section-header">
             <div>
@@ -1363,6 +1348,7 @@ function bindPageEvents() {
       event.preventDefault();
       const formData = new FormData(homeSearch);
       currentSearchFilters = {
+        q: formData.get("q"),
         eventType: formData.get("eventType"),
         province: formData.get("location"),
       };
@@ -1377,6 +1363,7 @@ function bindPageEvents() {
       event.preventDefault();
       const formData = new FormData(filters);
       currentSearchFilters = {
+        q: formData.get("q"),
         service: formData.get("service"),
         province: formData.get("province"),
       };
