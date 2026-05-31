@@ -1,10 +1,12 @@
 const {
+  ensureCompaniesTable,
   ensureCompanyAuthTables,
   ensureServicesTable,
   getConfig,
   getTableClient,
 } = require("../shared/azure");
 const { getCurrentCompanySession } = require("../shared/companyAuth");
+const { notifyServiceSubmittedForReview } = require("../shared/email");
 const { enforceAllowedOrigin } = require("../shared/guard");
 const { badRequest, json, serverError } = require("../shared/http");
 const { cleanText } = require("../shared/validation");
@@ -48,6 +50,15 @@ async function getService(table, companyId, serviceId) {
   }
 }
 
+async function getCompany(companyId, config) {
+  try {
+    return await getTableClient(config.companiesTable, config).getEntity("company", companyId);
+  } catch (error) {
+    if (error.statusCode === 404) return null;
+    throw error;
+  }
+}
+
 module.exports = async function submitCurrentCompanyServiceForReview(context, req) {
   try {
     if (String(req.method || "").toUpperCase() !== "POST") {
@@ -77,6 +88,7 @@ module.exports = async function submitCurrentCompanyServiceForReview(context, re
     }
 
     const companyId = session.partitionKey;
+    await ensureCompaniesTable(config);
     await ensureServicesTable(config);
 
     const table = getTableClient(config.servicesTable, config);
@@ -107,6 +119,28 @@ module.exports = async function submitCurrentCompanyServiceForReview(context, re
       },
       "Merge",
     );
+
+    try {
+      const company = await getCompany(companyId, config);
+      if (company) {
+        await notifyServiceSubmittedForReview(
+          context,
+          {
+            company,
+            service: {
+              ...existing,
+              partitionKey: companyId,
+              rowKey: serviceId,
+              status: "pending",
+              updatedAt,
+            },
+          },
+          config,
+        );
+      }
+    } catch (error) {
+      context.log.warn(`Service review notification failed: ${error.message}`);
+    }
 
     context.res = json(200, {
       id: existing.id || serviceId,

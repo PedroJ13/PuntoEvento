@@ -62,6 +62,9 @@ async function ensureCompanyAuthTables(config = getConfig()) {
   await getTableClient(config.companySessionsTable, config).createTable().catch((error) => {
     if (error.statusCode !== 409) throw error;
   });
+  await getTableClient(config.usersTable, config).createTable().catch((error) => {
+    if (error.statusCode !== 409) throw error;
+  });
 }
 
 async function ensureServicesTable(config = getConfig()) {
@@ -72,6 +75,12 @@ async function ensureServicesTable(config = getConfig()) {
 
 async function ensureUploadsTable(config = getConfig()) {
   await getTableClient(config.uploadsTable, config).createTable().catch((error) => {
+    if (error.statusCode !== 409) throw error;
+  });
+}
+
+async function ensureLeadsTable(config = getConfig()) {
+  await getTableClient(config.leadsTable, config).createTable().catch((error) => {
     if (error.statusCode !== 409) throw error;
   });
 }
@@ -389,6 +398,7 @@ module.exports = {
   createWriteSasUrl,
   ensureCompanyAuthTables,
   ensureCompaniesTable,
+  ensureLeadsTable,
   ensureServicesTable,
   ensureUploadsTable,
   deletePendingBlob,

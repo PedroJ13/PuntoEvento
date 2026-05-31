@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Panel empresa | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
-    <link rel="stylesheet" href="styles.css?v=14" />
-    <link rel="stylesheet" href="panel.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=19" />
+    <link rel="stylesheet" href="panel.css?v=7" />
   </head>
   <body class="panel-body">
     <main class="panel-shell">
@@ -22,7 +22,39 @@
         </div>
       </header>
 
-      <section class="company-summary">
+      <section class="panel-auth" data-auth-section hidden>
+        <div>
+          <p class="eyebrow" data-auth-eyebrow>Acceso empresa</p>
+          <h2 data-auth-title>Iniciar sesion</h2>
+          <p data-auth-copy>Entra con el email y password activados para tu empresa.</p>
+        </div>
+        <form class="auth-form" data-login-form>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            <span>Password</span>
+            <input name="password" type="password" autocomplete="current-password" minlength="8" required />
+          </label>
+          <button class="primary-button" type="submit">Iniciar sesion</button>
+        </form>
+        <form class="auth-form is-hidden" data-activate-form>
+          <input name="token" type="hidden" />
+          <label>
+            <span>Password</span>
+            <input name="password" type="password" autocomplete="new-password" minlength="8" required />
+          </label>
+          <label>
+            <span>Confirmar password</span>
+            <input name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required />
+          </label>
+          <button class="primary-button" type="submit">Activar acceso</button>
+        </form>
+        <p class="panel-message" data-auth-message aria-live="polite"></p>
+      </section>
+
+      <section class="company-summary" data-authenticated-only>
         <div>
           <p class="eyebrow">Empresa</p>
           <h2 data-company-name>Cargando empresa...</h2>
@@ -44,7 +76,7 @@
         </div>
       </section>
 
-      <section class="panel-section">
+      <section class="panel-section" data-authenticated-only>
         <div class="section-heading">
           <div>
             <p class="eyebrow">Servicios</p>
@@ -111,6 +143,6 @@
         </div>
       </section>
     </main>
-    <script src="panel.js?v=5"></script>
+    <script src="panel.js?v=6"></script>
   </body>
 </html>

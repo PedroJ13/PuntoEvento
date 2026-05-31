@@ -62,6 +62,7 @@ const state = {
   eventTypes: FALLBACK_EVENT_TYPES,
   mode: new URLSearchParams(window.location.search).get("demo") === "local" ? "demo" : "real",
   pendingImages: [],
+  inviteToken: "",
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -89,6 +90,13 @@ function setPanelMessage(message, tone = "") {
 
 function setFormMessage(message, tone = "") {
   const node = $("[data-form-message]");
+  if (!node) return;
+  node.textContent = message;
+  node.dataset.tone = tone;
+}
+
+function setAuthMessage(message, tone = "") {
+  const node = $("[data-auth-message]");
   if (!node) return;
   node.textContent = message;
   node.dataset.tone = tone;
@@ -158,7 +166,12 @@ async function apiJson(path, options = {}) {
   });
 
   const text = await response.text();
-  const data = text ? JSON.parse(text) : null;
+  let data = null;
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {
+    data = null;
+  }
   if (!response.ok) {
     const error = new Error(data?.error || "No se pudo completar la accion.");
     error.status = response.status;
@@ -168,23 +181,49 @@ async function apiJson(path, options = {}) {
   return data;
 }
 
-async function acceptInviteIfPresent() {
+function getInviteTokenFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const token = params.get("invite") || params.get("token");
-  if (!token || state.mode === "demo") return false;
+  return params.get("invite") || params.get("token") || "";
+}
 
-  setPanelMessage("Validando invitacion...");
-  await apiJson("/company-auth/accept-invite", {
-    method: "POST",
-    body: JSON.stringify({ token }),
-  });
-
+function cleanInviteParams() {
+  const params = new URLSearchParams(window.location.search);
   params.delete("invite");
   params.delete("token");
   const cleanUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
   window.history.replaceState({}, "", cleanUrl);
-  setPanelMessage("Invitacion aceptada. Sesion iniciada.", "success");
-  return true;
+}
+
+function genericAuthError(error) {
+  if (error.status === 400) return "Revisa los datos e intentalo de nuevo.";
+  if (error.status === 403) return "Este acceso no esta disponible. Contacta al equipo de Punto Evento.";
+  return "No pudimos validar el acceso. Revisa los datos e intentalo de nuevo.";
+}
+
+function renderAuthMode(mode = "login", message = "") {
+  const isActivation = mode === "activate";
+  const section = $("[data-auth-section]");
+  if (!section) return;
+  section.hidden = false;
+  $("[data-auth-eyebrow]").textContent = isActivation ? "Activacion inicial" : "Acceso empresa";
+  $("[data-auth-title]").textContent = isActivation ? "Activa tu acceso" : "Iniciar sesion";
+  $("[data-auth-copy]").textContent = isActivation
+    ? "Define un password para entrar al panel ahora y volver despues con tu email."
+    : "Entra con el email y password activados para tu empresa.";
+  $("[data-login-form]")?.classList.toggle("is-hidden", isActivation);
+  $("[data-activate-form]")?.classList.toggle("is-hidden", !isActivation);
+  const tokenInput = $("[data-activate-form] input[name='token']");
+  if (tokenInput) tokenInput.value = state.inviteToken || "";
+  setAuthMessage(message || (isActivation ? "Usa el enlace de invitacion para activar tu acceso." : ""), message ? "error" : "");
+}
+
+function setAuthenticatedView(isAuthenticated) {
+  $$("[data-authenticated-only]").forEach((node) => {
+    node.classList.toggle("is-hidden", !isAuthenticated);
+  });
+  $("[data-logout]")?.classList.toggle("is-hidden", !isAuthenticated);
+  const authSection = $("[data-auth-section]");
+  if (authSection) authSection.hidden = isAuthenticated;
 }
 
 async function loadCatalogs() {
@@ -248,12 +287,14 @@ function renderCompany() {
 function renderAuthRequired() {
   state.company = null;
   state.services = [];
+  setAuthenticatedView(false);
+  renderAuthMode(state.inviteToken ? "activate" : "login");
   renderCompany();
   const list = $("[data-services-list]");
   list.innerHTML = `
     <div class="panel-empty">
-      <strong>Necesitas abrir el enlace de invitacion para entrar al panel.</strong>
-      <p>Si ya recibiste acceso, abre el enlace completo de invitacion. Si no lo tienes, contacta al equipo de Punto Evento.</p>
+      <strong>Necesitas iniciar sesion para entrar al panel.</strong>
+      <p>Si recibiste invitacion, abre el enlace completo para activar tu password. Si ya activaste acceso, usa tu email y password.</p>
       <a class="primary-button compact-button" href="index.html#empresas">Registrar empresa</a>
     </div>
   `;
@@ -316,22 +357,23 @@ function setActionsDisabled(isDisabled) {
 async function loadRealPanel() {
   setActionsDisabled(true);
   try {
-    await acceptInviteIfPresent();
     const [company, services] = await Promise.all([
       apiJson("/companies/me"),
       apiJson("/companies/me/services"),
     ]);
     state.company = company;
     state.services = Array.isArray(services) ? services : [];
+    setAuthenticatedView(true);
     setPanelMessage("");
+    setAuthMessage("");
     renderServices();
   } catch (error) {
     if (error.status === 401) {
       renderAuthRequired();
-      setPanelMessage("Necesitas abrir el enlace de invitacion para entrar al panel.", "error");
+      setAuthMessage(state.inviteToken ? "Activa tu acceso para continuar." : "Inicia sesion para entrar al panel.", "");
     } else {
       renderAuthRequired();
-      setPanelMessage("No pudimos cargar el panel. Intentalo de nuevo en unos minutos.", "error");
+      setAuthMessage("No pudimos cargar el panel. Intentalo de nuevo en unos minutos.", "error");
       console.warn(error);
     }
   } finally {
@@ -340,6 +382,7 @@ async function loadRealPanel() {
 }
 
 function loadDemoPanel() {
+  setAuthenticatedView(true);
   state.company = {
     name: "Aurisbel Eventos",
     slug: "aurisbel-eventos",
@@ -701,12 +744,90 @@ async function logout() {
   try {
     await apiJson("/company-auth/logout", { method: "POST", body: "{}" });
   } finally {
+    state.inviteToken = "";
+    cleanInviteParams();
     renderAuthRequired();
-    setPanelMessage("Sesion cerrada.");
+    setAuthMessage("Sesion cerrada.");
+  }
+}
+
+async function activateAccess(form) {
+  const password = String(form.elements.password.value || "");
+  const passwordConfirm = String(form.elements.passwordConfirm.value || "");
+  if (password.length < 8) {
+    setAuthMessage("Usa un password de al menos 8 caracteres.", "error");
+    return;
+  }
+  if (password !== passwordConfirm) {
+    setAuthMessage("Los passwords no coinciden.", "error");
+    return;
+  }
+
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.textContent = "Activando...";
+  setAuthMessage("Activando acceso...");
+  try {
+    await apiJson("/company-auth/activate", {
+      method: "POST",
+      body: JSON.stringify({ token: form.elements.token.value, password }),
+    });
+    state.inviteToken = "";
+    cleanInviteParams();
+    form.reset();
+    setPanelMessage("Acceso activado. Sesion iniciada.", "success");
+    await loadRealPanel();
+  } catch (error) {
+    console.warn(error);
+    setAuthMessage(genericAuthError(error), "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Activar acceso";
+  }
+}
+
+async function loginCompany(form) {
+  const email = String(form.elements.email.value || "").trim();
+  const password = String(form.elements.password.value || "");
+  if (!email || !password) {
+    setAuthMessage("Completa email y password.", "error");
+    return;
+  }
+
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.textContent = "Ingresando...";
+  setAuthMessage("Validando acceso...");
+  try {
+    await apiJson("/company-auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
+    form.reset();
+    setPanelMessage("Sesion iniciada.", "success");
+    await loadRealPanel();
+  } catch (error) {
+    console.warn(error);
+    setAuthMessage(genericAuthError(error), "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Iniciar sesion";
   }
 }
 
 document.addEventListener("submit", async (event) => {
+  if (event.target.matches("[data-activate-form]")) {
+    event.preventDefault();
+    await activateAccess(event.target);
+    return;
+  }
+
+  if (event.target.matches("[data-login-form]")) {
+    event.preventDefault();
+    await loginCompany(event.target);
+    return;
+  }
+
   if (!event.target.matches("[data-service-form]")) return;
   event.preventDefault();
   try {
@@ -824,6 +945,7 @@ document.addEventListener("click", (event) => {
 });
 
 async function init() {
+  state.inviteToken = getInviteTokenFromUrl();
   await loadCatalogs();
   renderCatalogControls();
   renderPhotoPreview();

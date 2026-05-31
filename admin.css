@@ -70,6 +70,7 @@
   background: #fff;
   color: var(--ink);
   padding: 12px 14px;
+  font: inherit;
 }
 
 .admin-login-card input:focus {
@@ -82,6 +83,7 @@
   min-height: 24px;
   margin: 0;
   color: var(--muted);
+  line-height: 1.35;
 }
 
 .admin-message.is-error {
@@ -137,6 +139,7 @@
 }
 
 .admin-tab {
+  flex: 1 1 150px;
   min-height: 42px;
   border: 0;
   border-radius: 8px;
@@ -796,6 +799,22 @@
   .internal-item-actions,
   .form-actions {
     grid-template-columns: 1fr;
+  }
+
+  .admin-shell {
+    width: min(100% - 28px, 1240px);
+    padding-top: 28px;
+  }
+
+  .admin-tabs {
+    display: grid;
+  }
+
+  .admin-actions button,
+  .internal-item-actions button,
+  .form-actions button,
+  .admin-login-card button {
+    width: 100%;
   }
 
   .service-form {

@@ -5,9 +5,19 @@ const { getTableClient } = require("./azure");
 
 const SESSION_COOKIE_PATH = "/api";
 const COMPANY_OWNER_ROLE = "company_owner";
+const PASSWORD_HASH_PREFIX = "scrypt";
+const PASSWORD_KEY_LENGTH = 64;
 
 function cleanToken(value, maxLength = 512) {
   return String(value || "").trim().slice(0, maxLength);
+}
+
+function normalizeEmail(value) {
+  return String(value || "").trim().toLowerCase().slice(0, 320);
+}
+
+function cleanPassword(value, maxLength = 256) {
+  return String(value || "").slice(0, maxLength);
 }
 
 function createSecureToken(bytes = 32) {
@@ -16,6 +26,22 @@ function createSecureToken(bytes = 32) {
 
 function hashSecret(value) {
   return crypto.createHash("sha256").update(String(value || ""), "utf8").digest("hex");
+}
+
+function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString("base64url");
+  const hash = crypto.scryptSync(cleanPassword(password), salt, PASSWORD_KEY_LENGTH).toString("base64url");
+  return `${PASSWORD_HASH_PREFIX}$${salt}$${hash}`;
+}
+
+function verifyPassword(password, storedHash) {
+  const [prefix, salt, hash] = String(storedHash || "").split("$");
+  if (prefix !== PASSWORD_HASH_PREFIX || !salt || !hash) return false;
+
+  const expected = Buffer.from(hash, "base64url");
+  const actual = crypto.scryptSync(cleanPassword(password), salt, expected.length);
+  if (actual.length !== expected.length) return false;
+  return crypto.timingSafeEqual(actual, expected);
 }
 
 function parseCookies(header) {
@@ -106,6 +132,17 @@ async function markInviteUsed(invite, config = getConfig()) {
 }
 
 async function createCompanySession(invite, config = getConfig()) {
+  return createCompanySessionForCompany(
+    {
+      companyId: invite.partitionKey,
+      email: invite.email,
+      role: invite.role || COMPANY_OWNER_ROLE,
+    },
+    config,
+  );
+}
+
+async function createCompanySessionForCompany(identity, config = getConfig()) {
   const now = new Date().toISOString();
   const sessionId = `session_${crypto.randomUUID()}`;
   const sessionToken = createSecureToken(32);
@@ -113,12 +150,12 @@ async function createCompanySession(invite, config = getConfig()) {
     Date.now() + Math.max(1, Number(config.companySessionTtlDays || 14)) * 24 * 60 * 60 * 1000,
   ).toISOString();
   const session = {
-    partitionKey: invite.partitionKey,
+    partitionKey: identity.companyId,
     rowKey: sessionId,
     id: sessionId,
     sessionHash: hashSecret(sessionToken),
-    email: invite.email,
-    role: invite.role || COMPANY_OWNER_ROLE,
+    email: normalizeEmail(identity.email),
+    role: identity.role || COMPANY_OWNER_ROLE,
     status: "active",
     expiresAt,
     createdAt: now,
@@ -128,6 +165,66 @@ async function createCompanySession(invite, config = getConfig()) {
 
   await getTableClient(config.companySessionsTable, config).createEntity(session);
   return { session, sessionToken };
+}
+
+async function findUserByEmail(email, config = getConfig()) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!normalizedEmail) return null;
+
+  const table = getTableClient(config.usersTable, config);
+  const entities = table.listEntities({
+    queryOptions: { filter: odata`email eq ${normalizedEmail}` },
+  });
+
+  for await (const user of entities) {
+    return user;
+  }
+  return null;
+}
+
+async function findCompanyOwnerUser(companyId, email, config = getConfig()) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!companyId || !normalizedEmail) return null;
+
+  const table = getTableClient(config.usersTable, config);
+  const entities = table.listEntities({
+    queryOptions: {
+      filter: odata`PartitionKey eq ${companyId} and email eq ${normalizedEmail}`,
+    },
+  });
+
+  for await (const user of entities) {
+    return user;
+  }
+  return null;
+}
+
+async function upsertCompanyOwnerPassword({ companyId, email, password }, config = getConfig()) {
+  const normalizedEmail = normalizeEmail(email);
+  const existing = await findCompanyOwnerUser(companyId, normalizedEmail, config);
+  const now = new Date().toISOString();
+  const userId = existing?.id || existing?.rowKey || `user_${crypto.randomUUID()}`;
+  const user = {
+    partitionKey: companyId,
+    rowKey: existing?.rowKey || userId,
+    id: userId,
+    companyId,
+    email: normalizedEmail,
+    role: existing?.role || COMPANY_OWNER_ROLE,
+    status: "active",
+    passwordHash: hashPassword(password),
+    passwordSetAt: now,
+    createdAt: existing?.createdAt || now,
+    updatedAt: now,
+  };
+
+  if (existing) {
+    await getTableClient(config.usersTable, config).updateEntity(user, "Merge");
+  } else {
+    await getTableClient(config.usersTable, config).createEntity(user);
+  }
+
+  return user;
 }
 
 async function findSessionByToken(sessionToken, config = getConfig()) {
@@ -181,15 +278,22 @@ async function revokeSession(session, config = getConfig()) {
 module.exports = {
   clearSessionCookie,
   cleanToken,
+  cleanPassword,
   createCompanySession,
+  createCompanySessionForCompany,
   createSecureToken,
+  findUserByEmail,
   findInviteByToken,
   getCurrentCompanySession,
+  hashPassword,
   hashSecret,
   parseCookies,
   publicSessionPayload,
+  normalizeEmail,
   revokeSession,
   sessionCookie,
+  upsertCompanyOwnerPassword,
   validateActiveInvite,
+  verifyPassword,
   markInviteUsed,
 };

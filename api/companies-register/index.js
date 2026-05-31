@@ -5,6 +5,7 @@ const {
   getConfig,
   getTableClient,
 } = require("../shared/azure");
+const { notifyCompanyRegistration } = require("../shared/email");
 const { enforceAllowedOrigin } = require("../shared/guard");
 const { badRequest, json, serverError } = require("../shared/http");
 const { slugify, validateCompanyRegistrationPayload } = require("../shared/validation");
@@ -64,7 +65,7 @@ module.exports = async function registerCompany(context, req) {
     const companyId = `company_${crypto.randomUUID()}`;
     const slug = await uniqueCompanySlug(table, company.name);
 
-    await table.createEntity({
+    const entity = {
       partitionKey: "company",
       rowKey: companyId,
       id: companyId,
@@ -84,7 +85,15 @@ module.exports = async function registerCompany(context, req) {
       plan: "free",
       createdAt: now,
       updatedAt: now,
-    });
+    };
+
+    await table.createEntity(entity);
+
+    try {
+      await notifyCompanyRegistration(context, entity, config);
+    } catch (error) {
+      context.log.warn(`Company registration notification failed: ${error.message}`);
+    }
 
     context.res = json(201, {
       companyId,

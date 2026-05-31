@@ -7,6 +7,7 @@ const CONFIG = {
   categoriesUrl: "data/categories.json",
   publicServicesUrl: "/api/public/services",
   publicCompanyUrl: (slug) => `/api/public/companies/${encodeURIComponent(slug)}`,
+  publicLeadsUrl: "/api/public/leads",
   fallbackProviderImage: "assets/images/fallback-provider.svg",
   apiBaseUrl: "/api",
   maxProviderImages: 6,
@@ -31,11 +32,16 @@ let serviceDataSource = "demo";
 let serviceDataNotice = "";
 let currentSearchFilters = {};
 const companyProfileCache = new Map();
+let quoteContext = null;
+let isQuoteSubmitting = false;
 
 const app = document.querySelector("#app");
 const drawer = document.querySelector("#quoteDrawer");
 const quoteForm = document.querySelector("#quoteForm");
 const quoteConfirmation = document.querySelector("#quoteConfirmation");
+const quoteTitle = document.querySelector("#quoteTitle");
+const quoteStatus = document.querySelector("[data-quote-status]");
+const quoteContextNode = document.querySelector("[data-quote-context]");
 const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 let lastFocusedElement = null;
@@ -306,6 +312,13 @@ function serviceHref(service) {
   return `#proveedor/${encodeURIComponent(companySlug)}${suffix}`;
 }
 
+function quoteButtonAttributes(service) {
+  const companyId = service.company?.id || "";
+  const serviceId = service.id || "";
+  if (!companyId || !serviceId || serviceDataSource !== "api") return "";
+  return ` data-company-id="${safeText(companyId)}" data-service-id="${safeText(serviceId)}" data-service-name="${safeText(service.name)}" data-company-name="${safeText(service.company?.name || "")}"`;
+}
+
 function packagesForProvider(providerId) {
   return packages.filter((pack) => pack.providerId === providerId);
 }
@@ -357,7 +370,7 @@ function serviceCard(service) {
         <strong>${safeText(service.priceFrom)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver empresa</a>
-          <button class="secondary-button" data-open-quote data-service-name="${safeText(service.name)}">Cotizar servicio</button>
+          <button class="secondary-button" data-open-quote${quoteButtonAttributes(service)}>Cotizar servicio</button>
         </div>
       </div>
     </article>
@@ -408,7 +421,7 @@ function wideServiceCard(service) {
         <strong>${safeText(service.priceFrom)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver empresa</a>
-          <button class="primary-button" data-open-quote data-service-name="${safeText(service.name)}">Cotizar servicio</button>
+          <button class="primary-button" data-open-quote${quoteButtonAttributes(service)}>Cotizar servicio</button>
         </div>
       </div>
     </article>
@@ -810,7 +823,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
           <strong>${safeText(selectedService.name)}</strong>
         </div>
         <div class="card-actions">
-          <button class="primary-button" data-open-quote data-service-name="${safeText(selectedService.name)}">Cotizar servicio</button>
+          <button class="primary-button" data-open-quote${quoteButtonAttributes(selectedService)}>Cotizar servicio</button>
           <a class="secondary-button" href="#bodas">Ver mas servicios</a>
         </div>
       </aside>
@@ -862,7 +875,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
             <li><span class="check">&#10003;</span><span>${publishedServices.length} servicio(s) publicado(s).</span></li>
             <li><span class="check">&#10003;</span><span>Perfil revisado antes de publicarse.</span></li>
           </ul>
-          <button class="primary-button" data-open-quote data-service-name="${safeText(selectedService.name)}">Pedir presupuesto</button>
+          <button class="primary-button" data-open-quote${quoteButtonAttributes(selectedService)}>Pedir presupuesto</button>
         </aside>
       </div>
     </section>
@@ -1672,8 +1685,42 @@ function bindCarousel() {
   });
 }
 
+function setQuoteStatus(message, tone = "") {
+  if (!quoteStatus) return;
+  quoteStatus.textContent = message;
+  quoteStatus.dataset.tone = tone;
+}
+
+function quoteContextFromTrigger(trigger) {
+  const companyId = trigger?.dataset.companyId || "";
+  const serviceId = trigger?.dataset.serviceId || "";
+  if (!companyId || !serviceId) return null;
+  return {
+    companyId,
+    serviceId,
+    serviceName: trigger.dataset.serviceName || "servicio seleccionado",
+    companyName: trigger.dataset.companyName || "",
+  };
+}
+
 function openQuote(event) {
   lastFocusedElement = event?.currentTarget || document.activeElement;
+  quoteContext = quoteContextFromTrigger(event?.currentTarget);
+  const serviceName = quoteContext?.serviceName || event?.currentTarget?.dataset.serviceName || "";
+  if (quoteTitle) {
+    quoteTitle.textContent = serviceName ? `Cotizar ${serviceName}` : "Cotizar servicio";
+  }
+  if (quoteContextNode) {
+    quoteContextNode.textContent = quoteContext?.companyName
+      ? `Solicitud dirigida a ${quoteContext.companyName}.`
+      : "Abre un servicio publicado para dirigir la solicitud a una empresa.";
+  }
+  setQuoteStatus(
+    quoteContext
+      ? ""
+      : "Para enviar una cotizacion real, abre un servicio publicado desde el listado o perfil de empresa.",
+    quoteContext ? "" : "error",
+  );
   quoteForm.classList.remove("is-hidden");
   quoteConfirmation.classList.add("is-hidden");
   drawer.classList.add("is-open");
@@ -1690,7 +1737,8 @@ function closeQuote({ submitted = false } = {}) {
     quoteForm.classList.add("is-hidden");
     quoteConfirmation.classList.remove("is-hidden");
     quoteConfirmation.focus();
-    showToast("Solicitud demo registrada.");
+    setQuoteStatus("");
+    showToast("Solicitud enviada.");
     return;
   }
 
@@ -1698,10 +1746,62 @@ function closeQuote({ submitted = false } = {}) {
   drawer.setAttribute("aria-hidden", "true");
   quoteForm.classList.remove("is-hidden");
   quoteConfirmation.classList.add("is-hidden");
+  setQuoteStatus("");
+  quoteContext = null;
 
   if (lastFocusedElement && document.contains(lastFocusedElement)) {
     lastFocusedElement.focus();
   }
+}
+
+async function submitPublicLead(form) {
+  if (!quoteContext) {
+    throw new Error("Selecciona un servicio publicado antes de enviar la solicitud.");
+  }
+
+  const formData = new FormData(form);
+  const response = await fetch(CONFIG.publicLeadsUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      companyId: quoteContext.companyId,
+      serviceId: quoteContext.serviceId,
+      name: String(formData.get("name") || "").trim(),
+      email: String(formData.get("email") || "").trim(),
+      phone: String(formData.get("phone") || "").trim(),
+      eventType: String(formData.get("eventType") || "").trim(),
+      eventDate: String(formData.get("date") || "").trim(),
+      guests: String(formData.get("guests") || "").trim(),
+      message: String(formData.get("message") || "").trim(),
+    }),
+  });
+
+  const text = await response.text();
+  let payload = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = null;
+  }
+
+  if (!response.ok) {
+    const error = new Error(payload?.error || "No se pudo enviar la solicitud.");
+    error.status = response.status;
+    error.data = payload;
+    throw error;
+  }
+
+  return payload;
+}
+
+function quoteErrorMessage(error) {
+  if (error.status === 400) return "Revisa los datos requeridos antes de enviar.";
+  if (error.status === 404) return "Este servicio ya no esta disponible para cotizar.";
+  if (error.status === 409) return "La empresa no tiene un canal operativo para recibir cotizaciones.";
+  if (error.status === 502 && error.data?.leadId) {
+    return "Recibimos la solicitud, pero no pudimos notificar a la empresa en este momento.";
+  }
+  return error.message || "No se pudo enviar la solicitud. Intentalo de nuevo en unos minutos.";
 }
 
 function showToast(message) {
@@ -1717,14 +1817,31 @@ document.querySelectorAll("[data-close-quote]").forEach((button) => {
   button.addEventListener("click", () => closeQuote());
 });
 
-quoteForm.addEventListener("submit", (event) => {
+quoteForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
   if (!quoteForm.reportValidity()) {
     return;
   }
 
-  closeQuote({ submitted: true });
+  if (isQuoteSubmitting) return;
+
+  const submitButton = quoteForm.querySelector('button[type="submit"]');
+  isQuoteSubmitting = true;
+  setButtonLoading(submitButton, true, "Enviando...");
+  setQuoteStatus("Enviando solicitud...");
+
+  try {
+    await submitPublicLead(quoteForm);
+    closeQuote({ submitted: true });
+  } catch (error) {
+    console.warn(error);
+    setQuoteStatus(quoteErrorMessage(error), "error");
+    showToast("No se pudo enviar la solicitud.");
+  } finally {
+    isQuoteSubmitting = false;
+    setButtonLoading(submitButton, false);
+  }
 });
 
 document.addEventListener("keydown", (event) => {

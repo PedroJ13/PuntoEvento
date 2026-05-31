@@ -503,6 +503,7 @@ button:focus-visible,
 
 .card-actions > * {
   flex: 1;
+  min-width: 0;
 }
 
 .package-card {
@@ -964,6 +965,12 @@ button:focus-visible,
   gap: 14px;
 }
 
+.quote-context {
+  margin: -2px 0 18px;
+  color: var(--muted);
+  font-weight: 750;
+}
+
 .quote-form label {
   display: grid;
   gap: 6px;
@@ -980,6 +987,19 @@ button:focus-visible,
   display: grid;
   gap: 14px;
   margin-top: 18px;
+}
+
+.quote-status {
+  min-height: 20px;
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.35;
+  font-weight: 750;
+}
+
+.quote-status[data-tone="error"] {
+  color: var(--terracotta);
+  font-weight: 850;
 }
 
 .quote-confirmation.is-hidden,
@@ -1058,6 +1078,7 @@ button:focus-visible,
 .form-help {
   margin: 0;
   color: var(--muted);
+  line-height: 1.45;
 }
 
 .upload-box {
@@ -1174,6 +1195,7 @@ button:focus-visible,
 
 .company-submit-status {
   min-height: 1.35em;
+  line-height: 1.35;
   font-weight: 800;
 }
 
@@ -1339,6 +1361,10 @@ button:disabled,
 
   .wide-card {
     grid-template-columns: 1fr;
+  }
+
+  .card-actions {
+    display: grid;
   }
 
   .service-option {

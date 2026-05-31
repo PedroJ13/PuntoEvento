@@ -9,7 +9,7 @@
       content="Demo local de una propuesta para Punto Evento Costa Rica."
     />
     <link rel="preconnect" href="https://images.unsplash.com" />
-    <link rel="stylesheet" href="styles.css?v=17" />
+    <link rel="stylesheet" href="styles.css?v=19" />
   </head>
   <body>
     <header class="topbar">
@@ -46,6 +46,7 @@
         </button>
         <p class="eyebrow">Solicitud de presupuesto</p>
         <h2 id="quoteTitle">Cotizar proveedores seleccionados</h2>
+        <p class="quote-context" data-quote-context>Elige un servicio publicado para enviar la solicitud a la empresa correcta.</p>
         <form class="quote-form" id="quoteForm">
           <label>
             Tipo de evento
@@ -69,24 +70,29 @@
             <input type="text" name="name" placeholder="Tu nombre" autocomplete="name" required />
           </label>
           <label>
+            Email
+            <input type="email" name="email" placeholder="tu@email.com" autocomplete="email" required />
+          </label>
+          <label>
             WhatsApp
             <input type="tel" name="phone" placeholder="8888-8888" autocomplete="tel" inputmode="tel" required />
           </label>
           <label class="full">
             Detalles
-            <textarea name="details" rows="4" placeholder="Lugar, estilo, presupuesto o servicios que necesitas" required></textarea>
+            <textarea name="message" rows="4" placeholder="Lugar, estilo, presupuesto o servicios que necesitas" required></textarea>
           </label>
-          <button class="primary-button full" type="submit">Enviar solicitud demo</button>
+          <button class="primary-button full" type="submit">Enviar solicitud</button>
+          <p class="quote-status full" data-quote-status aria-live="polite"></p>
         </form>
         <div class="quote-confirmation is-hidden" id="quoteConfirmation" tabindex="-1">
-          <p class="eyebrow">Demo registrada</p>
+          <p class="eyebrow">Solicitud enviada</p>
           <h3>Solicitud lista para revisar</h3>
-          <p>En el MVP este paso podria enviar el lead a un formulario externo, correo o Azure Function. Por ahora no se envia informacion real.</p>
+          <p>Recibimos tu solicitud y la enviaremos a la empresa correspondiente.</p>
           <button class="primary-button" type="button" data-close-quote>Cerrar</button>
         </div>
       </section>
     </div>
 
-    <script src="app.js?v=23"></script>
+    <script src="app.js?v=25"></script>
   </body>
 </html>
