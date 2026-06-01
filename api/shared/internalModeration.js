@@ -1,6 +1,7 @@
 const { odata } = require("@azure/data-tables");
 const {
   deletePendingBlob,
+  ensureCompanyAuthTables,
   ensureCompaniesTable,
   ensurePublicContainer,
   ensureServicesTable,
@@ -11,6 +12,8 @@ const {
   getTableClient,
 } = require("./azure");
 const { requireAdminAuth } = require("./adminAuth");
+const { getOrCreateCompanyInvite } = require("./companyInvites");
+const { sendCompanyActivationInviteEmail } = require("./email");
 const { enforceAllowedOrigin } = require("./guard");
 const { badRequest, json, serverError } = require("./http");
 const { validateServiceUploadCapacity } = require("./serviceUploadRules");
@@ -271,7 +274,93 @@ async function moderateCompany(context, action, req, config) {
   if (action === "reject") patch.rejectionReason = cleanText(req.body?.reason, 500);
 
   await companiesTable.updateEntity(patch, "Merge");
-  context.res = success(status);
+
+  if (action !== "approve") {
+    context.res = success(status);
+    return;
+  }
+
+  const approvedCompany = {
+    ...company,
+    status,
+    updatedAt: now,
+    rejectionReason: "",
+  };
+
+  try {
+    if (!approvedCompany.email) {
+      context.res = success(status, {
+        invite: {
+          status: "missing_email",
+          emailSent: false,
+        },
+        warning: "Company approved, but activation email was not sent because company email is missing.",
+      });
+      return;
+    }
+
+    await ensureCompanyAuthTables(config);
+    const inviteResult = await getOrCreateCompanyInvite(
+      {
+        companyId,
+        email: approvedCompany.email,
+      },
+      config,
+    );
+
+    if (!inviteResult.created) {
+      context.res = success(status, {
+        invite: {
+          status: "active_exists",
+          inviteId: inviteResult.invite.id || inviteResult.invite.rowKey,
+          expiresAt: inviteResult.invite.expiresAt,
+          emailSent: false,
+        },
+        warning: "Company approved, but activation email was not sent because an active invite already exists.",
+      });
+      return;
+    }
+
+    try {
+      await sendCompanyActivationInviteEmail(
+        {
+          company: approvedCompany,
+          inviteUrl: inviteResult.inviteUrl,
+        },
+        config,
+      );
+      context.res = success(status, {
+        invite: {
+          status: "email_sent",
+          inviteId: inviteResult.invite.id || inviteResult.invite.rowKey,
+          expiresAt: inviteResult.invite.expiresAt,
+          emailSent: true,
+        },
+      });
+      return;
+    } catch (error) {
+      context.log.warn("Company activation invite email failed.");
+      context.res = success(status, {
+        invite: {
+          status: "email_failed",
+          inviteId: inviteResult.invite.id || inviteResult.invite.rowKey,
+          expiresAt: inviteResult.invite.expiresAt,
+          emailSent: false,
+        },
+        warning: "Company approved and invite created, but activation email could not be sent.",
+      });
+      return;
+    }
+  } catch (error) {
+    context.log.warn("Company activation invite generation failed.");
+    context.res = success(status, {
+      invite: {
+        status: "invite_failed",
+        emailSent: false,
+      },
+      warning: "Company approved, but activation invite could not be created.",
+    });
+  }
 }
 
 async function moderateService(context, action, req, config) {

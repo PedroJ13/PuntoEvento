@@ -104,6 +104,21 @@
   color: var(--muted);
 }
 
+.admin-toolbar [data-status][data-tone="success"] {
+  color: #176347;
+  font-weight: 850;
+}
+
+.admin-toolbar [data-status][data-tone="warning"] {
+  color: #7a5412;
+  font-weight: 850;
+}
+
+.admin-toolbar [data-status][data-tone="error"] {
+  color: var(--terracotta);
+  font-weight: 850;
+}
+
 .demo-banner {
   display: flex;
   align-items: center;

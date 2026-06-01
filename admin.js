@@ -137,9 +137,11 @@ function parseList(value) {
   }
 }
 
-function setStatus(message) {
+function setStatus(message, tone = "") {
   const status = $("[data-status]");
-  if (status) status.textContent = message;
+  if (!status) return;
+  status.textContent = message;
+  status.dataset.tone = tone;
 }
 
 function setLoginMessage(message, isError = false) {
@@ -916,6 +918,42 @@ function internalActionPath(type, action, ids) {
   return "";
 }
 
+function companyApproveMessage(response = {}) {
+  const inviteStatus = response?.invite?.status || "";
+  if (inviteStatus === "email_sent") {
+    return {
+      message: "Empresa aprobada e invitacion enviada.",
+      tone: "success",
+    };
+  }
+  if (inviteStatus === "active_exists") {
+    return {
+      message: "Empresa aprobada; ya existia invitacion activa.",
+      tone: "warning",
+    };
+  }
+  if (["email_failed", "missing_email", "invite_failed"].includes(inviteStatus) || response?.warning) {
+    return {
+      message: "Empresa aprobada, pero no se pudo enviar la invitacion. Reintentar o enviar manualmente.",
+      tone: "warning",
+    };
+  }
+  return {
+    message: "Empresa aprobada.",
+    tone: "success",
+  };
+}
+
+function internalActionSuccessMessage(type, action, response = {}) {
+  if (type === "companies" && action === "approve") {
+    return companyApproveMessage(response);
+  }
+  return {
+    message: action === "approve" ? "Item aprobado." : "Item rechazado.",
+    tone: action === "approve" ? "success" : "warning",
+  };
+}
+
 async function handleInternalAction(button) {
   if (state.demoMode) {
     setStatus("La moderacion nueva requiere login admin real.");
@@ -945,14 +983,15 @@ async function handleInternalAction(button) {
   button.disabled = true;
   setStatus(action === "approve" ? "Aprobando item..." : "Rechazando item...");
   try {
-    await adminFetch(path, {
+    const response = await adminFetch(path, {
       method: "POST",
       body: action === "reject" ? JSON.stringify({ reason }) : "{}",
     });
-    setStatus(action === "approve" ? "Item aprobado." : "Item rechazado.");
+    const result = internalActionSuccessMessage(type, action, response);
+    setStatus(result.message, result.tone);
     await loadInternalList(type);
   } catch (error) {
-    setStatus(error.message);
+    setStatus(error.message, "error");
     button.disabled = false;
   }
 }

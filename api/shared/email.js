@@ -351,10 +351,24 @@ async function sendLeadEmailToCompany({ company, service, lead }, config) {
   });
 }
 
+async function sendCompanyActivationInviteEmail({ company, inviteUrl }, config) {
+  await sendEmail(config, {
+    to: [company.email],
+    subject: "Activa tu acceso a Punto Evento",
+    html: `
+      <h2>Tu empresa fue aprobada en Punto Evento</h2>
+      <p>Ya puedes activar tu acceso al panel de empresa.</p>
+      <p><a href="${escapeText(inviteUrl)}">Activar acceso</a></p>
+      <p>Por seguridad, este enlace vence automaticamente.</p>
+    `,
+  });
+}
+
 module.exports = {
   notifyCompanyRegistration,
   notifyProviderRegistration,
   notifyServiceSubmittedForReview,
+  sendCompanyActivationInviteEmail,
   sendLeadEmailToCompany,
   sendEmail,
 };

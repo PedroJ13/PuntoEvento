@@ -1,4 +1,3 @@
-const crypto = require("crypto");
 const {
   ensureCompaniesTable,
   ensureCompanyAuthTables,
@@ -6,11 +5,9 @@ const {
   getTableClient,
 } = require("../shared/azure");
 const { requireAdminAuth } = require("../shared/adminAuth");
-const { createSecureToken, hashSecret } = require("../shared/companyAuth");
+const { COMPANY_OWNER_ROLE, createCompanyInviteEntity } = require("../shared/companyInvites");
 const { enforceAllowedOrigin } = require("../shared/guard");
 const { badRequest, json, serverError } = require("../shared/http");
-
-const COMPANY_OWNER_ROLE = "company_owner";
 
 function cleanText(value, maxLength = 256) {
   return String(value || "").trim().slice(0, maxLength);
@@ -18,12 +15,6 @@ function cleanText(value, maxLength = 256) {
 
 function notFound(message) {
   return json(404, { error: message });
-}
-
-function inviteUrl(token, config) {
-  const path = `/panel.html?invite=${encodeURIComponent(token)}`;
-  const baseUrl = String(config.appPublicUrl || "").trim().replace(/\/+$/, "");
-  return baseUrl ? `${baseUrl}${path}` : path;
 }
 
 async function getCompany(companyId, config) {
@@ -76,34 +67,15 @@ module.exports = async function createCompanyInvite(context, req) {
       return;
     }
 
-    const now = new Date().toISOString();
-    const expiresAt = new Date(
-      Date.now() + Math.max(1, Number(config.companyInviteTokenTtlMinutes || 1440)) * 60 * 1000,
-    ).toISOString();
-    const inviteId = `invite_${crypto.randomUUID()}`;
-    const token = createSecureToken(32);
-
-    await getTableClient(config.companyInvitesTable, config).createEntity({
-      partitionKey: companyId,
-      rowKey: inviteId,
-      id: inviteId,
-      tokenHash: hashSecret(token),
-      email,
-      role: COMPANY_OWNER_ROLE,
-      status: "active",
-      expiresAt,
-      usedAt: "",
-      createdAt: now,
-      updatedAt: now,
-    });
+    const { invite, inviteUrl } = await createCompanyInviteEntity({ companyId, email }, config);
 
     context.res = json(201, {
-      inviteId,
+      inviteId: invite.id || invite.rowKey,
       companyId,
-      email,
+      email: invite.email,
       role: COMPANY_OWNER_ROLE,
-      expiresAt,
-      inviteUrl: inviteUrl(token, config),
+      expiresAt: invite.expiresAt,
+      inviteUrl,
     });
   } catch (error) {
     context.log.error(error);

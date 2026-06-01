@@ -309,7 +309,13 @@ Response `200`:
 ```json
 {
   "ok": true,
-  "status": "published"
+  "status": "published",
+  "invite": {
+    "status": "email_sent",
+    "inviteId": "invite_123",
+    "expiresAt": "2026-06-02T00:00:00Z",
+    "emailSent": true
+  }
 }
 ```
 
@@ -320,6 +326,12 @@ Reglas:
 - Actualiza `updatedAt`.
 - Limpia `rejectionReason`.
 - No publica automaticamente servicios ni uploads relacionados.
+- Si no existe una invitacion activa vigente para esa empresa/email, crea una en `CompanyInvites`.
+- Envia email de activacion a `Company.email` usando el provider de email actual.
+- No devuelve `inviteUrl`, token completo, `tokenHash`, cookies ni secretos.
+- Si ya existe una invitacion activa vigente, no genera otra y responde `invite.status=active_exists` con `emailSent=false`.
+- Si el email falla, la empresa queda aprobada y responde `invite.status=email_failed`, `emailSent=false` y `warning` claro.
+- Si no hay email de empresa o falla la creacion del invite, la empresa queda aprobada y la response incluye `warning` para reintento/manual.
 
 ### GET `/api/internal/companies/pending`
 
