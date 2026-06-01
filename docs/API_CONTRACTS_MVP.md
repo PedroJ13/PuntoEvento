@@ -52,6 +52,7 @@ Request:
   "email": "empresa@email.com",
   "password": "password-temporal-o-flujo-auth",
   "whatsapp": "50688888888",
+  "phone": "50622222222",
   "website": "https://...",
   "instagram": "https://...",
   "facebook": "https://...",
@@ -76,7 +77,7 @@ Response `201`:
 Validaciones:
 
 - `companyName`, `email`, `whatsapp`, `province` y `description` requeridos.
-- `website`, `instagram`, `facebook` y `tiktok` son opcionales.
+- `phone`, `website`, `instagram`, `facebook` y `tiktok` son opcionales.
 - `email` es dato interno por defecto; no publicarlo en endpoints publicos.
 - Email valido y normalizado.
 - Slug unico.
@@ -99,6 +100,7 @@ Response `200`:
   "plan": "free",
   "email": "empresa@email.com",
   "whatsapp": "50688888888",
+  "phone": "50622222222",
   "website": "https://...",
   "instagram": "https://...",
   "facebook": "https://...",
@@ -149,6 +151,89 @@ Validaciones:
 - Token no debe estar vencido, usado ni revocado.
 - Al aceptar, marcar invitacion como usada y crear `CompanySessions`.
 - No devolver token, hash ni datos internos.
+
+### POST `/api/company-auth/activate`
+
+Activa acceso recurrente de empresa desde una invitacion y define password inicial.
+
+Request:
+
+```json
+{
+  "token": "token-largo-de-invitacion",
+  "password": "password-seguro"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "companyId": "company_123",
+  "email": "empresa@email.com",
+  "role": "company_owner"
+}
+```
+
+Headers:
+
+```text
+Set-Cookie: pe_company_session=<session>; HttpOnly; Secure; SameSite=Lax; Path=/api
+```
+
+Reglas:
+
+- Mantiene `POST /api/company-auth/accept-invite` como compatibilidad para activacion sin password.
+- Token requerido, activo, no usado y no vencido.
+- `password` requerido con minimo 8 caracteres.
+- Guarda solo `passwordHash` con `scrypt` y salt aleatorio en `Users`.
+- Crea sesion server-side en `CompanySessions`.
+- Marca la invitacion como usada.
+- Empresas `pending` y `published` pueden activar/login.
+- Empresas `rejected` o `suspended` responden `403`.
+- No devolver password, hash, token, cookie cruda ni metadata interna.
+
+### POST `/api/company-auth/login`
+
+Login recurrente de empresa con email/password.
+
+Request:
+
+```json
+{
+  "email": "empresa@email.com",
+  "password": "password-seguro"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "companyId": "company_123",
+  "email": "empresa@email.com",
+  "role": "company_owner"
+}
+```
+
+Headers:
+
+```text
+Set-Cookie: pe_company_session=<session>; HttpOnly; Secure; SameSite=Lax; Path=/api
+```
+
+Errores:
+
+- `400` si faltan email/password.
+- `401` para email inexistente, usuario inactivo, password invalido o empresa inexistente.
+- `403` si la empresa existe pero su estado no puede acceder al panel (`rejected`, `suspended` u otro no permitido).
+
+Reglas:
+
+- Busca usuario activo por email normalizado en `Users`.
+- Verifica password con hash fuerte; nunca compara ni guarda password plano.
+- Crea sesion server-side igual que el flujo de invitacion.
+- No expone `passwordHash`, tokens, cookies, `partitionKey`, `rowKey` ni metadata interna.
 
 ### POST `/api/company-auth/logout`
 
@@ -352,10 +437,13 @@ Reglas:
 
 - Requiere credencial interna admin.
 - El servicio debe existir en `Services` con `PartitionKey=companyId` y `RowKey=serviceId`.
+- La empresa asociada debe estar `published`; si no, responder `409`.
 - Actualiza `Services.status` a `published`.
 - Actualiza `updatedAt`.
 - Limpia `rejectionReason`.
-- No aprueba uploads pendientes automaticamente; los uploads deben aprobarse por accion explicita.
+- Publica tambien los uploads pendientes asociados a ese servicio, aplicando reglas de cover y galeria.
+- Si un upload asociado no puede publicarse por validacion de imagenes, responder con error claro y no dejar el servicio en estado parcialmente publicado.
+- La UI interna debe mostrar las imagenes dentro del expediente del servicio, no como cola separada principal.
 
 ### POST `/api/internal/services/{companyId}/{serviceId}/reject`
 
@@ -406,6 +494,8 @@ Reglas:
 - Requiere credencial interna admin.
 - El upload debe existir en `Uploads` con `PartitionKey=companyId` y `RowKey=uploadId`.
 - Solo uploads `pending` pueden aprobarse.
+- La empresa asociada debe estar `published`; si no, responder `409`.
+- Si `scope=service`, el servicio asociado debe estar `published`; si no, responder `409`.
 - Copia el blob desde el contenedor pendiente hacia el contenedor publico usando el mismo path `companies/...`.
 - Cambia `Uploads.status` a `published` y guarda `publicBlobName`, `publicBlobUrl` y `updatedAt`.
 - Intenta borrar el blob pendiente despues de publicar; si falla el borrado, no falla la publicacion.
@@ -414,6 +504,8 @@ Reglas:
 - Si `scope=company` e `imageType=cover`, actualiza `Companies.coverUrl`.
 - Si `scope=company` e `imageType=logo`, actualiza `Companies.logoUrl`.
 - Si `scope=company` e `imageType=gallery`, solo deja el upload publicado porque `Company` no tiene campo `gallery` definido para MVP.
+- En servicios, no permitir mas de 10 imagenes publicadas en total incluyendo cover.
+- En servicios, debe existir maximo un cover publicado.
 
 ### GET `/api/internal/uploads/pending`
 
@@ -445,8 +537,9 @@ Reglas:
 
 - Requiere credencial interna admin.
 - Lista solo `Uploads` con `status=pending`.
-- No devuelve `pendingBlobName`, `pendingBlobUrl`, SAS, `partitionKey`, `rowKey`, hashes, cookies, connection strings ni metadata interna.
-- Preview visual de imagenes pendientes queda fuera de este contrato; si se necesita, debe ser un endpoint interno autenticado que no exponga SAS.
+- No devuelve `pendingBlobName`, SAS, `partitionKey`, `rowKey`, hashes, cookies, connection strings ni metadata interna.
+- Puede devolver una URL interna de preview sin SAS, por ejemplo `/api/internal/uploads/{companyId}/{uploadId}/preview`, protegida con credencial interna admin.
+- Este endpoint puede seguir existiendo como soporte tecnico, pero la moderacion visual principal debe agrupar las imagenes dentro del servicio.
 
 ### POST `/api/internal/uploads/{companyId}/{uploadId}/reject`
 
@@ -703,6 +796,8 @@ Validaciones:
 - Requiere autenticacion de empresa.
 - `scope`: `company` o `service`.
 - Si `scope` es `service`, el servicio debe pertenecer a la empresa autenticada.
+- Para servicios, no reservar mas de 10 imagenes activas o pendientes en total, incluyendo cover.
+- Para servicios, no reservar mas de un cover activo o pendiente.
 - Maximo 5 MB por imagen.
 - Tipos permitidos: `image/jpeg`, `image/png`, `image/webp`.
 - Extensiones permitidas: `.jpg`, `.jpeg`, `.png`, `.webp`.
@@ -798,6 +893,7 @@ Reglas:
 - Solo servicios `published`.
 - Solo empresas `published`.
 - `q` filtra de forma basica por `name`, `description`, `category` y `eventTypes`.
+- `q` tambien debe filtrar por `company.name` y `company.slug`.
 - `category`, `eventType` y `province` hacen match exacto normalizado.
 - `limit` tiene maximo `50`.
 - `cursor` queda reservado para una iteracion futura; por ahora siempre responde `nextCursor: ""`.
@@ -820,6 +916,10 @@ Response `200`:
   "logoUrl": "https://...",
   "coverUrl": "https://...",
   "whatsapp": "50688888888",
+  "website": "https://...",
+  "instagram": "https://...",
+  "facebook": "https://...",
+  "tiktok": "https://...",
   "province": "Heredia",
   "canton": "San Francisco",
   "selectedServiceSlug": "mesa-dulce",
@@ -846,6 +946,63 @@ Reglas:
 - Solo incluir servicios `published`.
 - Permitir query opcional `?service=mesa-dulce`; si coincide con un servicio publicado devuelto, responder `selectedServiceSlug` con ese slug. Si no coincide, responder `selectedServiceSlug: ""`.
 - No devolver `email`, hashes, `partitionKey`, `rowKey`, tokens, metadata interna ni imagenes pendientes.
+
+### POST `/api/public/leads`
+
+Recibe una solicitud publica de cotizacion y la envia por email a la empresa del servicio publicado.
+
+Request:
+
+```json
+{
+  "companyId": "company_123",
+  "serviceId": "service_123",
+  "name": "Cliente",
+  "email": "cliente@email.com",
+  "phone": "8888-8888",
+  "eventType": "Boda",
+  "eventDate": "2026-08-15",
+  "guests": "80",
+  "message": "Necesito cotizar..."
+}
+```
+
+Response `201`:
+
+```json
+{
+  "ok": true,
+  "leadId": "lead_123"
+}
+```
+
+Reglas:
+
+- Endpoint publico; no requiere sesion.
+- `companyId`, `serviceId`, `name`, `email`, `phone` y `message` son requeridos.
+- Email de cliente debe tener formato valido.
+- La empresa debe existir con `status=published`.
+- El servicio debe existir bajo esa empresa con `status=published`.
+- Persiste el lead en `Leads` antes de enviar email para trazabilidad.
+- Envia email via Azure Communication Services Email al `Company.email` interno.
+- No devuelve ni publica el email privado de la empresa.
+- Si el proveedor de email falla, marca `emailStatus=failed` y responde `502` con `leadId`.
+- Si el envio funciona, marca `emailStatus=sent`.
+
+### Emails internos de operacion
+
+Eventos backend:
+
+- `POST /api/companies/register` intenta enviar email interno de nueva empresa registrada.
+- `POST /api/companies/me/services/{serviceId}/submit-review` intenta enviar email interno de servicio enviado a revision.
+
+Reglas:
+
+- Usan Azure Communication Services Email por defecto con `EMAIL_PROVIDER=acs`, `AZURE_COMMUNICATION_CONNECTION_STRING`, `AZURE_COMMUNICATION_EMAIL_FROM`, `NOTIFICATION_EMAIL_TO` y `NOTIFICATION_EMAIL_FROM_NAME`.
+- `AZURE_COMMUNICATION_EMAIL_FROM` puede omitirse si `NOTIFICATION_EMAIL_FROM` contiene el sender ACS configurado.
+- SendGrid queda como fallback explicito solo si `EMAIL_PROVIDER=sendgrid` y existe `SENDGRID_API_KEY`.
+- Si falta configuracion o el proveedor falla, el flujo principal no falla.
+- Los errores se registran sin imprimir API keys ni connection strings.
 
 ## Estados
 
@@ -875,10 +1032,11 @@ Upload/Image:
 ## Decisiones de moderacion MVP
 
 - La moderacion operativa debe orientarse a expediente de empresa: empresa, servicios y uploads relacionados en un solo contexto.
-- Las listas globales pueden mantenerse como resumen, pero no deben ser el unico flujo de decision cuando haya volumen real.
+- Las listas globales pueden mantenerse como resumen tecnico, pero no deben quedar al final como flujo viejo de tres columnas para aprobar empresa/servicio/upload por separado.
+- Las imagenes de servicio se moderan dentro del servicio: el admin aprueba empresa y servicios; aprobar servicio publica sus imagenes pendientes asociadas.
 - No hay cascadas silenciosas:
   - aprobar empresa no publica servicios/uploads;
-  - aprobar servicio no aprueba uploads;
+  - aprobar servicio publica solo los uploads pendientes asociados a ese mismo servicio, de forma visible y esperada por el admin;
   - rechazar empresa no rechaza servicios/uploads;
   - rechazar servicio no rechaza uploads.
 - Las cascadas futuras deben ser acciones explicitas con resumen y confirmacion.

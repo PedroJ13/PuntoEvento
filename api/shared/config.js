@@ -80,6 +80,11 @@ function getConfig() {
     companySessionTtlDays:
       Number(process.env.COMPANY_SESSION_TTL_DAYS || 0) || DEFAULT_COMPANY_SESSION_TTL_DAYS,
     allowedOrigins,
+    emailProvider: String(process.env.EMAIL_PROVIDER || "acs").trim().toLowerCase(),
+    azureCommunicationConnectionString:
+      process.env.AZURE_COMMUNICATION_CONNECTION_STRING || "",
+    azureCommunicationEmailFrom:
+      process.env.AZURE_COMMUNICATION_EMAIL_FROM || process.env.NOTIFICATION_EMAIL_FROM || "",
     sendGridApiKey: process.env.SENDGRID_API_KEY || "",
     notificationEmailTo: process.env.NOTIFICATION_EMAIL_TO || "",
     notificationEmailFrom: process.env.NOTIFICATION_EMAIL_FROM || "",
