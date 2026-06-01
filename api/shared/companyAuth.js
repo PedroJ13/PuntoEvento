@@ -168,18 +168,24 @@ async function createCompanySessionForCompany(identity, config = getConfig()) {
 }
 
 async function findUserByEmail(email, config = getConfig()) {
+  const users = await listUsersByEmail(email, config);
+  return users[0] || null;
+}
+
+async function listUsersByEmail(email, config = getConfig()) {
   const normalizedEmail = normalizeEmail(email);
-  if (!normalizedEmail) return null;
+  if (!normalizedEmail) return [];
 
   const table = getTableClient(config.usersTable, config);
   const entities = table.listEntities({
     queryOptions: { filter: odata`email eq ${normalizedEmail}` },
   });
+  const users = [];
 
   for await (const user of entities) {
-    return user;
+    users.push(user);
   }
-  return null;
+  return users;
 }
 
 async function findCompanyOwnerUser(companyId, email, config = getConfig()) {
@@ -283,6 +289,7 @@ module.exports = {
   createCompanySessionForCompany,
   createSecureToken,
   findUserByEmail,
+  listUsersByEmail,
   findInviteByToken,
   getCurrentCompanySession,
   hashPassword,

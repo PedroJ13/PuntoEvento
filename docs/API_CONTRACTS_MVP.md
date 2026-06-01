@@ -230,7 +230,11 @@ Errores:
 
 Reglas:
 
-- Busca usuario activo por email normalizado en `Users`.
+- Busca usuarios activos por email normalizado en `Users`.
+- Si hay multiples usuarios con el mismo email, verifica el password contra cada candidato sin exponer hashes.
+- Si exactamente uno o mas candidatos verifican password y pertenecen a empresas con estado permitido, usa el candidato permitido con `passwordSetAt`/`updatedAt` mas reciente.
+- Si ningun candidato verifica password, responde `401`.
+- Si el password verifica pero todas las empresas candidatas estan en estado no permitido, responde `403`.
 - Verifica password con hash fuerte; nunca compara ni guarda password plano.
 - Crea sesion server-side igual que el flujo de invitacion.
 - No expone `passwordHash`, tokens, cookies, `partitionKey`, `rowKey` ni metadata interna.

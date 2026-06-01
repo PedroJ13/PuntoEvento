@@ -9,7 +9,7 @@ const { badRequest, json, serverError } = require("../shared/http");
 const {
   cleanPassword,
   createCompanySessionForCompany,
-  findUserByEmail,
+  listUsersByEmail,
   normalizeEmail,
   publicSessionPayload,
   sessionCookie,
@@ -20,6 +20,13 @@ const LOGIN_ALLOWED_COMPANY_STATUSES = new Set(["pending", "published"]);
 
 function invalidCredentials() {
   return json(401, { error: "Invalid email or password" });
+}
+
+function userTimestamp(user) {
+  return (
+    Date.parse(user.passwordSetAt || user.updatedAt || user.createdAt || "") ||
+    0
+  );
 }
 
 async function getCompany(companyId, config) {
@@ -55,21 +62,40 @@ module.exports = async function loginCompany(context, req) {
     await ensureCompaniesTable(config);
     await ensureCompanyAuthTables(config);
 
-    const user = await findUserByEmail(email, config);
-    if (!user || user.status !== "active" || !verifyPassword(password, user.passwordHash)) {
+    const users = await listUsersByEmail(email, config);
+    const passwordMatches = users.filter(
+      (candidate) =>
+        candidate.status === "active" &&
+        candidate.passwordHash &&
+        verifyPassword(password, candidate.passwordHash),
+    );
+    if (!passwordMatches.length) {
       context.res = invalidCredentials();
       return;
     }
 
-    const company = await getCompany(user.partitionKey, config);
-    if (!company) {
-      context.res = invalidCredentials();
-      return;
+    const allowedMatches = [];
+    let existingCompanyMatches = 0;
+    for (const user of passwordMatches) {
+      const company = await getCompany(user.partitionKey, config);
+      if (!company) continue;
+      existingCompanyMatches += 1;
+      if (LOGIN_ALLOWED_COMPANY_STATUSES.has(company.status || "pending")) {
+        allowedMatches.push({ user, company });
+      }
     }
-    if (!LOGIN_ALLOWED_COMPANY_STATUSES.has(company.status || "pending")) {
+
+    if (!allowedMatches.length) {
+      if (!existingCompanyMatches) {
+        context.res = invalidCredentials();
+        return;
+      }
       context.res = json(403, { error: "Company status cannot access panel" });
       return;
     }
+
+    allowedMatches.sort((left, right) => userTimestamp(right.user) - userTimestamp(left.user));
+    const { user } = allowedMatches[0];
 
     const { session, sessionToken } = await createCompanySessionForCompany(
       {
