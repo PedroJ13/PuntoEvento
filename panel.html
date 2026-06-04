@@ -6,142 +6,190 @@
     <title>Panel empresa | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=20" />
-    <link rel="stylesheet" href="panel.css?v=8" />
+    <link rel="stylesheet" href="panel.css?v=9" />
   </head>
   <body class="panel-body">
     <main class="panel-shell">
-      <header class="panel-header">
-        <div>
-          <p class="eyebrow" data-panel-mode>Panel empresa</p>
-          <h1>Carga tus servicios</h1>
-          <p>Completa la informacion que quieres mostrar a clientes cuando tu servicio este publicado.</p>
+      <aside class="panel-sidebar" aria-label="Navegacion del panel empresa">
+        <div class="panel-brand" aria-label="Punto Evento panel empresa">
+          <span class="brand-mark" aria-hidden="true">PE</span>
+          <span class="brand-name"><strong>Punto</strong> Evento</span>
+          <span class="brand-tagline">Catalogo digital de proveedores para eventos</span>
         </div>
-        <div class="panel-actions">
-          <a class="ghost-button compact-button" href="index.html#inicio">Volver a la pagina publica</a>
-          <button class="secondary-button compact-button" type="button" data-logout>Cerrar sesion</button>
-        </div>
-      </header>
 
-      <section class="panel-auth" data-auth-section hidden>
-        <div>
-          <p class="eyebrow" data-auth-eyebrow>Acceso empresa</p>
-          <h2 data-auth-title>Iniciar sesion</h2>
-          <p data-auth-copy>Entra con el email y password activados para tu empresa.</p>
-        </div>
-        <form class="auth-form" data-login-form>
-          <label>
-            <span>Email</span>
-            <input name="email" type="email" autocomplete="email" required />
-          </label>
-          <label>
-            <span>Password</span>
-            <input name="password" type="password" autocomplete="current-password" minlength="8" required />
-          </label>
-          <button class="primary-button" type="submit">Iniciar sesion</button>
-        </form>
-        <form class="auth-form is-hidden" data-activate-form>
-          <input name="token" type="hidden" />
-          <label>
-            <span>Password</span>
-            <input name="password" type="password" autocomplete="new-password" minlength="8" required />
-          </label>
-          <label>
-            <span>Confirmar password</span>
-            <input name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required />
-          </label>
-          <button class="primary-button" type="submit">Activar acceso</button>
-        </form>
-        <p class="panel-message" data-auth-message aria-live="polite"></p>
-      </section>
+        <nav class="panel-nav">
+          <button class="panel-nav-item is-active" type="button" data-panel-nav="company">Mi empresa</button>
+          <button class="panel-nav-item" type="button" data-panel-nav="services">Mis servicios</button>
+          <button class="panel-nav-item is-disabled" type="button" disabled>
+            <span>Mensajes</span>
+            <span class="soon-badge">Proximamente</span>
+          </button>
+          <button class="panel-nav-item is-disabled" type="button" disabled>
+            <span>Configuracion</span>
+            <span class="soon-badge">Proximamente</span>
+          </button>
+          <button class="panel-nav-item is-disabled" type="button" disabled>
+            <span>Metricas</span>
+            <span class="soon-badge">Proximamente</span>
+          </button>
+          <button class="panel-nav-item is-disabled" type="button" disabled>
+            <span>Planes</span>
+            <span class="soon-badge">Proximamente</span>
+          </button>
+          <button class="panel-nav-item is-disabled" type="button" disabled>
+            <span>Reportes</span>
+            <span class="soon-badge">Proximamente</span>
+          </button>
+        </nav>
 
-      <section class="company-summary" data-authenticated-only>
-        <div>
-          <p class="eyebrow">Empresa</p>
-          <h2 data-company-name>Cargando empresa...</h2>
-          <p data-company-description>Validando sesion de invitacion.</p>
-        </div>
-        <div class="summary-grid">
-          <article>
-            <strong data-service-count>0</strong>
-            <span>servicios</span>
-          </article>
-          <article>
-            <strong data-plan>-</strong>
-            <span>plan actual</span>
-          </article>
-          <article>
-            <strong data-company-status>-</strong>
-            <span>perfil empresa</span>
-          </article>
-        </div>
-      </section>
+        <section class="sidebar-help" aria-label="Ayuda">
+          <p>Necesitas ayuda?</p>
+          <span>Estamos aqui para ayudarte a destacar tu negocio.</span>
+          <span class="help-button">Contactanos</span>
+        </section>
+      </aside>
 
-      <section class="panel-section" data-authenticated-only>
-        <div class="section-heading">
+      <div class="panel-workspace">
+        <header class="panel-header">
           <div>
-            <p class="eyebrow">Tus servicios</p>
-            <h2>Informacion de la empresa</h2>
+            <p class="eyebrow" data-panel-mode>Panel empresa</p>
+            <h1 data-panel-title>Carga tus servicios</h1>
+            <p data-panel-copy>Completa la informacion que quieres mostrar a clientes cuando tu servicio este publicado.</p>
           </div>
           <div class="panel-actions">
-            <button class="primary-button compact-button" type="button" data-add-service>Cargar servicio</button>
+            <a class="ghost-button compact-button" href="index.html#inicio">Volver a la pagina publica</a>
+            <button class="secondary-button compact-button" type="button" data-logout>Cerrar sesion</button>
           </div>
-        </div>
-        <p class="panel-message" data-panel-message></p>
+        </header>
 
-        <div class="services-layout">
-          <div class="services-list" data-services-list></div>
-          <form class="service-form is-hidden" data-service-form>
-            <div>
-              <p class="eyebrow" data-service-form-mode>Cargar servicio</p>
-              <h3>Informacion del servicio</h3>
-              <p>Completa los datos principales y las fotos que veran tus clientes.</p>
-            </div>
-            <input name="id" type="hidden" />
-            <div class="readonly-summary full-field" data-service-readonly-summary>
-              <div>
-                <strong>Estado</strong>
-                <span data-current-service-status>En carga</span>
-              </div>
-              <div>
-                <strong>Fotos publicadas</strong>
-                <span data-current-photo-count>0 archivo(s)</span>
-              </div>
-            </div>
+        <section class="panel-auth" data-auth-section hidden>
+          <div>
+            <p class="eyebrow" data-auth-eyebrow>Acceso empresa</p>
+            <h2 data-auth-title>Iniciar sesion</h2>
+            <p data-auth-copy>Entra con el email y password activados para tu empresa.</p>
+          </div>
+          <form class="auth-form" data-login-form>
             <label>
-              <span>Nombre</span>
-              <input name="name" required maxlength="80" />
+              <span>Email</span>
+              <input name="email" type="email" autocomplete="email" required />
             </label>
             <label>
-              <span>Categoria</span>
-              <select name="category" required data-category-select></select>
+              <span>Password</span>
+              <input name="password" type="password" autocomplete="current-password" minlength="8" required />
             </label>
-            <fieldset class="choice-field full-field">
-              <legend>Tipos de evento</legend>
-              <div class="choice-grid" data-event-type-options></div>
-            </fieldset>
-            <label>
-              <span>Precio desde</span>
-              <input name="priceFrom" required placeholder="CRC 120000" />
-            </label>
-            <label class="file-field full-field">
-              <span>Fotos del servicio</span>
-              <input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple data-service-photos />
-              <small>Agrega hasta 10 fotos JPG, PNG o WEBP. Elige una como portada.</small>
-            </label>
-            <div class="photo-preview-grid full-field" data-photo-preview></div>
-            <label class="full-field">
-              <span>Descripcion</span>
-              <textarea name="description" rows="4" required maxlength="320"></textarea>
-            </label>
-            <div class="form-actions">
-              <button class="primary-button" type="submit">Guardar y enviar</button>
-              <button class="ghost-button" type="button" data-cancel-service>Cancelar</button>
-            </div>
-            <p class="panel-message" data-form-message></p>
+            <button class="primary-button" type="submit">Iniciar sesion</button>
           </form>
-        </div>
-      </section>
+          <form class="auth-form is-hidden" data-activate-form>
+            <input name="token" type="hidden" />
+            <label>
+              <span>Password</span>
+              <input name="password" type="password" autocomplete="new-password" minlength="8" required />
+            </label>
+            <label>
+              <span>Confirmar password</span>
+              <input name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required />
+            </label>
+            <button class="primary-button" type="submit">Activar acceso</button>
+          </form>
+          <p class="panel-message" data-auth-message aria-live="polite"></p>
+        </section>
+
+        <section class="company-summary panel-view" data-authenticated-only data-panel-view="company">
+          <div class="company-card-main">
+            <span class="panel-icon" aria-hidden="true">PE</span>
+            <div>
+              <p class="eyebrow">Empresa</p>
+              <h2 data-company-name>Cargando empresa...</h2>
+              <p data-company-description>Validando sesion de invitacion.</p>
+            </div>
+          </div>
+          <div class="summary-grid">
+            <article>
+              <strong data-service-count>0</strong>
+              <span>servicios</span>
+            </article>
+            <article>
+              <strong data-plan>-</strong>
+              <span>plan actual</span>
+            </article>
+            <article>
+              <strong data-company-status>-</strong>
+              <span>perfil empresa</span>
+            </article>
+          </div>
+          <div class="company-note">
+            <strong>Datos generales</strong>
+            <p>Tu empresa esta registrada. Para cambiar datos generales, contacta al equipo de Punto Evento durante esta etapa inicial.</p>
+          </div>
+        </section>
+
+        <section class="panel-section panel-view" data-authenticated-only data-panel-view="services">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Tus servicios</p>
+              <h2>Mis servicios</h2>
+            </div>
+            <div class="panel-actions">
+              <button class="primary-button compact-button" type="button" data-add-service>Cargar servicio</button>
+            </div>
+          </div>
+          <p class="panel-message" data-panel-message></p>
+
+          <div class="services-layout">
+            <div class="services-list" data-services-list></div>
+            <form class="service-form is-hidden" data-service-form>
+              <div>
+                <p class="eyebrow" data-service-form-mode>Cargar servicio</p>
+                <h3>Informacion del servicio</h3>
+                <p>Completa los datos principales y las fotos que veran tus clientes.</p>
+              </div>
+              <input name="id" type="hidden" />
+              <div class="readonly-summary full-field" data-service-readonly-summary>
+                <div>
+                  <strong>Estado</strong>
+                  <span data-current-service-status>En carga</span>
+                </div>
+                <div>
+                  <strong>Fotos publicadas</strong>
+                  <span data-current-photo-count>0 archivo(s)</span>
+                </div>
+              </div>
+              <label>
+                <span>Nombre</span>
+                <input name="name" required maxlength="80" />
+              </label>
+              <label>
+                <span>Categoria</span>
+                <select name="category" required data-category-select></select>
+              </label>
+              <fieldset class="choice-field full-field">
+                <legend>Tipos de evento</legend>
+                <div class="choice-grid" data-event-type-options></div>
+              </fieldset>
+              <label>
+                <span>Precio desde</span>
+                <input name="priceFrom" required placeholder="CRC 120000" />
+              </label>
+              <label class="file-field full-field">
+                <span>Fotos del servicio</span>
+                <input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple data-service-photos />
+                <small>Agrega hasta 10 fotos JPG, PNG o WEBP. Elige una como portada.</small>
+              </label>
+              <div class="photo-preview-grid full-field" data-photo-preview></div>
+              <label class="full-field">
+                <span>Descripcion</span>
+                <textarea name="description" rows="4" required maxlength="320"></textarea>
+              </label>
+              <div class="form-actions">
+                <button class="primary-button" type="submit">Guardar y enviar</button>
+                <button class="ghost-button" type="button" data-cancel-service>Cancelar</button>
+              </div>
+              <p class="panel-message" data-form-message></p>
+            </form>
+          </div>
+        </section>
+      </div>
     </main>
-    <script src="panel.js?v=7"></script>
+    <script src="panel.js?v=8"></script>
   </body>
 </html>

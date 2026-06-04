@@ -63,6 +63,7 @@ const state = {
   mode: new URLSearchParams(window.location.search).get("demo") === "local" ? "demo" : "real",
   pendingImages: [],
   inviteToken: "",
+  activeView: "services",
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -100,6 +101,37 @@ function setAuthMessage(message, tone = "") {
   if (!node) return;
   node.textContent = message;
   node.dataset.tone = tone;
+}
+
+function panelViewContent(view) {
+  const content = {
+    company: {
+      title: "Mi empresa",
+      copy: "Revisa el estado del perfil y los datos base registrados para Punto Evento.",
+    },
+    services: {
+      title: "Carga tus servicios",
+      copy: "Completa la informacion que quieres mostrar a clientes cuando tu servicio este publicado.",
+    },
+  };
+  return content[view] || content.services;
+}
+
+function setActivePanelView(view = "services") {
+  state.activeView = view === "company" ? "company" : "services";
+  $$("[data-panel-view]").forEach((node) => {
+    node.classList.toggle("is-active-view", node.dataset.panelView === state.activeView);
+  });
+  $$("[data-panel-nav]").forEach((button) => {
+    const isActive = button.dataset.panelNav === state.activeView;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-current", isActive ? "page" : "false");
+  });
+  const content = panelViewContent(state.activeView);
+  const title = $("[data-panel-title]");
+  const copy = $("[data-panel-copy]");
+  if (title) title.textContent = content.title;
+  if (copy) copy.textContent = content.copy;
 }
 
 function normalizeStatus(status) {
@@ -224,6 +256,7 @@ function setAuthenticatedView(isAuthenticated) {
   $("[data-logout]")?.classList.toggle("is-hidden", !isAuthenticated);
   const authSection = $("[data-auth-section]");
   if (authSection) authSection.hidden = isAuthenticated;
+  if (isAuthenticated) setActivePanelView(state.activeView);
 }
 
 async function loadCatalogs() {
@@ -468,6 +501,7 @@ function renderReadonlySummary(service = null) {
 }
 
 function resetServiceForm(service = null) {
+  setActivePanelView("services");
   const form = $("[data-service-form]");
   form.reset();
   form.classList.remove("is-hidden");
@@ -851,6 +885,12 @@ document.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("click", async (event) => {
+  const navButton = event.target.closest("[data-panel-nav]");
+  if (navButton) {
+    setActivePanelView(navButton.dataset.panelNav);
+    return;
+  }
+
   if (event.target.matches("[data-add-service]")) {
     resetServiceForm();
   }
@@ -958,6 +998,7 @@ document.addEventListener("click", (event) => {
 
 async function init() {
   state.inviteToken = getInviteTokenFromUrl();
+  setActivePanelView("services");
   await loadCatalogs();
   renderCatalogControls();
   renderPhotoPreview();
