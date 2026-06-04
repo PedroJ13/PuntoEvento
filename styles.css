@@ -30,6 +30,10 @@
   --leaf: var(--brand-success);
   --blue: var(--brand-ink-soft);
   --shadow: 0 18px 50px rgba(23, 25, 29, 0.12);
+  --public-shadow-soft: 0 18px 46px rgba(23, 25, 29, 0.08);
+  --public-shadow-card: 0 12px 30px rgba(23, 25, 29, 0.07);
+  --public-radius: 16px;
+  --heading-font: Georgia, "Times New Roman", serif;
   --radius: 8px;
   color-scheme: light;
 }
@@ -77,8 +81,8 @@ textarea {
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 22px;
-  min-height: 72px;
-  padding: 12px clamp(18px, 4vw, 56px);
+  min-height: 76px;
+  padding: 10px clamp(18px, 4vw, 56px);
   border-bottom: 1px solid rgba(228, 218, 203, 0.9);
   background: rgba(255, 253, 248, 0.94);
   backdrop-filter: blur(16px);
@@ -89,6 +93,13 @@ textarea {
   align-items: center;
   gap: 10px;
   min-width: max-content;
+}
+
+.brand-logo-public {
+  display: block;
+  width: clamp(150px, 13vw, 188px);
+  max-height: 54px;
+  object-fit: contain;
 }
 
 .brand-mark {
@@ -194,11 +205,11 @@ textarea {
 .hero {
   position: relative;
   display: grid;
-  min-height: 680px;
+  min-height: 700px;
   align-items: end;
   overflow: hidden;
   background:
-    linear-gradient(90deg, rgba(23, 25, 29, 0.72), rgba(23, 25, 29, 0.18)),
+    linear-gradient(90deg, rgba(23, 25, 29, 0.78), rgba(23, 25, 29, 0.24)),
     var(--hero-image) center/cover no-repeat;
 }
 
@@ -241,6 +252,25 @@ h1 {
   letter-spacing: 0;
 }
 
+.public-body h1,
+.public-body h2,
+.provider-title,
+.metric strong,
+.package-price,
+.plan-price {
+  font-family: var(--heading-font);
+  font-weight: 700;
+}
+
+.public-body h1 {
+  font-size: clamp(2.9rem, 6vw, 6rem);
+  line-height: 0.96;
+}
+
+.public-body h2 {
+  font-size: clamp(2rem, 3.5vw, 3.3rem);
+}
+
 h2 {
   margin-bottom: 14px;
   font-size: clamp(1.65rem, 3vw, 2.75rem);
@@ -264,14 +294,14 @@ h3 {
 .search-panel {
   display: grid;
   grid-template-columns: minmax(220px, 1.35fr) repeat(2, minmax(150px, 1fr)) auto;
-  gap: 10px;
+  gap: 12px;
   width: min(980px, 100%);
   margin-top: 34px;
-  padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid rgba(228, 218, 203, 0.9);
+  border-radius: var(--public-radius);
   background: rgba(255, 253, 248, 0.96);
-  box-shadow: var(--shadow);
+  box-shadow: 0 22px 60px rgba(23, 25, 29, 0.18);
 }
 
 .field {
@@ -328,10 +358,10 @@ button:focus-visible,
 
 .metric {
   min-height: 108px;
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   background: var(--brand-surface);
   border: 1px solid var(--line);
-  box-shadow: 0 14px 36px rgba(24, 33, 43, 0.09);
+  box-shadow: var(--public-shadow-card);
   padding: 20px;
 }
 
@@ -352,7 +382,7 @@ button:focus-visible,
 .section {
   width: min(1180px, calc(100% - 36px));
   margin: 0 auto;
-  padding: 72px 0;
+  padding: 80px 0;
 }
 
 #registro-empresa {
@@ -387,7 +417,7 @@ button:focus-visible,
   position: relative;
   min-height: 168px;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   color: #fff;
   isolation: isolate;
 }
@@ -405,12 +435,12 @@ button:focus-visible,
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.68));
+  background: linear-gradient(180deg, rgba(23, 25, 29, 0.04), rgba(23, 25, 29, 0.68));
   z-index: 1;
 }
 
 .category-tile:hover img {
-  transform: scale(1.04);
+  transform: scale(1.02);
 }
 
 .category-tile span {
@@ -430,9 +460,12 @@ button:focus-visible,
 }
 
 .step {
-  border-left: 4px solid var(--brand-ink);
+  border: 1px solid var(--brand-line);
+  border-top: 4px solid var(--brand-ink);
+  border-radius: var(--public-radius);
   background: var(--brand-surface);
-  padding: 22px;
+  box-shadow: var(--public-shadow-card);
+  padding: 24px;
 }
 
 .step:nth-child(2) {
@@ -444,9 +477,10 @@ button:focus-visible,
 }
 
 .step-number {
-  color: var(--muted);
+  color: var(--brand-gold-dark);
+  font-family: var(--heading-font);
   font-size: 0.78rem;
-  font-weight: 850;
+  font-weight: 700;
 }
 
 .cards-grid {
@@ -460,9 +494,10 @@ button:focus-visible,
 .plan-card,
 .review-card {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   background: var(--brand-surface);
   overflow: hidden;
+  box-shadow: var(--public-shadow-card);
 }
 
 .provider-card {
@@ -541,7 +576,7 @@ button:focus-visible,
   grid-template-rows: auto auto 1fr auto auto;
   align-items: start;
   min-height: 300px;
-  padding: 20px;
+  padding: 24px;
 }
 
 .package-price {
@@ -600,7 +635,7 @@ button:focus-visible,
 
 .image-stack img {
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   object-fit: cover;
 }
 
@@ -635,7 +670,7 @@ button:focus-visible,
 .subhero img {
   width: 100%;
   aspect-ratio: 16 / 10;
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   object-fit: cover;
 }
 
@@ -645,9 +680,9 @@ button:focus-visible,
   gap: 10px;
   align-items: end;
   margin: 24px 0;
-  padding: 14px;
+  padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   background: var(--brand-surface);
 }
 
@@ -664,9 +699,10 @@ button:focus-visible,
 .side-panel {
   align-self: start;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   background: var(--brand-surface);
-  padding: 18px;
+  box-shadow: var(--public-shadow-card);
+  padding: 22px;
 }
 
 .side-panel h3 {
@@ -700,7 +736,7 @@ button:focus-visible,
   display: grid;
   gap: 12px;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   background: var(--brand-surface);
   padding: 24px;
 }
@@ -723,9 +759,10 @@ button:focus-visible,
   grid-template-columns: 230px 1fr;
   gap: 0;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   overflow: hidden;
   background: var(--brand-surface);
+  box-shadow: var(--public-shadow-card);
 }
 
 .wide-card img {
@@ -742,10 +779,10 @@ button:focus-visible,
 .provider-hero {
   display: grid;
   grid-template-columns: 1fr 380px;
-  gap: 26px;
+  gap: 28px;
   width: min(1180px, calc(100% - 36px));
   margin: 0 auto;
-  padding: 34px 0 72px;
+  padding: 40px 0 80px;
 }
 
 .provider-carousel {
@@ -756,8 +793,9 @@ button:focus-visible,
 .carousel-stage {
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   background: var(--brand-surface-muted);
+  box-shadow: var(--public-shadow-soft);
 }
 
 .carousel-image {
@@ -778,7 +816,7 @@ button:focus-visible,
   border: 1px solid rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   color: #fff;
-  background: rgba(16, 37, 45, 0.58);
+  background: rgba(23, 25, 29, 0.6);
   cursor: pointer;
   font-size: 1.8rem;
   font-weight: 600;
@@ -786,7 +824,7 @@ button:focus-visible,
 }
 
 .carousel-nav:hover {
-  background: rgba(16, 37, 45, 0.78);
+  background: rgba(23, 25, 29, 0.8);
 }
 
 .carousel-nav.prev {
@@ -803,7 +841,7 @@ button:focus-visible,
   bottom: 16px;
   border-radius: 999px;
   color: #fff;
-  background: rgba(16, 37, 45, 0.72);
+  background: rgba(23, 25, 29, 0.72);
   font-size: 0.82rem;
   font-weight: 850;
   padding: 7px 10px;
@@ -819,7 +857,7 @@ button:focus-visible,
   overflow: hidden;
   height: 86px;
   border: 2px solid transparent;
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--brand-surface);
   cursor: pointer;
   padding: 0;
@@ -842,18 +880,22 @@ button:focus-visible,
   align-self: start;
   min-width: 0;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   background: var(--brand-surface);
-  box-shadow: var(--shadow);
-  padding: 22px;
+  box-shadow: var(--public-shadow-soft);
+  padding: 26px;
 }
 
 .provider-title {
   max-width: 100%;
   margin: 14px 0 10px;
-  font-size: clamp(2.1rem, 4vw, 4.15rem);
+  font-size: clamp(2.3rem, 4vw, 4.5rem);
   line-height: 0.98;
   overflow-wrap: anywhere;
+}
+
+.public-body .provider-title {
+  font-size: clamp(2.3rem, 4vw, 4.5rem);
 }
 
 .rating-row {
@@ -861,7 +903,7 @@ button:focus-visible,
   flex-wrap: wrap;
   align-items: center;
   gap: 7px;
-  color: #27323d;
+  color: var(--brand-ink-soft);
   font-weight: 750;
 }
 
@@ -902,8 +944,12 @@ button:focus-visible,
 }
 
 .content-block {
-  padding: 26px 0;
-  border-top: 1px solid var(--line);
+  margin-bottom: 18px;
+  padding: 26px;
+  border: 1px solid var(--line);
+  border-radius: var(--public-radius);
+  background: var(--brand-surface);
+  box-shadow: var(--public-shadow-card);
 }
 
 .service-list {
@@ -917,14 +963,14 @@ button:focus-visible,
   gap: 16px;
   align-items: start;
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: var(--public-radius);
   padding: 16px;
   background: var(--brand-surface);
 }
 
 .service-option.is-selected {
   border-color: rgba(185, 147, 75, 0.55);
-  background: var(--brand-gold-soft);
+  background: #f6ecd9;
 }
 
 .service-option .ghost-button {
@@ -1300,6 +1346,10 @@ button:disabled,
     grid-template-columns: 1fr auto;
   }
 
+  .brand-logo-public {
+    width: clamp(136px, 22vw, 168px);
+  }
+
   .nav {
     order: 3;
     grid-column: 1 / -1;
@@ -1341,6 +1391,11 @@ button:disabled,
     padding: 10px 14px;
   }
 
+  .brand-logo-public {
+    width: min(148px, 42vw);
+    max-height: 48px;
+  }
+
   .nav-cta {
     display: none;
   }
@@ -1352,6 +1407,11 @@ button:disabled,
   .hero-inner {
     width: min(100% - 28px, 1180px);
     padding-top: 86px;
+  }
+
+  .public-body h1 {
+    font-size: clamp(2.65rem, 12vw, 3.2rem);
+    line-height: 1.02;
   }
 
   .section,
@@ -1380,9 +1440,9 @@ button:disabled,
   }
 
   .subhero h1 {
-    max-width: 12ch;
-    font-size: 2rem;
-    line-height: 1.08;
+    max-width: 13ch;
+    font-size: clamp(2.45rem, 11vw, 3.05rem);
+    line-height: 1.04;
   }
 
   .subhero p {
