@@ -4,6 +4,25 @@ const https = require("https");
 const ACS_EMAIL_API_VERSION = "2023-03-31";
 const EMAIL_PROVIDER_ACS = "acs";
 const EMAIL_PROVIDER_SENDGRID = "sendgrid";
+const EMAIL_STYLES = {
+  page:
+    "background:#f8f5ef;padding:24px;font-family:Arial,sans-serif;color:#17191d;",
+  card:
+    "background:#fffdf8;border:1px solid #e4dacb;border-radius:12px;padding:24px;color:#17191d;",
+  brand:
+    "font-size:13px;font-weight:bold;letter-spacing:.08em;text-transform:uppercase;color:#17191d;margin:0 0 10px;",
+  accent: "height:3px;background:#b9934b;margin:0 0 20px;",
+  h2: "color:#17191d;font-size:22px;line-height:1.25;margin:0 0 14px;",
+  p: "color:#2a2c31;font-size:15px;line-height:1.55;margin:0 0 14px;",
+  table:
+    "border-collapse:collapse;width:100%;margin:16px 0;border:1px solid #e4dacb;",
+  labelCell:
+    "padding:8px 10px;font-weight:bold;background:#f3eee6;border:1px solid #e4dacb;color:#17191d;",
+  valueCell: "padding:8px 10px;border:1px solid #e4dacb;color:#2a2c31;",
+  sectionLabel: "color:#17191d;font-size:15px;line-height:1.4;margin:16px 0 8px;",
+  cta:
+    "background:#17191d;color:#ffffff;border-radius:8px;padding:10px 14px;display:inline-block;text-decoration:none;font-weight:bold;",
+};
 
 function escapeText(value) {
   return String(value || "").replace(/[<>&]/g, (char) => {
@@ -15,6 +34,31 @@ function escapeText(value) {
 
 function plainText(value) {
   return String(value || "").replace(/[\r\n]+/g, " ").trim();
+}
+
+function emailShell(content) {
+  return `
+    <div style="${EMAIL_STYLES.page}">
+      <div style="${EMAIL_STYLES.card}">
+        <p style="${EMAIL_STYLES.brand}">Punto Evento CR</p>
+        <div style="${EMAIL_STYLES.accent}"></div>
+        ${content}
+      </div>
+    </div>
+  `;
+}
+
+function emailRows(details) {
+  return details
+    .map(
+      ([label, value]) =>
+        `<tr><td style="${EMAIL_STYLES.labelCell}">${escapeText(label)}</td><td style="${EMAIL_STYLES.valueCell}">${escapeText(value || "-")}</td></tr>`,
+    )
+    .join("");
+}
+
+function emailCta(href, label) {
+  return `<p style="${EMAIL_STYLES.p}"><a href="${escapeText(href)}" style="${EMAIL_STYLES.cta}">${escapeText(label)}</a></p>`;
 }
 
 function htmlToText(html) {
@@ -237,33 +281,28 @@ async function notifyProviderRegistration(context, provider, config) {
     ["Web", provider.website],
     ["ID interno", provider.rowKey],
   ];
-  const rows = details
-    .map(
-      ([label, value]) =>
-        `<tr><td style="padding:6px 10px;font-weight:bold;">${escapeText(label)}</td><td style="padding:6px 10px;">${escapeText(value || "-")}</td></tr>`,
-    )
-    .join("");
+  const rows = emailRows(details);
   const appLink = config.appPublicUrl
-    ? `<p><a href="${escapeText(config.appPublicUrl)}">Abrir Punto Evento CR</a></p>`
+    ? emailCta(config.appPublicUrl, "Abrir Punto Evento CR")
     : "";
 
   await sendInternalNotification(context, config, {
     subject: `Nueva empresa registrada en Punto Evento CR: ${plainText(provider.name)}`,
     replyTo: provider.email ? { email: provider.email, name: provider.name } : undefined,
-    html: `
-      <h2>Nuevo registro de empresa</h2>
-      <p>Una empresa envio sus datos a Punto Evento CR y queda pendiente de revision interna.</p>
-      <table style="border-collapse:collapse;">${rows}</table>
-      <p><strong>Descripcion</strong></p>
-      <p>${escapeText(provider.description)}</p>
-      <p>Revisar la informacion y aprobar o rechazar la empresa desde el admin interno.</p>
+    html: emailShell(`
+      <h2 style="${EMAIL_STYLES.h2}">Nuevo registro de empresa</h2>
+      <p style="${EMAIL_STYLES.p}">Una empresa envio sus datos a Punto Evento CR y queda pendiente de revision interna.</p>
+      <table style="${EMAIL_STYLES.table}">${rows}</table>
+      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripcion</strong></p>
+      <p style="${EMAIL_STYLES.p}">${escapeText(provider.description)}</p>
+      <p style="${EMAIL_STYLES.p}">Revisar la informacion y aprobar o rechazar la empresa desde el admin interno.</p>
       ${appLink}
-    `,
+    `),
   });
 }
 
 async function notifyCompanyRegistration(context, company, config) {
-  const rows = [
+  const rows = emailRows([
     ["Empresa", company.name],
     ["Email", company.email],
     ["WhatsApp", company.whatsapp],
@@ -271,29 +310,24 @@ async function notifyCompanyRegistration(context, company, config) {
     ["Provincia", company.province],
     ["Canton", company.canton],
     ["ID interno", company.id || company.rowKey],
-  ]
-    .map(
-      ([label, value]) =>
-        `<tr><td style="padding:6px 10px;font-weight:bold;">${escapeText(label)}</td><td style="padding:6px 10px;">${escapeText(value || "-")}</td></tr>`,
-    )
-    .join("");
+  ]);
 
   await sendInternalNotification(context, config, {
     subject: `Nueva empresa registrada en Punto Evento CR: ${plainText(company.name)}`,
     replyTo: company.email ? { email: company.email, name: company.name } : undefined,
-    html: `
-      <h2>Nueva empresa registrada</h2>
-      <p>Una empresa se registro en Punto Evento CR y queda pendiente de revision interna.</p>
-      <table style="border-collapse:collapse;">${rows}</table>
-      <p><strong>Descripcion</strong></p>
-      <p>${escapeText(company.description)}</p>
-      <p>Revisar la informacion y aprobar o rechazar la empresa desde el admin interno.</p>
-    `,
+    html: emailShell(`
+      <h2 style="${EMAIL_STYLES.h2}">Nueva empresa registrada</h2>
+      <p style="${EMAIL_STYLES.p}">Una empresa se registro en Punto Evento CR y queda pendiente de revision interna.</p>
+      <table style="${EMAIL_STYLES.table}">${rows}</table>
+      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripcion</strong></p>
+      <p style="${EMAIL_STYLES.p}">${escapeText(company.description)}</p>
+      <p style="${EMAIL_STYLES.p}">Revisar la informacion y aprobar o rechazar la empresa desde el admin interno.</p>
+    `),
   });
 }
 
 async function notifyServiceSubmittedForReview(context, { company, service }, config) {
-  const rows = [
+  const rows = emailRows([
     ["Empresa", company.name],
     ["Email empresa", company.email],
     ["Servicio", service.name],
@@ -301,29 +335,24 @@ async function notifyServiceSubmittedForReview(context, { company, service }, co
     ["Precio desde", service.priceFrom],
     ["Empresa ID", service.partitionKey],
     ["Servicio ID", service.rowKey],
-  ]
-    .map(
-      ([label, value]) =>
-        `<tr><td style="padding:6px 10px;font-weight:bold;">${escapeText(label)}</td><td style="padding:6px 10px;">${escapeText(value || "-")}</td></tr>`,
-    )
-    .join("");
+  ]);
 
   await sendInternalNotification(context, config, {
     subject: `Servicio enviado a revision en Punto Evento CR: ${plainText(service.name)}`,
     replyTo: company.email ? { email: company.email, name: company.name } : undefined,
-    html: `
-      <h2>Servicio enviado a revision</h2>
-      <p>Una empresa envio un servicio a Punto Evento CR para moderacion interna.</p>
-      <table style="border-collapse:collapse;">${rows}</table>
-      <p><strong>Descripcion</strong></p>
-      <p>${escapeText(service.description)}</p>
-      <p>Revisar el servicio, sus datos publicos y sus imagenes antes de aprobarlo.</p>
-    `,
+    html: emailShell(`
+      <h2 style="${EMAIL_STYLES.h2}">Servicio enviado a revision</h2>
+      <p style="${EMAIL_STYLES.p}">Una empresa envio un servicio a Punto Evento CR para moderacion interna.</p>
+      <table style="${EMAIL_STYLES.table}">${rows}</table>
+      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripcion</strong></p>
+      <p style="${EMAIL_STYLES.p}">${escapeText(service.description)}</p>
+      <p style="${EMAIL_STYLES.p}">Revisar el servicio, sus datos publicos y sus imagenes antes de aprobarlo.</p>
+    `),
   });
 }
 
 async function sendLeadEmailToCompany({ company, service, lead }, config) {
-  const rows = [
+  const rows = emailRows([
     ["Servicio", service.name],
     ["Empresa", company.name],
     ["Nombre cliente", lead.name],
@@ -333,26 +362,21 @@ async function sendLeadEmailToCompany({ company, service, lead }, config) {
     ["Fecha", lead.eventDate],
     ["Invitados", lead.guests],
     ["Lead ID", lead.id],
-  ]
-    .map(
-      ([label, value]) =>
-        `<tr><td style="padding:6px 10px;font-weight:bold;">${escapeText(label)}</td><td style="padding:6px 10px;">${escapeText(value || "-")}</td></tr>`,
-    )
-    .join("");
+  ]);
 
   await sendEmail(config, {
     to: [company.email],
     subject: `Nueva solicitud desde Punto Evento CR: ${plainText(service.name)}`,
     replyTo: lead.email ? { email: lead.email, name: lead.name } : undefined,
-    html: `
-      <h2>Nueva solicitud de cotizacion</h2>
-      <p>Hola ${escapeText(company.name)}.</p>
-      <p>Recibiste una solicitud desde Punto Evento CR para el servicio <strong>${escapeText(service.name)}</strong>.</p>
-      <p>Este correo queda como respaldo y trazabilidad del contacto. Puedes responder directo a este email o contactar al cliente por WhatsApp.</p>
-      <table style="border-collapse:collapse;">${rows}</table>
-      <p><strong>Mensaje</strong></p>
-      <p>${escapeText(lead.message)}</p>
-    `,
+    html: emailShell(`
+      <h2 style="${EMAIL_STYLES.h2}">Nueva solicitud de cotizacion</h2>
+      <p style="${EMAIL_STYLES.p}">Hola ${escapeText(company.name)}.</p>
+      <p style="${EMAIL_STYLES.p}">Recibiste una solicitud desde Punto Evento CR para el servicio <strong>${escapeText(service.name)}</strong>.</p>
+      <p style="${EMAIL_STYLES.p}">Este correo queda como respaldo y trazabilidad del contacto. Puedes responder directo a este email o contactar al cliente por WhatsApp.</p>
+      <table style="${EMAIL_STYLES.table}">${rows}</table>
+      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Mensaje</strong></p>
+      <p style="${EMAIL_STYLES.p}">${escapeText(lead.message)}</p>
+    `),
   });
 }
 
@@ -360,14 +384,14 @@ async function sendCompanyActivationInviteEmail({ company, inviteUrl }, config) 
   await sendEmail(config, {
     to: [company.email],
     subject: "Tu empresa fue aprobada en Punto Evento CR",
-    html: `
-      <h2>Tu empresa fue aprobada en Punto Evento CR</h2>
-      <p>Hola ${escapeText(company.name)}.</p>
-      <p>Bienvenido a Punto Evento CR. Tu empresa fue aprobada y ya puedes activar tu acceso al panel.</p>
-      <p>Desde el panel podras revisar tu perfil, cargar servicios y mantener tu informacion actualizada.</p>
-      <p><a href="${escapeText(inviteUrl)}">Activar acceso</a></p>
-      <p>Por seguridad, este enlace vence automaticamente.</p>
-    `,
+    html: emailShell(`
+      <h2 style="${EMAIL_STYLES.h2}">Tu empresa fue aprobada en Punto Evento CR</h2>
+      <p style="${EMAIL_STYLES.p}">Hola ${escapeText(company.name)}.</p>
+      <p style="${EMAIL_STYLES.p}">Bienvenido a Punto Evento CR. Tu empresa fue aprobada y ya puedes activar tu acceso al panel.</p>
+      <p style="${EMAIL_STYLES.p}">Desde el panel podras revisar tu perfil, cargar servicios y mantener tu informacion actualizada.</p>
+      ${emailCta(inviteUrl, "Activar acceso")}
+      <p style="${EMAIL_STYLES.p}">Por seguridad, este enlace vence automaticamente.</p>
+    `),
   });
 }
 
