@@ -172,6 +172,10 @@
   box-shadow: 0 8px 22px rgba(24, 33, 43, 0.08);
 }
 
+.admin-tab.support-tab {
+  display: none;
+}
+
 .admin-section {
   display: grid;
   gap: 18px;

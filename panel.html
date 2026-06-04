@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Panel empresa | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
-    <link rel="stylesheet" href="styles.css?v=19" />
-    <link rel="stylesheet" href="panel.css?v=7" />
+    <link rel="stylesheet" href="styles.css?v=20" />
+    <link rel="stylesheet" href="panel.css?v=8" />
   </head>
   <body class="panel-body">
     <main class="panel-shell">
       <header class="panel-header">
         <div>
           <p class="eyebrow" data-panel-mode>Panel empresa</p>
-          <h1>Gestiona tus servicios</h1>
-          <p>Crea, edita y prepara los servicios que se mostraran en Punto Evento despues de la revision interna.</p>
+          <h1>Carga tus servicios</h1>
+          <p>Completa la informacion que quieres mostrar a clientes cuando tu servicio este publicado.</p>
         </div>
         <div class="panel-actions">
           <a class="ghost-button compact-button" href="index.html#inicio">Volver a la pagina publica</a>
@@ -79,11 +79,11 @@
       <section class="panel-section" data-authenticated-only>
         <div class="section-heading">
           <div>
-            <p class="eyebrow">Servicios</p>
-            <h2>Catalogo de la empresa</h2>
+            <p class="eyebrow">Tus servicios</p>
+            <h2>Informacion de la empresa</h2>
           </div>
           <div class="panel-actions">
-            <button class="primary-button compact-button" type="button" data-add-service>Agregar servicio</button>
+            <button class="primary-button compact-button" type="button" data-add-service>Cargar servicio</button>
           </div>
         </div>
         <p class="panel-message" data-panel-message></p>
@@ -92,18 +92,18 @@
           <div class="services-list" data-services-list></div>
           <form class="service-form is-hidden" data-service-form>
             <div>
-              <p class="eyebrow" data-service-form-mode>Nuevo servicio</p>
-              <h3>Datos del servicio</h3>
-              <p>Guarda el servicio como borrador. Cuando este completo, envialo a revision.</p>
+              <p class="eyebrow" data-service-form-mode>Cargar servicio</p>
+              <h3>Informacion del servicio</h3>
+              <p>Completa los datos principales y las fotos que veran tus clientes.</p>
             </div>
             <input name="id" type="hidden" />
             <div class="readonly-summary full-field" data-service-readonly-summary>
               <div>
-                <strong>Estado actual</strong>
-                <span data-current-service-status>Borrador</span>
+                <strong>Estado</strong>
+                <span data-current-service-status>En carga</span>
               </div>
               <div>
-                <strong>Fotos aprobadas</strong>
+                <strong>Fotos publicadas</strong>
                 <span data-current-photo-count>0 archivo(s)</span>
               </div>
             </div>
@@ -124,9 +124,9 @@
               <input name="priceFrom" required placeholder="CRC 120000" />
             </label>
             <label class="file-field full-field">
-              <span>Imagenes del servicio</span>
+              <span>Fotos del servicio</span>
               <input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple data-service-photos />
-              <small>Agrega hasta 10 imagenes JPG, PNG o WEBP. Marca una como cover; las demas van a galeria. Todo queda pendiente de aprobacion.</small>
+              <small>Agrega hasta 10 fotos JPG, PNG o WEBP. Elige una como portada.</small>
             </label>
             <div class="photo-preview-grid full-field" data-photo-preview></div>
             <label class="full-field">
@@ -134,8 +134,7 @@
               <textarea name="description" rows="4" required maxlength="320"></textarea>
             </label>
             <div class="form-actions">
-              <button class="primary-button" type="submit">Guardar borrador</button>
-              <button class="secondary-button" type="button" data-send-review>Enviar a revision</button>
+              <button class="primary-button" type="submit">Guardar y enviar</button>
               <button class="ghost-button" type="button" data-cancel-service>Cancelar</button>
             </div>
             <p class="panel-message" data-form-message></p>
@@ -143,6 +142,6 @@
         </div>
       </section>
     </main>
-    <script src="panel.js?v=6"></script>
+    <script src="panel.js?v=7"></script>
   </body>
 </html>

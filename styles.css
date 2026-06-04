@@ -506,6 +506,17 @@ button:focus-visible,
   min-width: 0;
 }
 
+.contact-note {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-align: center;
+}
+
 .package-card {
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;

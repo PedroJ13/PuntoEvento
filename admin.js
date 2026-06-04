@@ -88,7 +88,7 @@ const DEFAULT_SERVICES = [
 const state = {
   auth: sessionStorage.getItem(AUTH_KEY) || "",
   providers: [],
-  activeTab: "revision",
+  activeTab: "modelo",
   demoMode: false,
   pendingPhotos: [],
   services: loadServices(),
@@ -465,6 +465,21 @@ function scopedInternalActionsMarkup(type, ids, disabledApproveReason = "", appr
   `;
 }
 
+function companyCanBeReviewed(company) {
+  return ["pending", "draft"].includes(String(company?.status || ""));
+}
+
+function companyActionNote(company) {
+  const status = String(company?.status || "");
+  if (status === "published") {
+    return "Empresa aprobada. Revisa los servicios pendientes de esta empresa.";
+  }
+  if (status === "rejected") {
+    return "Empresa rechazada. No hay accion principal de empresa en este estado.";
+  }
+  return "Empresa sin accion principal disponible en este estado.";
+}
+
 function companyItemMarkup(company) {
   const companyId = company.companyId || company.id || "";
   const location = [company.province, company.canton].filter(Boolean).join(", ") || "-";
@@ -736,6 +751,9 @@ function caseCompanyDetail(company) {
     companyMetaRow("TikTok", company.tiktok),
     companyMetaRow("Zona", location),
   ].join("");
+  const companyActions = companyCanBeReviewed(company)
+    ? scopedInternalActionsMarkup("companies", { "company-id": companyId }, "", "Aprobar empresa", "Rechazar empresa")
+    : `<p class="admin-note compact-empty">${escapeHtml(companyActionNote(company))}</p>`;
   return `
     <article class="internal-item">
       <div class="internal-item-header">
@@ -748,7 +766,7 @@ function caseCompanyDetail(company) {
       <div class="internal-item-meta">
         ${contactRows}
       </div>
-      ${scopedInternalActionsMarkup("companies", { "company-id": companyId })}
+      ${companyActions}
     </article>
   `;
 }
@@ -947,6 +965,12 @@ function companyApproveMessage(response = {}) {
 function internalActionSuccessMessage(type, action, response = {}) {
   if (type === "companies" && action === "approve") {
     return companyApproveMessage(response);
+  }
+  if (type === "services") {
+    return {
+      message: action === "approve" ? "Servicio aprobado." : "Servicio rechazado.",
+      tone: action === "approve" ? "success" : "warning",
+    };
   }
   return {
     message: action === "approve" ? "Item aprobado." : "Item rechazado.",
@@ -1254,7 +1278,7 @@ document.addEventListener("click", async (event) => {
     });
     state.internal.previewUrls.forEach((url) => URL.revokeObjectURL(url));
     state.internal.previewUrls.clear();
-    state.activeTab = "revision";
+    state.activeTab = "modelo";
     showLogin();
   }
 

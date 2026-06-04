@@ -894,6 +894,11 @@ Response `200`:
         "id": "company_123",
         "slug": "aurisbel",
         "name": "Aurisbel",
+        "whatsapp": "50688888888",
+        "website": "https://...",
+        "instagram": "https://...",
+        "facebook": "https://...",
+        "tiktok": "https://...",
         "province": "Heredia",
         "canton": "San Francisco",
         "plan": "free"
@@ -914,7 +919,9 @@ Reglas:
 - `limit` tiene maximo `50`.
 - `cursor` queda reservado para una iteracion futura; por ahora siempre responde `nextCursor: ""`.
 - Ordenar por `sortBoost`, `isFeatured`, relevancia y fecha segun decision de producto.
+- `company.whatsapp`, `company.website`, `company.instagram`, `company.facebook` y `company.tiktok` son canales publicos permitidos cuando existen.
 - No devolver datos privados ni imagenes pendientes.
+- No devolver `company.email` en resultados publicos; el email interno solo se usa por `POST /api/public/leads`.
 - Implementacion MVP puede escanear servicios publicados y resolver empresas por `companyId`; migrar a `ServiceIndex` cuando se requiera ranking/paginacion real.
 
 ### GET `/api/public/companies/{slug}`
@@ -961,11 +968,13 @@ Reglas:
 - Si la empresa no esta `published`, responder `404`.
 - Solo incluir servicios `published`.
 - Permitir query opcional `?service=mesa-dulce`; si coincide con un servicio publicado devuelto, responder `selectedServiceSlug` con ese slug. Si no coincide, responder `selectedServiceSlug: ""`.
+- `whatsapp`, `website`, `instagram`, `facebook` y `tiktok` son canales publicos permitidos cuando existen.
+- Si `whatsapp` existe, Web Dev puede usarlo como canal primario de contacto/cotizacion.
 - No devolver `email`, hashes, `partitionKey`, `rowKey`, tokens, metadata interna ni imagenes pendientes.
 
 ### POST `/api/public/leads`
 
-Recibe una solicitud publica de cotizacion y la envia por email a la empresa del servicio publicado.
+Recibe una solicitud publica de cotizacion para trazabilidad y envio por email a la empresa del servicio publicado. Complementa el contacto por WhatsApp y no expone el email privado de la empresa.
 
 Request:
 
@@ -1002,23 +1011,37 @@ Reglas:
 - Persiste el lead en `Leads` antes de enviar email para trazabilidad.
 - Envia email via Azure Communication Services Email al `Company.email` interno.
 - No devuelve ni publica el email privado de la empresa.
+- Si la empresa no tiene `Company.email` interno, responde `409` con `error: "Company cannot receive leads"`.
 - Si el proveedor de email falla, marca `emailStatus=failed` y responde `502` con `leadId`.
 - Si el envio funciona, marca `emailStatus=sent`.
+
+### Flujo contacto/cotizacion MVP
+
+- Si una empresa publicada tiene `whatsapp`, ese canal es primario para contacto inmediato desde Web Dev.
+- Aunque exista `whatsapp`, `POST /api/public/leads` se mantiene para respaldo/trazabilidad por email cuando el usuario completa el formulario.
+- Si una empresa publicada no tiene `whatsapp`, Web Dev debe usar `POST /api/public/leads` como canal principal de cotizacion.
+- Si falta el email interno de empresa, `POST /api/public/leads` responde `409`; el frontend debe mostrar un error claro y no asumir envio silencioso.
+- Si Azure Communication Services Email falla, el lead queda persistido con `emailStatus=failed` y la respuesta es `502` con `leadId`.
+- El frontend no debe construir enlaces ni mostrar email privado de empresa porque la API publica no lo devuelve.
 
 ### Emails internos de operacion
 
 Eventos backend:
 
 - `POST /api/companies/register` intenta enviar email interno de nueva empresa registrada.
+- `POST /api/internal/companies/{companyId}/approve` intenta enviar email de bienvenida/activacion a la empresa aprobada.
 - `POST /api/companies/me/services/{serviceId}/submit-review` intenta enviar email interno de servicio enviado a revision.
+- `POST /api/public/leads` envia email de solicitud de cotizacion a la empresa publicada.
 
 Reglas:
 
 - Usan Azure Communication Services Email por defecto con `EMAIL_PROVIDER=acs`, `AZURE_COMMUNICATION_CONNECTION_STRING`, `AZURE_COMMUNICATION_EMAIL_FROM`, `NOTIFICATION_EMAIL_TO` y `NOTIFICATION_EMAIL_FROM_NAME`.
 - `AZURE_COMMUNICATION_EMAIL_FROM` puede omitirse si `NOTIFICATION_EMAIL_FROM` contiene el sender ACS configurado.
 - SendGrid queda como fallback explicito solo si `EMAIL_PROVIDER=sendgrid` y existe `SENDGRID_API_KEY`.
-- Si falta configuracion o el proveedor falla, el flujo principal no falla.
+- En registro, aprobacion de empresa y envio de servicio a revision, si falta configuracion o el proveedor falla, el flujo principal no falla.
+- En cotizacion publica, si el proveedor falla, el lead queda persistido con `emailStatus=failed` y la API responde `502` con `leadId`.
 - Los errores se registran sin imprimir API keys ni connection strings.
+- Los asuntos deben indicar origen/accion de Punto Evento y los cuerpos deben ser breves, profesionales y utiles para el siguiente paso.
 
 ## Estados
 

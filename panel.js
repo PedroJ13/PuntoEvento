@@ -127,10 +127,10 @@ function isAllowedServiceImage(file) {
 
 function serviceStatusLabel(status) {
   const labels = {
-    draft: "Borrador",
-    pending: "Pendiente",
+    draft: "En carga",
+    pending: "Recibido",
     published: "Publicado",
-    rejected: "Rechazado",
+    rejected: "Necesita ajuste",
     inactive: "Inactivo",
   };
   return labels[normalizeStatus(status)];
@@ -142,11 +142,11 @@ function canSubmitReview(service) {
 
 function submitReviewStatusMessage(status) {
   const messages = {
-    pending: "Este servicio ya esta en revision.",
-    published: "Este servicio ya esta publicado. Editalo para guardarlo como borrador antes de enviarlo de nuevo.",
-    inactive: "Este servicio esta inactivo. Activalo o crea uno nuevo antes de enviarlo a revision.",
+    pending: "Tu informacion ya fue recibida.",
+    published: "Este servicio ya esta publicado. Editalo si necesitas actualizarlo.",
+    inactive: "Este servicio esta inactivo. Activalo o crea uno nuevo para enviarlo.",
   };
-  return messages[normalizeStatus(status)] || "Este servicio no se puede enviar a revision en su estado actual.";
+  return messages[normalizeStatus(status)] || "Este servicio no se puede enviar en su estado actual.";
 }
 
 function publicCompanyHref(service = null) {
@@ -306,9 +306,9 @@ function serviceMarkup(service) {
   const publicLink =
     normalizeStatus(service.status) === "published"
       ? `<a class="ghost-button compact-button" href="${escapeHtml(publicCompanyHref(service))}">Ver publico</a>`
-      : `<span class="review-note">Visible cuando sea publicado.</span>`;
+      : `<span class="review-note">Aparecera cuando este publicado.</span>`;
   const reviewAction = canSubmitReview(service)
-    ? `<button class="primary-button compact-button" type="button" data-submit-review>Enviar a revision</button>`
+    ? `<button class="primary-button compact-button" type="button" data-submit-review>Completar envio</button>`
     : `<span class="review-note">${escapeHtml(submitReviewStatusMessage(service.status))}</span>`;
   return `
     <article class="service-card" data-service-id="${escapeHtml(service.id)}">
@@ -342,7 +342,7 @@ function renderServices() {
   renderCompany();
   const list = $("[data-services-list]");
   if (!state.services.length) {
-    list.innerHTML = '<div class="panel-empty">Todavia no hay servicios. Agrega el primero para iniciar la revision.</div>';
+    list.innerHTML = '<div class="panel-empty">Todavia no hay servicios. Carga el primero para mostrar lo que ofreces.</div>';
     return;
   }
   list.innerHTML = state.services.map(serviceMarkup).join("");
@@ -411,7 +411,7 @@ function setDefaultCoverImage() {
 function currentServiceImages(service = null) {
   const images = [];
   if (service?.coverUrl) {
-    images.push({ name: "Cover aprobado", src: service.coverUrl, type: "cover" });
+    images.push({ name: "Portada publicada", src: service.coverUrl, type: "cover" });
   }
   parseArray(service?.gallery).forEach((src, index) => {
     images.push({ name: `Galeria aprobada ${index + 1}`, src, type: "gallery" });
@@ -424,7 +424,7 @@ function renderPhotoPreview(service = null) {
   if (!preview) return;
   const approvedImages = currentServiceImages(service);
   if (!approvedImages.length && !state.pendingImages.length) {
-    preview.innerHTML = '<div class="photo-preview-empty">Sin imagenes seleccionadas.</div>';
+    preview.innerHTML = '<div class="photo-preview-empty">Sin fotos seleccionadas.</div>';
     return;
   }
   const approvedMarkup = approvedImages
@@ -432,7 +432,7 @@ function renderPhotoPreview(service = null) {
       (image) => `
         <article class="photo-preview-item">
           <img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.name)}">
-          <span>${escapeHtml(image.type === "cover" ? "Cover aprobado" : image.name)}</span>
+          <span>${escapeHtml(image.type === "cover" ? "Portada publicada" : image.name)}</span>
         </article>
       `,
     )
@@ -444,7 +444,7 @@ function renderPhotoPreview(service = null) {
           <img src="${escapeHtml(image.previewUrl)}" alt="${escapeHtml(image.name)}">
           <span>${escapeHtml(image.name)}</span>
           <div class="photo-actions">
-            <button class="ghost-button compact-button" type="button" data-set-cover="${index}">${image.isCover ? "Cover" : "Usar como cover"}</button>
+            <button class="ghost-button compact-button" type="button" data-set-cover="${index}">${image.isCover ? "Portada" : "Usar como portada"}</button>
             <button class="secondary-button compact-button" type="button" data-remove-photo="${index}">Quitar</button>
           </div>
         </article>
@@ -458,12 +458,12 @@ function renderReadonlySummary(service = null) {
   const statusNode = $("[data-current-service-status]");
   const photoCountNode = $("[data-current-photo-count]");
   if (statusNode) {
-    statusNode.textContent = service ? serviceStatusLabel(service.status) : "Borrador nuevo";
+    statusNode.textContent = service ? serviceStatusLabel(service.status) : "Servicio nuevo";
   }
   if (photoCountNode) {
   const count = serviceImageCount(service || {});
     const pendingCount = state.pendingImages.length;
-    photoCountNode.textContent = pendingCount ? `${count} aprobado(s), ${pendingCount} pendiente(s)` : `${count} archivo(s)`;
+    photoCountNode.textContent = pendingCount ? `${count} publicada(s), ${pendingCount} nueva(s)` : `${count} archivo(s)`;
   }
 }
 
@@ -473,7 +473,7 @@ function resetServiceForm(service = null) {
   form.classList.remove("is-hidden");
   revokePendingImageUrls();
   state.pendingImages = [];
-  $("[data-service-form-mode]").textContent = service ? "Editar servicio" : "Nuevo servicio";
+  $("[data-service-form-mode]").textContent = service ? "Editar servicio" : "Cargar servicio";
   setFormMessage("");
   form.elements.id.value = service?.id || "";
   form.elements.name.value = service?.name || "";
@@ -491,9 +491,9 @@ function resetServiceForm(service = null) {
     reviewButton.dataset.serviceId = service?.id || "";
     reviewButton.title = service?.id
       ? canSubmitReview(service)
-        ? "Enviar este borrador a revision interna."
+        ? "Completar el envio de este servicio."
         : submitReviewStatusMessage(service.status)
-      : "Guarda el borrador antes de enviarlo a revision.";
+      : "Guarda el servicio antes de enviarlo.";
   }
   renderPhotoPreview(service);
   form.elements.name.focus();
@@ -536,7 +536,7 @@ function validateServicePayload(payload) {
     return "Completa la descripcion del servicio.";
   }
   if (!payload.priceFrom) {
-    return "Completa el precio desde antes de enviar a revision.";
+    return "Completa el precio desde antes de enviar.";
   }
   return "";
 }
@@ -549,6 +549,18 @@ function validateServiceForReview(service) {
     description: service?.description || "",
     priceFrom: service?.priceFrom || "",
   });
+}
+
+async function sendSavedService(saved, existing = null) {
+  if (!canSubmitReview(saved)) return saved;
+  const updated =
+    state.mode === "demo"
+      ? { ...saved, status: "pending", updatedAt: new Date().toISOString() }
+      : await apiJson(`/companies/me/services/${encodeURIComponent(saved.id)}/submit-review`, {
+          method: "POST",
+          body: "{}",
+        });
+  return { ...saved, status: normalizeStatus(updated.status), updatedAt: updated.updatedAt || saved.updatedAt };
 }
 
 async function saveService(form) {
@@ -565,7 +577,7 @@ async function saveService(form) {
     return;
   }
 
-  setFormMessage("Guardando servicio...");
+  setFormMessage("Guardando informacion...");
   const saved =
     state.mode === "demo"
       ? {
@@ -588,16 +600,16 @@ async function saveService(form) {
 
   if (state.pendingImages.length) {
     await uploadServiceImages(saved.id);
-    setPanelMessage("Borrador guardado. Imagenes enviadas a revision.", "success");
-  } else {
-    setPanelMessage("Borrador guardado. Cuando este completo, envialo a revision.", "success");
   }
+
+  const submitted = await sendSavedService(saved, existing);
+  setPanelMessage("Tu informacion fue recibida.", "success");
 
   closeServiceForm();
   if (state.mode === "demo") {
-    const index = state.services.findIndex((service) => service.id === saved.id);
-    if (index >= 0) state.services.splice(index, 1, saved);
-    else state.services.unshift(saved);
+    const index = state.services.findIndex((service) => service.id === submitted.id);
+    if (index >= 0) state.services.splice(index, 1, submitted);
+    else state.services.unshift(submitted);
     renderServices();
   } else {
     await loadRealPanel();
@@ -606,7 +618,7 @@ async function saveService(form) {
 
 function reviewErrorMessage(error, service = null) {
   if (error.status === 400) {
-    return error.data?.error || validateServiceForReview(service) || "Completa los campos minimos antes de enviar a revision.";
+    return error.data?.error || validateServiceForReview(service) || "Completa los campos minimos antes de enviar.";
   }
   if (error.status === 401) {
     return "Tu sesion expiro. Abre de nuevo el enlace de invitacion o inicia sesion otra vez.";
@@ -617,7 +629,7 @@ function reviewErrorMessage(error, service = null) {
   if (error.status === 409) {
     return error.data?.error || submitReviewStatusMessage(service?.status);
   }
-  return "No se pudo enviar a revision. Intentalo de nuevo en unos minutos.";
+  return "No se pudo enviar el servicio. Intentalo de nuevo en unos minutos.";
 }
 
 async function submitServiceForReview(serviceId, trigger = null) {
@@ -642,7 +654,7 @@ async function submitServiceForReview(serviceId, trigger = null) {
     trigger.disabled = true;
     trigger.textContent = "Enviando...";
   }
-  setPanelMessage(`Enviando "${service.name}" a revision...`);
+  setPanelMessage(`Enviando "${service.name}"...`);
   setFormMessage("");
 
   try {
@@ -656,7 +668,7 @@ async function submitServiceForReview(serviceId, trigger = null) {
 
     service.status = normalizeStatus(updated.status);
     service.updatedAt = updated.updatedAt || service.updatedAt;
-    setPanelMessage("Servicio enviado a revision.", "success");
+    setPanelMessage("Tu informacion fue recibida.", "success");
     renderServices();
     const form = $("[data-service-form]");
     if (form && !form.classList.contains("is-hidden") && form.elements.id.value === serviceId) {
@@ -850,7 +862,7 @@ document.addEventListener("click", async (event) => {
   if (event.target.matches("[data-send-review]")) {
     const serviceId = event.target.dataset.serviceId || $("[data-service-form]")?.elements.id.value;
     if (!serviceId) {
-      setFormMessage("Guarda el borrador antes de enviarlo a revision.", "error");
+      setFormMessage("Guarda el servicio antes de enviarlo.", "error");
     } else {
       await submitServiceForReview(serviceId, event.target);
     }
@@ -898,7 +910,7 @@ document.addEventListener("change", (event) => {
     return;
   }
   if (existingCount + state.pendingImages.length + files.length > MAX_SERVICE_IMAGES) {
-    setFormMessage(`Maximo ${MAX_SERVICE_IMAGES} imagenes por servicio, incluyendo el cover.`, "error");
+    setFormMessage(`Maximo ${MAX_SERVICE_IMAGES} fotos por servicio, incluyendo la portada.`, "error");
     event.target.value = "";
     return;
   }
@@ -913,7 +925,7 @@ document.addEventListener("change", (event) => {
     });
   });
   setDefaultCoverImage();
-  setFormMessage("Imagenes listas. Marca una como cover antes de guardar.");
+    setFormMessage("Fotos listas. Marca una como portada antes de guardar.");
   renderReadonlySummary(service);
   renderPhotoPreview(service);
   event.target.value = "";

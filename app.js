@@ -22,6 +22,32 @@ const PROVINCE_OPTIONS = [
   "Puntarenas",
   "Limon",
 ];
+const PUBLIC_SERVICE_CATEGORIES = [
+  {
+    label: "Salon y jardin",
+    image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    label: "Catering",
+    image: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    label: "Fotografia",
+    image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    label: "Musica y DJ",
+    image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    label: "Decoracion",
+    image: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=80",
+  },
+  {
+    label: "Mesa dulce",
+    image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80",
+  },
+];
 
 let providers = [];
 let providerGallery = [];
@@ -34,6 +60,7 @@ let currentSearchFilters = {};
 const companyProfileCache = new Map();
 let quoteContext = null;
 let isQuoteSubmitting = false;
+let shouldFocusResults = false;
 
 const app = document.querySelector("#app");
 const drawer = document.querySelector("#quoteDrawer");
@@ -143,6 +170,7 @@ function normalizePublicService(service) {
       id: company.id || companySlug,
       slug: companySlug,
       name: company.name || "Empresa publicada",
+      whatsapp: company.whatsapp || service.whatsapp || "",
       province: company.province || "",
       canton: company.canton || "",
       plan: company.plan || "free",
@@ -312,11 +340,37 @@ function serviceHref(service) {
   return `#proveedor/${encodeURIComponent(companySlug)}${suffix}`;
 }
 
+function whatsappUrl(service) {
+  const rawPhone = service.company?.whatsapp || service.whatsapp || "";
+  const digits = String(rawPhone).replace(/\D/g, "");
+  if (!digits) return "";
+  const normalizedPhone = digits.startsWith("506") ? digits : `506${digits}`;
+  const message = [
+    `Hola, vi ${service.name || "tu servicio"} en Punto Evento.`,
+    "Me gustaria recibir informacion.",
+  ].join(" ");
+  return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+}
+
 function quoteButtonAttributes(service) {
   const companyId = service.company?.id || "";
   const serviceId = service.id || "";
   if (!companyId || !serviceId || serviceDataSource !== "api") return "";
   return ` data-company-id="${safeText(companyId)}" data-service-id="${safeText(serviceId)}" data-service-name="${safeText(service.name)}" data-company-name="${safeText(service.company?.name || "")}"`;
+}
+
+function contactActionsMarkup(service, primaryClass = "primary-button") {
+  const whatsappHref = whatsappUrl(service);
+  if (whatsappHref) {
+    return `
+      <a class="${primaryClass}" href="${safeUrl(whatsappHref)}" target="_blank" rel="noopener">Contactar</a>
+      <button class="secondary-button" data-open-quote${quoteButtonAttributes(service)}>Enviar solicitud</button>
+    `;
+  }
+  return `
+    <button class="${primaryClass}" data-open-quote${quoteButtonAttributes(service)}>Contactar</button>
+    <span class="contact-note">Formulario por email</span>
+  `;
 }
 
 function packagesForProvider(providerId) {
@@ -370,7 +424,7 @@ function serviceCard(service) {
         <strong>${safeText(service.priceFrom)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver empresa</a>
-          <button class="secondary-button" data-open-quote${quoteButtonAttributes(service)}>Cotizar servicio</button>
+          ${contactActionsMarkup(service, "secondary-button")}
         </div>
       </div>
     </article>
@@ -395,7 +449,7 @@ function wideProviderCard(provider) {
         <strong>${safeText(provider.price)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
-          <button class="primary-button" data-open-quote>Pedir presupuesto</button>
+          <button class="primary-button" data-open-quote>Contactar</button>
         </div>
       </div>
     </article>
@@ -421,7 +475,7 @@ function wideServiceCard(service) {
         <strong>${safeText(service.priceFrom)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver empresa</a>
-          <button class="primary-button" data-open-quote${quoteButtonAttributes(service)}>Cotizar servicio</button>
+          ${contactActionsMarkup(service, "primary-button")}
         </div>
       </div>
     </article>
@@ -446,7 +500,7 @@ function packageCard(pack) {
       <h3>${safeText(pack.title)}</h3>
       <p>${safeText(pack.details)}</p>
       <div class="package-price">${safeText(pack.price)}</div>
-      <button class="secondary-button" data-open-quote>Cotizar paquete</button>
+      <button class="secondary-button" data-open-quote>Enviar solicitud</button>
     </article>
   `;
 }
@@ -523,6 +577,15 @@ function provinceOptionsMarkup(currentValue = "", includeAll = false) {
   `;
 }
 
+function serviceCategoryOptionsMarkup(currentValue = "") {
+  return `
+    <option value="Todos" ${selectedOption(currentValue || "Todos", "Todos")}>Todos</option>
+    ${PUBLIC_SERVICE_CATEGORIES.map(
+      (category) => `<option value="${safeText(category.label)}" ${selectedOption(currentValue, category.label)}>${safeText(category.label)}</option>`,
+    ).join("")}
+  `;
+}
+
 function homePage() {
   return `
     <section class="hero" style="--hero-image: url('${image("photo-1511795409834-ef04bbd61622")}')">
@@ -530,7 +593,7 @@ function homePage() {
         <div class="hero-copy">
           <p class="eyebrow">Eventos en Costa Rica</p>
           <h1>Encontra proveedores confiables para tu evento</h1>
-          <p>Compara salones, catering, musica, decoracion y paquetes. Pedi cotizaciones gratis y reserva con mas seguridad.</p>
+          <p>Compara salones, catering, musica, decoracion y otros servicios. Contacta directo o envia una solicitud.</p>
         </div>
         <form class="search-panel" id="homeSearch">
           <div class="field">
@@ -553,7 +616,7 @@ function homePage() {
               ${provinceOptionsMarkup("Todos", true)}
             </select>
           </div>
-          <button class="primary-button" type="submit">Encontrar proveedores</button>
+          <button class="primary-button" type="submit">Ver resultados</button>
         </form>
       </div>
     </section>
@@ -571,15 +634,15 @@ function homePage() {
           <p class="eyebrow">Categorias</p>
           <h2>Atajos para empezar</h2>
         </div>
-        <a class="ghost-button" href="#bodas">Ver bodas</a>
+        <a class="ghost-button" href="#bodas" data-results-link>Ver servicios</a>
       </div>
       <div class="category-grid">
-        ${categories
+        ${PUBLIC_SERVICE_CATEGORIES
           .map(
             (category) => `
-              <a class="category-tile" href="${safeUrl(category.href, "#inicio")}">
-                <img src="${safeImageUrl(category.image)}" alt="${safeText(category.name)}" loading="lazy" ${imageFallbackAttribute()}>
-                <span>${safeText(category.name)}</span>
+              <a class="category-tile" href="#bodas" data-service-category="${safeText(category.label)}">
+                <img src="${safeImageUrl(category.image)}" alt="${safeText(category.label)}" loading="lazy" ${imageFallbackAttribute()}>
+                <span>${safeText(category.label)}</span>
               </a>
             `,
           )
@@ -596,9 +659,9 @@ function homePage() {
           </div>
         </div>
         <div class="steps">
-          <article class="step"><span class="step-number">01</span><h3>Filtra por evento</h3><p>El cliente llega directo a opciones relevantes por tipo de evento, zona y tamano.</p></article>
-          <article class="step"><span class="step-number">02</span><h3>Compara proveedores</h3><p>Precios, fotos, opiniones, insignias y paquetes ayudan a decidir mas rapido.</p></article>
-          <article class="step"><span class="step-number">03</span><h3>Pide cotizaciones</h3><p>Una solicitud puede enviarse a varios proveedores para aumentar conversion.</p></article>
+          <article class="step"><span class="step-number">01</span><h3>Elige un servicio</h3><p>Empieza por lo que necesitas: salon, catering, fotos, musica o decoracion.</p></article>
+          <article class="step"><span class="step-number">02</span><h3>Compara opciones</h3><p>Precios, fotos, zona y descripcion ayudan a decidir mas rapido.</p></article>
+          <article class="step"><span class="step-number">03</span><h3>Contacta directo</h3><p>Usa WhatsApp cuando este disponible o envia una solicitud por formulario.</p></article>
         </div>
       </div>
     </section>
@@ -607,7 +670,7 @@ function homePage() {
       <div class="section-header">
         <div>
           <p class="eyebrow">Destacados</p>
-          <h2>Servicios listos para cotizar</h2>
+          <h2>Servicios listos para contactar</h2>
         </div>
         <button class="ghost-button" data-open-quote>Cotizacion multiple</button>
       </div>
@@ -655,10 +718,10 @@ function weddingsPage() {
     <section class="subhero">
       <div class="subhero-inner">
         <div>
-          <p class="eyebrow">Bodas en Costa Rica</p>
-          <h1>Organiza tu boda con proveedores verificados</h1>
-          <p>Compara salones, catering, decoracion, musica y fotografia con paquetes claros y contacto directo.</p>
-          <button class="primary-button" data-open-quote>Pedir cotizacion a varios</button>
+          <p class="eyebrow">Servicios en Costa Rica</p>
+          <h1>Encuentra proveedores por categoria de servicio</h1>
+          <p>Compara salones, catering, decoracion, musica y fotografia con informacion clara y contacto directo.</p>
+          <button class="primary-button" data-open-quote>Contactar proveedores</button>
         </div>
         <img src="${image("photo-1523438885200-e635ba2c371e")}" alt="Decoracion de boda">
       </div>
@@ -672,11 +735,7 @@ function weddingsPage() {
         <div class="field">
           <label>Servicio</label>
           <select name="service">
-            <option value="Todos" ${selectedOption(currentSearchFilters.service || "Todos", "Todos")}>Todos</option>
-            <option value="Salon y jardin" ${selectedOption(currentSearchFilters.service, "Salon y jardin")}>Salon y jardin</option>
-            <option value="Catering" ${selectedOption(currentSearchFilters.service, "Catering")}>Catering</option>
-            <option value="Musica y luces" ${selectedOption(currentSearchFilters.service, "Musica y luces")}>Musica y luces</option>
-            <option value="Decoracion floral" ${selectedOption(currentSearchFilters.service, "Decoracion floral")}>Decoracion floral</option>
+            ${serviceCategoryOptionsMarkup(currentSearchFilters.service || "Todos")}
           </select>
         </div>
         <div class="field">
@@ -695,9 +754,9 @@ function weddingsPage() {
             <p class="eyebrow">Resultados</p>
               <h2>Servicios recomendados</h2>
             </div>
-            <button class="ghost-button" data-open-quote>Cotizar seleccionados</button>
+            <button class="ghost-button" data-open-quote>Enviar solicitud</button>
           </div>
-          <div class="result-list" id="providerResults">
+          <div class="result-list" id="providerResults" tabindex="-1" aria-live="polite">
             ${results.length ? results.map(wideServiceCard).join("") : emptyServicesState()}
           </div>
           ${dataSourceNotice()}
@@ -760,6 +819,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
           id: company.id,
           slug: company.slug,
           name: company.name,
+          whatsapp: company.whatsapp,
           province: company.province,
           canton: company.canton,
           plan: company.plan,
@@ -823,7 +883,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
           <strong>${safeText(selectedService.name)}</strong>
         </div>
         <div class="card-actions">
-          <button class="primary-button" data-open-quote${quoteButtonAttributes(selectedService)}>Cotizar servicio</button>
+          ${contactActionsMarkup(selectedService, "primary-button")}
           <a class="secondary-button" href="#bodas">Ver mas servicios</a>
         </div>
       </aside>
@@ -875,7 +935,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
             <li><span class="check">&#10003;</span><span>${publishedServices.length} servicio(s) publicado(s).</span></li>
             <li><span class="check">&#10003;</span><span>Perfil revisado antes de publicarse.</span></li>
           </ul>
-          <button class="primary-button" data-open-quote${quoteButtonAttributes(selectedService)}>Pedir presupuesto</button>
+          ${contactActionsMarkup(selectedService, "primary-button")}
         </aside>
       </div>
     </section>
@@ -948,7 +1008,7 @@ function providerDemoPage(providerId) {
           <strong>${safeText(provider.price)}</strong>
         </div>
         <div class="card-actions">
-          <button class="primary-button" data-open-quote>Pedir presupuesto</button>
+          <button class="primary-button" data-open-quote>Contactar</button>
           <button class="secondary-button" data-toast="WhatsApp demo: se abriria una conversacion con el proveedor.">WhatsApp</button>
         </div>
       </aside>
@@ -975,7 +1035,7 @@ function providerDemoPage(providerId) {
               ${
                 providerPackages.length
                   ? providerPackages.map(packageCard).join("")
-                  : '<article class="package-card"><p class="package-meta">Demo</p><h3>Paquetes por definir</h3><p>Este proveedor todavia no tiene paquetes cargados en data/packages.json.</p><div class="package-price">Consultar</div><button class="secondary-button" data-open-quote>Cotizar servicio</button></article>'
+                  : '<article class="package-card"><p class="package-meta">Demo</p><h3>Paquetes por definir</h3><p>Este proveedor todavia no tiene paquetes cargados en data/packages.json.</p><div class="package-price">Consultar</div><button class="secondary-button" data-open-quote>Enviar solicitud</button></article>'
               }
             </div>
           </article>
@@ -998,7 +1058,7 @@ function providerDemoPage(providerId) {
             <li><span class="check">✓</span><span>${providerPackages.length} paquete(s) demo disponible(s).</span></li>
             <li><span class="check">✓</span><span>Cotizacion por formulario demo.</span></li>
           </ul>
-          <button class="primary-button" data-open-quote>Pedir presupuesto</button>
+          <button class="primary-button" data-open-quote>Contactar</button>
         </aside>
       </div>
     </section>
@@ -1356,6 +1416,13 @@ function companiesPageNew() {
   `;
 }
 
+function focusResultsArea(behavior = "smooth") {
+  const target = document.querySelector("#providerResults") || document.querySelector("#weddingFilters");
+  if (!target) return;
+  target.scrollIntoView({ behavior, block: "start" });
+  target.focus?.({ preventScroll: true });
+}
+
 async function render() {
   const [route = "inicio", providerId, serviceSlug] = window.location.hash.replace("#", "").split("/");
   const pages = {
@@ -1369,8 +1436,13 @@ async function render() {
   document.querySelectorAll(".nav a").forEach((link) => {
     link.classList.toggle("is-active", link.getAttribute("href") === `#${route}`);
   });
-  window.scrollTo({ top: 0, behavior: "instant" });
   bindPageEvents();
+  if (shouldFocusResults && route === "bodas") {
+    shouldFocusResults = false;
+    requestAnimationFrame(() => focusResultsArea("smooth"));
+  } else {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }
 }
 
 function bindPageEvents() {
@@ -1401,10 +1473,42 @@ function bindPageEvents() {
         eventType: formData.get("eventType"),
         province: formData.get("location"),
       };
-      window.location.hash = "bodas";
+      shouldFocusResults = true;
+      if (window.location.hash === "#bodas") {
+        render();
+      } else {
+        window.location.hash = "bodas";
+      }
       showToast("Busqueda aplicada: mostrando servicios recomendados.");
     });
   }
+
+  document.querySelectorAll("[data-service-category]").forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      currentSearchFilters = {
+        service: trigger.dataset.serviceCategory,
+      };
+      shouldFocusResults = true;
+      if (window.location.hash === "#bodas") {
+        render();
+      } else {
+        window.location.hash = "bodas";
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-results-link]").forEach((trigger) => {
+    trigger.addEventListener("click", (event) => {
+      event.preventDefault();
+      shouldFocusResults = true;
+      if (window.location.hash === "#bodas") {
+        render();
+      } else {
+        window.location.hash = "bodas";
+      }
+    });
+  });
 
   const filters = document.querySelector("#weddingFilters");
   if (filters) {
@@ -1416,6 +1520,7 @@ function bindPageEvents() {
         service: formData.get("service"),
         province: formData.get("province"),
       };
+      shouldFocusResults = true;
       render();
       const resultCount = filteredServices().length;
       showToast(resultCount ? `${resultCount} servicio(s) encontrado(s).` : "No encontramos servicios con esos filtros.");
@@ -1424,6 +1529,7 @@ function bindPageEvents() {
 
   document.querySelector("[data-clear-service-filters]")?.addEventListener("click", () => {
     currentSearchFilters = {};
+    shouldFocusResults = true;
     render();
     showToast("Filtros limpiados.");
   });
@@ -1708,17 +1814,17 @@ function openQuote(event) {
   quoteContext = quoteContextFromTrigger(event?.currentTarget);
   const serviceName = quoteContext?.serviceName || event?.currentTarget?.dataset.serviceName || "";
   if (quoteTitle) {
-    quoteTitle.textContent = serviceName ? `Cotizar ${serviceName}` : "Cotizar servicio";
+    quoteTitle.textContent = serviceName ? `Contactar por ${serviceName}` : "Contactar empresa";
   }
   if (quoteContextNode) {
     quoteContextNode.textContent = quoteContext?.companyName
-      ? `Solicitud dirigida a ${quoteContext.companyName}.`
+      ? `Solicitud por formulario/email dirigida a ${quoteContext.companyName}.`
       : "Abre un servicio publicado para dirigir la solicitud a una empresa.";
   }
   setQuoteStatus(
     quoteContext
       ? ""
-      : "Para enviar una cotizacion real, abre un servicio publicado desde el listado o perfil de empresa.",
+      : "Para enviar una solicitud real, abre un servicio publicado desde el listado o perfil de empresa.",
     quoteContext ? "" : "error",
   );
   quoteForm.classList.remove("is-hidden");

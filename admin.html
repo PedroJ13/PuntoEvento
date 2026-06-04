@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Admin | Punto Evento</title>
     <meta name="robots" content="noindex,nofollow" />
-    <link rel="stylesheet" href="styles.css?v=19" />
-    <link rel="stylesheet" href="admin.css?v=12" />
+    <link rel="stylesheet" href="styles.css?v=20" />
+    <link rel="stylesheet" href="admin.css?v=13" />
   </head>
   <body class="admin-body">
     <main class="admin-shell">
       <header class="admin-header">
         <div>
           <p class="eyebrow">Administracion</p>
-          <h1>Revision interna</h1>
-          <p>Modera proveedores legacy y revisa el estado de la migracion al modelo Company -> Services.</p>
+          <h1>Aprobacion de empresas y servicios</h1>
+          <p>Revisa empresas nuevas y servicios enviados antes de publicarlos.</p>
         </div>
         <button class="ghost-button" type="button" data-refresh>Actualizar</button>
       </header>
@@ -55,13 +55,13 @@
         </div>
 
         <nav class="admin-tabs" aria-label="Secciones admin">
-          <button class="admin-tab is-active" type="button" data-tab-target="revision">Revision</button>
-          <button class="admin-tab" type="button" data-tab-target="modelo">Modelo nuevo</button>
-          <button class="admin-tab" type="button" data-tab-target="empresa">Empresa demo</button>
-          <button class="admin-tab" type="button" data-tab-target="servicios">Servicios</button>
+          <button class="admin-tab is-active" type="button" data-tab-target="modelo">Empresas y servicios</button>
+          <button class="admin-tab support-tab" type="button" data-tab-target="revision">Legacy</button>
+          <button class="admin-tab support-tab" type="button" data-tab-target="empresa">Demo</button>
+          <button class="admin-tab support-tab" type="button" data-tab-target="servicios">Servicios demo</button>
         </nav>
 
-        <section class="admin-section" data-tab-panel="revision">
+        <section class="admin-section is-hidden" data-tab-panel="revision">
           <div class="admin-empty is-hidden" data-demo-review-lock>
             La revision interna requiere login admin real.
           </div>
@@ -75,7 +75,7 @@
           <div class="admin-list" data-provider-list></div>
         </section>
 
-        <section class="admin-section is-hidden" data-tab-panel="modelo">
+        <section class="admin-section" data-tab-panel="modelo">
           <div class="section-heading">
             <div>
               <p class="eyebrow">Company -> Services</p>
@@ -167,6 +167,6 @@
         </section>
       </section>
     </main>
-    <script src="admin.js?v=17"></script>
+    <script src="admin.js?v=18"></script>
   </body>
 </html>
