@@ -294,14 +294,7 @@ function renderCatalogControls() {
   const eventTypes = $("[data-event-type-options]");
   if (eventTypes) {
     eventTypes.innerHTML = state.eventTypes
-      .map(
-        (eventType) => `
-          <label class="choice-pill">
-            <input type="checkbox" name="eventTypes" value="${escapeHtml(eventType)}">
-            <span>${escapeHtml(eventType)}</span>
-          </label>
-        `,
-      )
+      .map((eventType) => `<option value="${escapeHtml(eventType)}">${escapeHtml(eventType)}</option>`)
       .join("");
   }
 }
@@ -513,8 +506,8 @@ function resetServiceForm(service = null) {
   form.elements.name.value = service?.name || "";
   form.elements.category.value = service?.category || state.categories[0] || "";
   const selectedEventTypes = parseArray(service?.eventTypes);
-  $$('input[name="eventTypes"]', form).forEach((input) => {
-    input.checked = selectedEventTypes.includes(input.value);
+  $$('select[name="eventTypes"] option', form).forEach((option) => {
+    option.selected = selectedEventTypes.includes(option.value);
   });
   form.elements.priceFrom.value = service?.priceFrom || "";
   form.elements.description.value = service?.description || "";
@@ -544,7 +537,7 @@ function closeServiceForm() {
 
 function servicePayloadFromForm(form) {
   const formData = new FormData(form);
-  const eventTypes = $$('input[name="eventTypes"]:checked', form).map((input) => input.value);
+  const eventTypes = $$('select[name="eventTypes"] option:checked', form).map((option) => option.value);
   return {
     name: String(formData.get("name") || "").trim(),
     category: String(formData.get("category") || "").trim(),
