@@ -346,7 +346,7 @@ function whatsappUrl(service) {
   if (!digits) return "";
   const normalizedPhone = digits.startsWith("506") ? digits : `506${digits}`;
   const message = [
-    `Hola, vi ${service.name || "tu servicio"} en Punto Evento.`,
+    `Hola, vi ${service.name || "tu servicio"} en Punto Evento CR.`,
     "Me gustaria recibir informacion.",
   ].join(" ");
   return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
@@ -1256,7 +1256,7 @@ function companiesPageNew() {
         <ul class="feature-list">
           <li><span class="check">&#10003;</span><span>Registro gratis para iniciar la revision de la empresa.</span></li>
           <li><span class="check">&#10003;</span><span>Acceso posterior al panel para crear servicios y subir fotos.</span></li>
-          <li><span class="check">&#10003;</span><span>Publicacion despues de moderacion interna de Punto Evento.</span></li>
+            <li><span class="check">&#10003;</span><span>Publicacion despues de moderacion interna de Punto Evento CR.</span></li>
           <li><span class="check">&#10003;</span><span>Opciones destacadas para aparecer en categorias clave.</span></li>
         </ul>
       </div>
@@ -1272,7 +1272,7 @@ function companiesPageNew() {
           <p class="eyebrow">Alta gratuita</p>
           <h2 id="registroEmpresaTitle" tabindex="-1">Registra tu empresa</h2>
         </div>
-        <p>Luego de recibir tus datos, Punto Evento revisara la empresa y enviara acceso al panel para crear servicios, subir fotos y enviarlos a revision.</p>
+        <p>Luego de recibir tus datos, Punto Evento CR revisara la empresa y enviara acceso al panel para crear servicios, subir fotos y enviarlos a revision.</p>
       </div>
       <form class="company-form" id="companyForm">
         <div class="form-panel">
@@ -1341,7 +1341,7 @@ function companiesPageNew() {
             </div>
             <div>
               <strong>3. Publicacion</strong>
-              <span>Punto Evento modera y publica lo aprobado.</span>
+              <span>Punto Evento CR modera y publica lo aprobado.</span>
             </div>
           </div>
           <a class="secondary-button" href="panel.html">Ya tengo acceso</a>
@@ -1352,7 +1352,7 @@ function companiesPageNew() {
           <div class="publish-summary">
             <div>
               <strong>Plan gratis</strong>
-              <span>Registro revisado por Punto Evento antes de activar el panel.</span>
+              <span>Registro revisado por Punto Evento CR antes de activar el panel.</span>
             </div>
             <div>
               <strong>Destacado despues</strong>
@@ -1578,7 +1578,7 @@ function bindCompanyRegistration() {
       ? "Registro recibido"
       : "Registro demo recibido";
     const message = isAzure
-      ? "Registro recibido. Punto Evento revisara la empresa y enviara acceso al panel para crear servicios, subir fotos y enviarlos a revision."
+      ? "Registro recibido. Punto Evento CR revisara la empresa y enviara acceso al panel para crear servicios, subir fotos y enviarlos a revision."
       : "Esta demo no guarda datos en Azure. Puedes editar el formulario o limpiar la simulacion.";
     confirmation.innerHTML = `
       <div class="form-panel">

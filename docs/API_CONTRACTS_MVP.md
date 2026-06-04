@@ -1041,7 +1041,7 @@ Reglas:
 - En registro, aprobacion de empresa y envio de servicio a revision, si falta configuracion o el proveedor falla, el flujo principal no falla.
 - En cotizacion publica, si el proveedor falla, el lead queda persistido con `emailStatus=failed` y la API responde `502` con `leadId`.
 - Los errores se registran sin imprimir API keys ni connection strings.
-- Los asuntos deben indicar origen/accion de Punto Evento y los cuerpos deben ser breves, profesionales y utiles para el siguiente paso.
+- Los asuntos deben indicar origen/accion de Punto Evento CR y los cuerpos deben ser breves, profesionales y utiles para el siguiente paso.
 
 ## Estados
 

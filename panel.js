@@ -107,7 +107,7 @@ function panelViewContent(view) {
   const content = {
     company: {
       title: "Mi empresa",
-      copy: "Revisa el estado del perfil y los datos base registrados para Punto Evento.",
+      copy: "Revisa el estado del perfil y los datos base registrados para Punto Evento CR.",
     },
     services: {
       title: "Carga tus servicios",
@@ -228,7 +228,7 @@ function cleanInviteParams() {
 
 function genericAuthError(error) {
   if (error.status === 400) return "Revisa los datos e intentalo de nuevo.";
-  if (error.status === 403) return "Este acceso no esta disponible. Contacta al equipo de Punto Evento.";
+  if (error.status === 403) return "Este acceso no esta disponible. Contacta al equipo de Punto Evento CR.";
   return "No pudimos validar el acceso. Revisa los datos e intentalo de nuevo.";
 }
 
@@ -901,7 +901,7 @@ document.addEventListener("click", async (event) => {
     }
   }
 
-  if (event.target.matches("[data-logout]")) {
+  if (event.target.closest("[data-logout]")) {
     await logout();
   }
 

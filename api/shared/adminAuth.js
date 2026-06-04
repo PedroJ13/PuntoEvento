@@ -30,7 +30,7 @@ function unauthorized() {
   return {
     ...json(401, { error: "Unauthorized" }),
     headers: {
-      "WWW-Authenticate": 'Basic realm="Punto Evento Admin"',
+      "WWW-Authenticate": 'Basic realm="Punto Evento CR Admin"',
       "Content-Type": "application/json",
     },
   };

@@ -244,15 +244,15 @@ async function notifyProviderRegistration(context, provider, config) {
     )
     .join("");
   const appLink = config.appPublicUrl
-    ? `<p><a href="${escapeText(config.appPublicUrl)}">Abrir Punto Evento</a></p>`
+    ? `<p><a href="${escapeText(config.appPublicUrl)}">Abrir Punto Evento CR</a></p>`
     : "";
 
   await sendInternalNotification(context, config, {
-    subject: `Nueva empresa registrada en Punto Evento: ${plainText(provider.name)}`,
+    subject: `Nueva empresa registrada en Punto Evento CR: ${plainText(provider.name)}`,
     replyTo: provider.email ? { email: provider.email, name: provider.name } : undefined,
     html: `
       <h2>Nuevo registro de empresa</h2>
-      <p>Una empresa envio sus datos a Punto Evento y queda pendiente de revision interna.</p>
+      <p>Una empresa envio sus datos a Punto Evento CR y queda pendiente de revision interna.</p>
       <table style="border-collapse:collapse;">${rows}</table>
       <p><strong>Descripcion</strong></p>
       <p>${escapeText(provider.description)}</p>
@@ -279,11 +279,11 @@ async function notifyCompanyRegistration(context, company, config) {
     .join("");
 
   await sendInternalNotification(context, config, {
-    subject: `Nueva empresa registrada en Punto Evento: ${plainText(company.name)}`,
+    subject: `Nueva empresa registrada en Punto Evento CR: ${plainText(company.name)}`,
     replyTo: company.email ? { email: company.email, name: company.name } : undefined,
     html: `
       <h2>Nueva empresa registrada</h2>
-      <p>Una empresa se registro en Punto Evento y queda pendiente de revision interna.</p>
+      <p>Una empresa se registro en Punto Evento CR y queda pendiente de revision interna.</p>
       <table style="border-collapse:collapse;">${rows}</table>
       <p><strong>Descripcion</strong></p>
       <p>${escapeText(company.description)}</p>
@@ -309,11 +309,11 @@ async function notifyServiceSubmittedForReview(context, { company, service }, co
     .join("");
 
   await sendInternalNotification(context, config, {
-    subject: `Servicio enviado a revision en Punto Evento: ${plainText(service.name)}`,
+    subject: `Servicio enviado a revision en Punto Evento CR: ${plainText(service.name)}`,
     replyTo: company.email ? { email: company.email, name: company.name } : undefined,
     html: `
       <h2>Servicio enviado a revision</h2>
-      <p>Una empresa envio un servicio a Punto Evento para moderacion interna.</p>
+      <p>Una empresa envio un servicio a Punto Evento CR para moderacion interna.</p>
       <table style="border-collapse:collapse;">${rows}</table>
       <p><strong>Descripcion</strong></p>
       <p>${escapeText(service.description)}</p>
@@ -342,12 +342,12 @@ async function sendLeadEmailToCompany({ company, service, lead }, config) {
 
   await sendEmail(config, {
     to: [company.email],
-    subject: `Nueva solicitud desde Punto Evento: ${plainText(service.name)}`,
+    subject: `Nueva solicitud desde Punto Evento CR: ${plainText(service.name)}`,
     replyTo: lead.email ? { email: lead.email, name: lead.name } : undefined,
     html: `
       <h2>Nueva solicitud de cotizacion</h2>
       <p>Hola ${escapeText(company.name)}.</p>
-      <p>Recibiste una solicitud desde Punto Evento para el servicio <strong>${escapeText(service.name)}</strong>.</p>
+      <p>Recibiste una solicitud desde Punto Evento CR para el servicio <strong>${escapeText(service.name)}</strong>.</p>
       <p>Este correo queda como respaldo y trazabilidad del contacto. Puedes responder directo a este email o contactar al cliente por WhatsApp.</p>
       <table style="border-collapse:collapse;">${rows}</table>
       <p><strong>Mensaje</strong></p>
@@ -359,11 +359,11 @@ async function sendLeadEmailToCompany({ company, service, lead }, config) {
 async function sendCompanyActivationInviteEmail({ company, inviteUrl }, config) {
   await sendEmail(config, {
     to: [company.email],
-    subject: "Tu empresa fue aprobada en Punto Evento",
+    subject: "Tu empresa fue aprobada en Punto Evento CR",
     html: `
-      <h2>Tu empresa fue aprobada en Punto Evento</h2>
+      <h2>Tu empresa fue aprobada en Punto Evento CR</h2>
       <p>Hola ${escapeText(company.name)}.</p>
-      <p>Bienvenido a Punto Evento. Tu empresa fue aprobada y ya puedes activar tu acceso al panel.</p>
+      <p>Bienvenido a Punto Evento CR. Tu empresa fue aprobada y ya puedes activar tu acceso al panel.</p>
       <p>Desde el panel podras revisar tu perfil, cargar servicios y mantener tu informacion actualizada.</p>
       <p><a href="${escapeText(inviteUrl)}">Activar acceso</a></p>
       <p>Por seguridad, este enlace vence automaticamente.</p>

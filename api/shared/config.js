@@ -89,7 +89,7 @@ function getConfig() {
     notificationEmailTo: process.env.NOTIFICATION_EMAIL_TO || "",
     notificationEmailFrom: process.env.NOTIFICATION_EMAIL_FROM || "",
     notificationEmailFromName:
-      process.env.NOTIFICATION_EMAIL_FROM_NAME || "Punto Evento",
+      process.env.NOTIFICATION_EMAIL_FROM_NAME || "Punto Evento CR",
     appPublicUrl: process.env.APP_PUBLIC_URL || "",
     adminUsername: process.env.ADMIN_USERNAME || "",
     adminPassword: process.env.ADMIN_PASSWORD || "",
