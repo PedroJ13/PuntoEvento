@@ -96,19 +96,16 @@
   display: grid;
   justify-items: center;
   color: var(--brand-ink);
+  background: var(--brand-bg);
   text-align: center;
   text-decoration: none;
 }
 
 .brand-logo {
-  width: min(164px, 100%);
+  display: block;
+  width: min(212px, 100%);
   height: auto;
-  border-radius: 50%;
   object-fit: contain;
-  mix-blend-mode: multiply;
-  opacity: 0.96;
-  -webkit-mask-image: radial-gradient(circle at center, #000 62%, rgba(0, 0, 0, 0.72) 76%, transparent 100%);
-  mask-image: radial-gradient(circle at center, #000 62%, rgba(0, 0, 0, 0.72) 76%, transparent 100%);
 }
 
 .panel-nav {
@@ -800,7 +797,7 @@
   }
 
   .brand-logo {
-    width: min(188px, 78vw);
+    width: min(168px, 78vw);
   }
 
   .panel-nav {
