@@ -80,8 +80,8 @@ textarea {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 22px;
-  min-height: 76px;
+  gap: clamp(16px, 2.8vw, 34px);
+  min-height: 80px;
   padding: 10px clamp(18px, 4vw, 56px);
   border-bottom: 1px solid rgba(228, 218, 203, 0.9);
   background: rgba(255, 253, 248, 0.94);
@@ -97,8 +97,8 @@ textarea {
 
 .brand-logo-public {
   display: block;
-  width: clamp(150px, 13vw, 188px);
-  max-height: 54px;
+  width: clamp(176px, 15vw, 220px);
+  max-height: 62px;
   object-fit: contain;
 }
 
@@ -205,7 +205,7 @@ textarea {
 .hero {
   position: relative;
   display: grid;
-  min-height: 700px;
+  min-height: 640px;
   align-items: end;
   overflow: hidden;
   background:
@@ -216,11 +216,11 @@ textarea {
 .hero-inner {
   width: min(1180px, calc(100% - 36px));
   margin: 0 auto;
-  padding: 108px 0 44px;
+  padding: 86px 0 38px;
 }
 
 .hero-copy {
-  max-width: 750px;
+  max-width: 720px;
   color: #fff;
 }
 
@@ -263,12 +263,12 @@ h1 {
 }
 
 .public-body h1 {
-  font-size: clamp(2.9rem, 6vw, 6rem);
-  line-height: 0.96;
+  font-size: clamp(2.65rem, 5vw, 5.05rem);
+  line-height: 0.98;
 }
 
 .public-body h2 {
-  font-size: clamp(2rem, 3.5vw, 3.3rem);
+  font-size: clamp(1.85rem, 3vw, 2.9rem);
 }
 
 h2 {
@@ -286,7 +286,7 @@ h3 {
 
 .hero-copy p {
   max-width: 650px;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   color: rgba(255, 255, 255, 0.86);
   font-size: 1.1rem;
 }
@@ -296,7 +296,7 @@ h3 {
   grid-template-columns: minmax(220px, 1.35fr) repeat(2, minmax(150px, 1fr)) auto;
   gap: 12px;
   width: min(980px, 100%);
-  margin-top: 34px;
+  margin-top: 28px;
   padding: 12px;
   border: 1px solid rgba(228, 218, 203, 0.9);
   border-radius: var(--public-radius);
@@ -351,7 +351,7 @@ button:focus-visible,
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
   width: min(1180px, calc(100% - 36px));
-  margin: -34px auto 0;
+  margin: -28px auto 0;
   position: relative;
   z-index: 4;
 }
@@ -382,7 +382,7 @@ button:focus-visible,
 .section {
   width: min(1180px, calc(100% - 36px));
   margin: 0 auto;
-  padding: 80px 0;
+  padding: 68px 0;
 }
 
 #registro-empresa {
@@ -778,7 +778,7 @@ button:focus-visible,
 
 .provider-hero {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
   gap: 28px;
   width: min(1180px, calc(100% - 36px));
   margin: 0 auto;
@@ -883,19 +883,21 @@ button:focus-visible,
   border-radius: var(--public-radius);
   background: var(--brand-surface);
   box-shadow: var(--public-shadow-soft);
-  padding: 26px;
+  padding: 24px;
 }
 
 .provider-title {
   max-width: 100%;
   margin: 14px 0 10px;
-  font-size: clamp(2.3rem, 4vw, 4.5rem);
-  line-height: 0.98;
+  font-size: clamp(2.1rem, 3vw, 3.35rem);
+  line-height: 1.02;
   overflow-wrap: anywhere;
+  word-break: normal;
+  text-wrap: balance;
 }
 
 .public-body .provider-title {
-  font-size: clamp(2.3rem, 4vw, 4.5rem);
+  font-size: clamp(2.1rem, 3vw, 3.35rem);
 }
 
 .rating-row {
@@ -1347,7 +1349,8 @@ button:disabled,
   }
 
   .brand-logo-public {
-    width: clamp(136px, 22vw, 168px);
+    width: clamp(168px, 28vw, 198px);
+    max-height: 58px;
   }
 
   .nav {
@@ -1388,12 +1391,13 @@ button:disabled,
 
 @media (max-width: 680px) {
   .topbar {
-    padding: 10px 14px;
+    min-height: 74px;
+    padding: 8px 14px;
   }
 
   .brand-logo-public {
-    width: min(148px, 42vw);
-    max-height: 48px;
+    width: min(168px, 48vw);
+    max-height: 54px;
   }
 
   .nav-cta {
@@ -1401,17 +1405,23 @@ button:disabled,
   }
 
   .hero {
-    min-height: 720px;
+    min-height: 660px;
   }
 
   .hero-inner {
     width: min(100% - 28px, 1180px);
-    padding-top: 86px;
+    padding-top: 72px;
   }
 
   .public-body h1 {
-    font-size: clamp(2.65rem, 12vw, 3.2rem);
+    font-size: clamp(2.35rem, 10vw, 2.9rem);
     line-height: 1.02;
+  }
+
+  .public-body .provider-title {
+    font-size: clamp(2.05rem, 10vw, 2.75rem);
+    line-height: 1.04;
+    text-wrap: balance;
   }
 
   .section,

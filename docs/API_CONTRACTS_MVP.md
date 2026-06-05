@@ -271,6 +271,14 @@ Nota:
 
 Se evita el prefijo `/api/admin/...` porque `admin` puede conflictuar con rutas reservadas del runtime de Azure Functions.
 
+Autenticacion interna MVP:
+
+- El frontend admin debe enviar la credencial como `X-Punto-Admin-Credential: Basic <base64(username:password)>`.
+- El backend puede aceptar headers legacy compatibles, pero no debe responder `WWW-Authenticate`.
+- Si faltan credenciales o son invalidas, responder `401` JSON con `error: "Credenciales invalidas"` para evitar el prompt nativo del navegador.
+- Si faltan `ADMIN_USERNAME` o `ADMIN_PASSWORD` en configuracion, responder `503` JSON con `error: "Admin credentials are not configured"`.
+- No devolver detalles de usuario/password esperado, secretos ni metadata interna.
+
 Request:
 
 ```json
@@ -295,7 +303,7 @@ Response `201`:
 
 Validaciones:
 
-- Requiere Basic Auth admin mientras no exista admin auth formal.
+- Requiere credencial interna admin via `X-Punto-Admin-Credential`.
 - `companyId` requerido.
 - La empresa debe existir.
 - Email requerido; si no se envia, puede usar email de la empresa.

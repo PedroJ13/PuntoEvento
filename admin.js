@@ -2,6 +2,7 @@ const API_BASE = "/api";
 const AUTH_KEY = "puntoEventoAdminAuth";
 const SERVICES_KEY = "puntoEventoDemoServices";
 const DEMO_PARAM_VALUE = "local";
+const INVALID_ADMIN_CREDENTIALS_MESSAGE = "Credenciales invalidas. Verifica usuario y password.";
 const SERVICE_STATUSES = ["draft", "pending", "published", "rejected", "inactive"];
 const CATEGORY_OPTIONS = ["Bodas", "Salones", "Catering", "Corporativos", "Fiestas infantiles", "Decoracion"];
 const EVENT_TYPE_OPTIONS = [
@@ -171,6 +172,15 @@ function authHeaders() {
   };
 }
 
+function clearAdminAuth() {
+  sessionStorage.removeItem(AUTH_KEY);
+  state.auth = "";
+}
+
+function isAuthFailureStatus(status) {
+  return status === 401 || status === 403;
+}
+
 function loadServices() {
   try {
     const stored = localStorage.getItem(SERVICES_KEY);
@@ -268,28 +278,36 @@ function photoMetadataFromFiles(files) {
 }
 
 async function adminFetch(path, options = {}) {
+  const headers = {
+    ...authHeaders(),
+    ...(options.headers || {}),
+  };
+  delete headers.Authorization;
+  delete headers.authorization;
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
-    headers: {
-      ...authHeaders(),
-      ...(options.headers || {}),
-    },
+    headers,
   });
+  const body = await response.json().catch(() => ({}));
 
-  if (response.status === 401 || response.status === 503) {
-    sessionStorage.removeItem(AUTH_KEY);
-    state.auth = "";
+  if (isAuthFailureStatus(response.status)) {
+    clearAdminAuth();
     showLogin();
+    throw new Error(INVALID_ADMIN_CREDENTIALS_MESSAGE);
+  }
+  if (response.status === 503) {
+    clearAdminAuth();
+    showLogin();
+    throw new Error(body.error || "Admin no esta configurado. Intenta mas tarde.");
   }
   if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
     if (response.status === 404) {
       throw new Error("API admin no encontrada. Revisa que el workflow haya desplegado api_location: api.");
     }
     const message = body.error || `No se pudo completar la accion. HTTP ${response.status}`;
     throw new Error(message);
   }
-  return response.json();
+  return body;
 }
 
 async function adminFetchWithFallback(primaryPath, fallbackPath, options = {}) {
@@ -304,10 +322,18 @@ async function adminFetchWithFallback(primaryPath, fallbackPath, options = {}) {
 }
 
 async function adminFetchBlob(path) {
+  const headers = authHeaders();
+  delete headers.Authorization;
+  delete headers.authorization;
   const response = await fetch(path, {
-    headers: authHeaders(),
+    headers,
   });
 
+  if (isAuthFailureStatus(response.status)) {
+    clearAdminAuth();
+    showLogin();
+    throw new Error(INVALID_ADMIN_CREDENTIALS_MESSAGE);
+  }
   if (!response.ok) {
     throw new Error(`No se pudo cargar preview. HTTP ${response.status}`);
   }
@@ -331,8 +357,7 @@ function showAdmin() {
 }
 
 function showDemo() {
-  sessionStorage.removeItem(AUTH_KEY);
-  state.auth = "";
+  clearAdminAuth();
   state.providers = [];
   state.activeTab = "empresa";
   setDemoMode(true);
@@ -1171,14 +1196,15 @@ document.addEventListener("submit", async (event) => {
     event.preventDefault();
     const form = new FormData(event.target);
     state.auth = btoa(`${form.get("username")}:${form.get("password")}`);
-    sessionStorage.setItem(AUTH_KEY, state.auth);
     setLoginMessage("Validando credenciales...");
     try {
       await loadProviders();
+      sessionStorage.setItem(AUTH_KEY, state.auth);
       setLoginMessage("Las credenciales se validan contra la API de Azure.");
     } catch (error) {
+      clearAdminAuth();
       showLogin();
-      setLoginMessage(error.message, true);
+      setLoginMessage(error.message || INVALID_ADMIN_CREDENTIALS_MESSAGE, true);
     }
     return;
   }
@@ -1267,8 +1293,7 @@ document.addEventListener("click", async (event) => {
   }
 
   if (event.target.matches("[data-logout]")) {
-    sessionStorage.removeItem(AUTH_KEY);
-    state.auth = "";
+    clearAdminAuth();
     state.providers = [];
     internalSections().forEach((section) => {
       section.items = [];
@@ -1356,8 +1381,9 @@ if (query.get("demo") === DEMO_PARAM_VALUE) {
   showDemo();
 } else if (state.auth) {
   loadProviders().catch((error) => {
+    clearAdminAuth();
     showLogin();
-    setLoginMessage(error.message, true);
+    setLoginMessage(error.message || INVALID_ADMIN_CREDENTIALS_MESSAGE, true);
   });
 } else {
   showLogin();

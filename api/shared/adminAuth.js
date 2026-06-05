@@ -27,13 +27,7 @@ function parseBasicAuth(header) {
 }
 
 function unauthorized() {
-  return {
-    ...json(401, { error: "Unauthorized" }),
-    headers: {
-      "WWW-Authenticate": 'Basic realm="Punto Evento CR Admin"',
-      "Content-Type": "application/json",
-    },
-  };
+  return json(401, { error: "Credenciales invalidas" });
 }
 
 function headerValue(headers, name) {
