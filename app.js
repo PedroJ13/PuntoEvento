@@ -116,9 +116,15 @@ async function loadProviderData() {
   categories = categoryData;
   try {
     const publicServices = await fetchPublicServices();
-    services = publicServices;
-    serviceDataSource = "api";
-    serviceDataNotice = "";
+    if (!publicServices.length && shouldUsePublicDemoData()) {
+      services = buildDemoServices();
+      serviceDataSource = "demo";
+      serviceDataNotice = "Mostrando información de referencia porque no hay servicios publicados en esta API local.";
+    } else {
+      services = publicServices;
+      serviceDataSource = "api";
+      serviceDataNotice = "";
+    }
   } catch (error) {
     if (shouldUsePublicDemoData()) {
       services = buildDemoServices();
@@ -324,7 +330,10 @@ function shouldUsePublicDemoData() {
 }
 
 function shouldShowReferenceCatalog() {
-  return serviceDataSource !== "error" || shouldUsePublicDemoData();
+  if (shouldUsePublicDemoData()) return true;
+  if (serviceDataSource === "error") return false;
+  if (serviceDataSource === "api" && services.length === 0) return false;
+  return true;
 }
 
 function isAllowedProviderImage(file) {
@@ -619,6 +628,16 @@ function emptyServicesState() {
     `;
   }
 
+  if (serviceDataSource === "api" && services.length === 0 && !hasActiveServiceFilters(currentSearchFilters)) {
+    return `
+      <article class="empty-results" role="status">
+        <p class="eyebrow">Catálogo en preparación</p>
+        <h3>No hay servicios publicados todavía</h3>
+        <p>Estamos preparando el catálogo de proveedores para eventos.</p>
+      </article>
+    `;
+  }
+
   return `
     <article class="empty-results" role="status">
       <p class="eyebrow">Sin coincidencias</p>
@@ -820,6 +839,17 @@ function weddingsPage() {
 }
 
 async function providerPage(companySlug, serviceSlug = "") {
+  if (serviceDataSource === "api" && services.length === 0 && !shouldUsePublicDemoData()) {
+    return `
+      <section class="section">
+        <p class="eyebrow">Catálogo en preparación</p>
+        <h1>No hay servicios publicados todavía</h1>
+        <p>Vuelve al listado cuando haya proveedores disponibles.</p>
+        <a class="primary-button" href="#bodas">Volver al listado</a>
+      </section>
+    `;
+  }
+
   if (serviceDataSource === "error" && !shouldUsePublicDemoData()) {
     return `
       <section class="section">
