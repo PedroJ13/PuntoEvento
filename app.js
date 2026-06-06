@@ -14,17 +14,17 @@ const CONFIG = {
   maxProviderImageSize: 5 * 1024 * 1024,
 };
 const PROVINCE_OPTIONS = [
-  "San Jose",
+  "San José",
   "Alajuela",
   "Cartago",
   "Heredia",
   "Guanacaste",
   "Puntarenas",
-  "Limon",
+  "Limón",
 ];
 const PUBLIC_SERVICE_CATEGORIES = [
   {
-    label: "Salon y jardin",
+    label: "Salón y jardín",
     image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80",
   },
   {
@@ -32,15 +32,15 @@ const PUBLIC_SERVICE_CATEGORIES = [
     image: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    label: "Fotografia",
+    label: "Fotografía",
     image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    label: "Musica y DJ",
+    label: "Música y DJ",
     image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
   },
   {
-    label: "Decoracion",
+    label: "Decoración",
     image: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=80",
   },
   {
@@ -54,7 +54,7 @@ let providerGallery = [];
 let packages = [];
 let categories = [];
 let services = [];
-let serviceDataSource = "demo";
+let serviceDataSource = "idle";
 let serviceDataNotice = "";
 let currentSearchFilters = {};
 const companyProfileCache = new Map();
@@ -111,20 +111,26 @@ async function loadProviderData() {
     }));
   packages = packageData.map((pack) => ({
     ...pack,
-    vendor: providers.find((provider) => provider.id === pack.providerId)?.name || "Proveedor demo",
+    vendor: providers.find((provider) => provider.id === pack.providerId)?.name || "Proveedor de referencia",
   }));
   categories = categoryData;
-  services = buildDemoServices();
-  serviceDataSource = "demo";
-  serviceDataNotice = "Mostrando datos demo porque la API publica no respondio.";
-
   try {
     const publicServices = await fetchPublicServices();
     services = publicServices;
     serviceDataSource = "api";
     serviceDataNotice = "";
   } catch (error) {
-    console.info("Usando fallback demo de servicios.", error);
+    if (shouldUsePublicDemoData()) {
+      services = buildDemoServices();
+      serviceDataSource = "demo";
+      serviceDataNotice = "Mostrando información de referencia porque los servicios publicados no están disponibles en este momento.";
+      console.info("Usando información de referencia de servicios.", error);
+    } else {
+      services = [];
+      serviceDataSource = "error";
+      serviceDataNotice = "No pudimos cargar los servicios publicados. Intenta de nuevo en unos minutos.";
+      console.warn("No se pudieron cargar los servicios públicos.", error);
+    }
   }
 
   providerGallery = providers[0]?.gallery || [];
@@ -202,7 +208,7 @@ function buildDemoServices() {
           name: provider.name,
           province: provider.location,
           canton: "",
-          plan: "demo",
+          plan: "referencia",
           logoUrl: "",
         },
       };
@@ -312,6 +318,15 @@ function isLocalDemoEnvironment() {
   return ["localhost", "127.0.0.1", ""].includes(window.location.hostname);
 }
 
+function shouldUsePublicDemoData() {
+  const params = new URLSearchParams(window.location.search);
+  return isLocalDemoEnvironment() || params.get("demo") === "local";
+}
+
+function shouldShowReferenceCatalog() {
+  return serviceDataSource !== "error" || shouldUsePublicDemoData();
+}
+
 function isAllowedProviderImage(file) {
   return ["image/jpeg", "image/png", "image/webp"].includes(file.type);
 }
@@ -347,7 +362,7 @@ function whatsappUrl(service) {
   const normalizedPhone = digits.startsWith("506") ? digits : `506${digits}`;
   const message = [
     `Hola, vi ${service.name || "tu servicio"} en Punto Evento CR.`,
-    "Me gustaria recibir informacion.",
+    "Me gustaría recibir información.",
   ].join(" ");
   return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
 }
@@ -368,7 +383,7 @@ function contactActionsMarkup(service, primaryClass = "primary-button") {
     `;
   }
   return `
-    <button class="${primaryClass}" data-open-quote${quoteButtonAttributes(service)}>Contactar</button>
+    <button class="${primaryClass}" data-open-quote${quoteButtonAttributes(service)}>Solicitar cotización</button>
     <span class="contact-note">Formulario por email</span>
   `;
 }
@@ -378,8 +393,51 @@ function packagesForProvider(providerId) {
 }
 
 function dataSourceNotice() {
-  if (serviceDataSource !== "demo" || !serviceDataNotice) return "";
+  if (!serviceDataNotice) return "";
   return `<p class="data-source-note">${safeText(serviceDataNotice)}</p>`;
+}
+
+function packageBandMarkup() {
+  if (!shouldShowReferenceCatalog()) return "";
+  return `
+    <section class="band">
+      <div class="section split">
+        <div>
+          <p class="eyebrow">Paquetes</p>
+          <h2>Precios que ayudan a decidir</h2>
+          <ul class="feature-list">
+            <li><span class="check">✓</span><span>Paquetes comparables por evento y presupuesto.</span></li>
+            <li><span class="check">✓</span><span>Proveedor, precio, ubicación y beneficios visibles desde el listado.</span></li>
+            <li><span class="check">✓</span><span>Contacto directo para convertir búsquedas en oportunidades.</span></li>
+          </ul>
+          <a class="primary-button" href="#bodas">Explorar paquetes</a>
+        </div>
+        <div class="image-stack">
+          <img src="${image("photo-1520854221256-17451cc331bf")}" alt="Recepción de boda" loading="lazy">
+          <img src="${image("photo-1546032996-6dfacbacbf3f")}" alt="Mesa de evento" loading="lazy">
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function weddingPackagesMarkup() {
+  if (!shouldShowReferenceCatalog()) return "";
+  return `
+    <section class="band">
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Paquetes de boda</p>
+            <h2>Comparación rápida de precios</h2>
+          </div>
+        </div>
+        <div class="cards-grid">
+          ${packages.map(packageCard).join("")}
+        </div>
+      </div>
+    </section>
+  `;
 }
 
 function providerCard(provider) {
@@ -399,7 +457,7 @@ function providerCard(provider) {
         <strong>${safeText(provider.price)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
-          <button class="secondary-button" data-open-quote>Cotizar</button>
+          <a class="secondary-button" href="#bodas" data-results-link>Elegir servicio</a>
         </div>
       </div>
     </article>
@@ -449,7 +507,7 @@ function wideProviderCard(provider) {
         <strong>${safeText(provider.price)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
-          <button class="primary-button" data-open-quote>Contactar</button>
+          <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
         </div>
       </div>
     </article>
@@ -500,7 +558,7 @@ function packageCard(pack) {
       <h3>${safeText(pack.title)}</h3>
       <p>${safeText(pack.details)}</p>
       <div class="package-price">${safeText(pack.price)}</div>
-      <button class="secondary-button" data-open-quote>Enviar solicitud</button>
+      <a class="secondary-button" href="#bodas" data-results-link>Elegir servicio</a>
     </article>
   `;
 }
@@ -551,11 +609,21 @@ function filteredServices() {
 }
 
 function emptyServicesState() {
+  if (serviceDataSource === "error" && !hasActiveServiceFilters(currentSearchFilters)) {
+    return `
+      <article class="empty-results" role="status">
+        <p class="eyebrow">Servicios no disponibles</p>
+        <h3>No pudimos cargar los servicios publicados</h3>
+        <p>Intenta de nuevo en unos minutos.</p>
+      </article>
+    `;
+  }
+
   return `
     <article class="empty-results" role="status">
       <p class="eyebrow">Sin coincidencias</p>
       <h3>No encontramos servicios con esos filtros</h3>
-      <p>Prueba con otra categoria o provincia para ver mas opciones disponibles.</p>
+      <p>Prueba con otra categoría o provincia para ver más opciones disponibles.</p>
       <button class="secondary-button" type="button" data-clear-service-filters>Limpiar filtros</button>
     </article>
   `;
@@ -592,8 +660,8 @@ function homePage() {
       <div class="hero-inner">
         <div class="hero-copy">
           <p class="eyebrow">Eventos en Costa Rica</p>
-          <h1>Encontra proveedores confiables para tu evento</h1>
-          <p>Compara salones, catering, musica, decoracion y otros servicios. Contacta directo o envia una solicitud.</p>
+          <h1>Encuentra proveedores confiables para tu evento</h1>
+          <p>Compara salones, catering, música, decoración y otros servicios. Elige un servicio publicado para contactar a la empresa correcta.</p>
         </div>
         <form class="search-panel" id="homeSearch">
           <div class="field">
@@ -621,11 +689,11 @@ function homePage() {
       </div>
     </section>
 
-    <section class="trust-strip" aria-label="Indicadores">
-      <div class="metric"><strong>13k+</strong><span>proveedores registrados</span></div>
-      <div class="metric"><strong>15+</strong><span>anos conectando eventos</span></div>
-      <div class="metric"><strong>50+</strong><span>categorias de servicio</span></div>
-      <div class="metric"><strong>1</strong><span>solicitud para varias cotizaciones</span></div>
+    <section class="trust-strip" aria-label="Beneficios">
+      <div class="metric"><strong>Servicios</strong><span>busqueda por necesidad real</span></div>
+      <div class="metric"><strong>Empresas</strong><span>perfil completo antes del contacto</span></div>
+      <div class="metric"><strong>Contacto</strong><span>solicitud dirigida por servicio</span></div>
+      <div class="metric"><strong>Registro</strong><span>gratis para proveedores</span></div>
     </section>
 
     <section class="section">
@@ -654,14 +722,14 @@ function homePage() {
       <div class="section">
         <div class="section-header">
           <div>
-            <p class="eyebrow">Flujo de conversion</p>
-            <h2>Busca, compara y cotiza</h2>
+            <p class="eyebrow">Flujo de contacto</p>
+            <h2>Busca, compara y solicita información</h2>
           </div>
         </div>
         <div class="steps">
-          <article class="step"><span class="step-number">01</span><h3>Elige un servicio</h3><p>Empieza por lo que necesitas: salon, catering, fotos, musica o decoracion.</p></article>
-          <article class="step"><span class="step-number">02</span><h3>Compara opciones</h3><p>Precios, fotos, zona y descripcion ayudan a decidir mas rapido.</p></article>
-          <article class="step"><span class="step-number">03</span><h3>Contacta directo</h3><p>Usa WhatsApp cuando este disponible o envia una solicitud por formulario.</p></article>
+          <article class="step"><span class="step-number">01</span><h3>Elige un servicio</h3><p>Empieza por lo que necesitas: salón, catering, fotos, música o decoración.</p></article>
+          <article class="step"><span class="step-number">02</span><h3>Compara opciones</h3><p>Precios, fotos, zona y descripción ayudan a decidir más rápido.</p></article>
+          <article class="step"><span class="step-number">03</span><h3>Contacta directo</h3><p>Usa WhatsApp cuando esté disponible o envía una solicitud asociada al servicio elegido.</p></article>
         </div>
       </div>
     </section>
@@ -672,7 +740,7 @@ function homePage() {
           <p class="eyebrow">Destacados</p>
           <h2>Servicios listos para contactar</h2>
         </div>
-        <button class="ghost-button" data-open-quote>Cotizacion multiple</button>
+        <a class="ghost-button" href="#bodas" data-results-link>Elegir servicio</a>
       </div>
       <div class="cards-grid">
         ${services.slice(0, 3).map(serviceCard).join("")}
@@ -680,31 +748,14 @@ function homePage() {
       ${dataSourceNotice()}
     </section>
 
-    <section class="band">
-      <div class="section split">
-        <div>
-          <p class="eyebrow">Paquetes</p>
-          <h2>Precios que ayudan a decidir</h2>
-          <ul class="feature-list">
-            <li><span class="check">✓</span><span>Paquetes comparables por evento y presupuesto.</span></li>
-            <li><span class="check">✓</span><span>Proveedor, precio, ubicacion y beneficios visibles desde el listado.</span></li>
-            <li><span class="check">✓</span><span>Contacto directo para convertir busquedas en oportunidades.</span></li>
-          </ul>
-          <a class="primary-button" href="#bodas">Explorar paquetes</a>
-        </div>
-        <div class="image-stack">
-          <img src="${image("photo-1520854221256-17451cc331bf")}" alt="Recepcion de boda" loading="lazy">
-          <img src="${image("photo-1546032996-6dfacbacbf3f")}" alt="Mesa de evento" loading="lazy">
-        </div>
-      </div>
-    </section>
+    ${packageBandMarkup()}
 
     <section class="cta-band">
       <div class="section">
         <div>
           <p class="eyebrow">Para proveedores</p>
           <h2>Convierte visibilidad en solicitudes</h2>
-          <p>Una pagina para vender el registro antes de mostrar formularios largos.</p>
+          <p>Una página para vender el registro antes de mostrar formularios largos.</p>
         </div>
         <a class="primary-button" href="#empresas">Crear perfil gratis</a>
       </div>
@@ -720,8 +771,8 @@ function weddingsPage() {
         <div>
           <p class="eyebrow">Servicios en Costa Rica</p>
           <h1>Encuentra proveedores por categoria de servicio</h1>
-          <p>Compara salones, catering, decoracion, musica y fotografia con informacion clara y contacto directo.</p>
-          <button class="primary-button" data-open-quote>Contactar proveedores</button>
+          <p>Compara salones, catering, decoración, música y fotografía con información clara y contacto directo.</p>
+          <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
         </div>
         <img src="${image("photo-1523438885200-e635ba2c371e")}" alt="Decoracion de boda">
       </div>
@@ -754,7 +805,7 @@ function weddingsPage() {
             <p class="eyebrow">Resultados</p>
               <h2>Servicios recomendados</h2>
             </div>
-            <button class="ghost-button" data-open-quote>Enviar solicitud</button>
+            <a class="ghost-button" href="#bodas" data-results-link>Elegir servicio</a>
           </div>
           <div class="result-list" id="providerResults" tabindex="-1" aria-live="polite">
             ${results.length ? results.map(wideServiceCard).join("") : emptyServicesState()}
@@ -764,29 +815,38 @@ function weddingsPage() {
       </div>
     </section>
 
-    <section class="band">
-      <div class="section">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Paquetes de boda</p>
-            <h2>Comparacion rapida de precios</h2>
-          </div>
-        </div>
-        <div class="cards-grid">
-          ${packages.map(packageCard).join("")}
-        </div>
-      </div>
-    </section>
+    ${weddingPackagesMarkup()}
   `;
 }
 
 async function providerPage(companySlug, serviceSlug = "") {
+  if (serviceDataSource === "error" && !shouldUsePublicDemoData()) {
+    return `
+      <section class="section">
+        <p class="eyebrow">Servicios no disponibles</p>
+        <h1>No pudimos cargar los servicios publicados</h1>
+        <p>Intenta de nuevo en unos minutos.</p>
+        <a class="primary-button" href="#bodas">Volver al listado</a>
+      </section>
+    `;
+  }
+
   if (serviceDataSource === "api" && companySlug) {
     try {
       const company = await fetchPublicCompany(companySlug, serviceSlug);
       return companyProfilePage(company, serviceSlug || company.selectedServiceSlug || "");
     } catch (error) {
-      console.info("Usando fallback demo de perfil.", error);
+      console.info("No se pudo cargar el perfil publicado.", error);
+      if (!shouldUsePublicDemoData()) {
+        return `
+          <section class="section">
+            <p class="eyebrow">Empresa no disponible</p>
+            <h1>No pudimos cargar los servicios publicados</h1>
+            <p>Intenta de nuevo en unos minutos o vuelve al listado.</p>
+            <a class="primary-button" href="#bodas">Ver servicios</a>
+          </section>
+        `;
+      }
     }
   }
 
@@ -950,7 +1010,7 @@ function providerDemoPage(providerId) {
       <section class="section">
         <p class="eyebrow">Proveedor no disponible</p>
         <h1>No encontramos proveedores publicados</h1>
-        <p>Revisa data/providers.json o vuelve al inicio para continuar la demo.</p>
+        <p>Vuelve al inicio para revisar los servicios disponibles.</p>
         <a class="primary-button" href="#inicio">Volver al inicio</a>
       </section>
     `;
@@ -960,7 +1020,7 @@ function providerDemoPage(providerId) {
     return `
       <section class="section">
         <p class="eyebrow">Proveedor no encontrado</p>
-        <h1>Ese proveedor no esta publicado en la demo</h1>
+        <h1>Ese proveedor no está publicado</h1>
         <p>Vuelve al listado para elegir una ficha disponible.</p>
         <a class="primary-button" href="#bodas">Ver proveedores</a>
       </section>
@@ -1008,8 +1068,8 @@ function providerDemoPage(providerId) {
           <strong>${safeText(provider.price)}</strong>
         </div>
         <div class="card-actions">
-          <button class="primary-button" data-open-quote>Contactar</button>
-          <button class="secondary-button" data-toast="WhatsApp demo: se abriria una conversacion con el proveedor.">WhatsApp</button>
+          <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
+          <button class="secondary-button" data-toast="Elige un servicio publicado para contactar por WhatsApp cuando este disponible.">WhatsApp</button>
         </div>
       </aside>
     </section>
@@ -1022,9 +1082,9 @@ function providerDemoPage(providerId) {
             <h2>${safeText(provider.category)} para eventos</h2>
             <p>${safeText(provider.description)}</p>
             <ul class="feature-list">
-              <li><span class="check">✓</span><span>Perfil demo con informacion comercial lista para validar.</span></li>
-              <li><span class="check">✓</span><span>Precio, ubicacion, fotos y paquetes visibles antes del contacto.</span></li>
-              <li><span class="check">✓</span><span>Cotizacion demo por formulario; sin envio real en esta fase.</span></li>
+              <li><span class="check">✓</span><span>Perfil con información comercial lista para revisar.</span></li>
+              <li><span class="check">✓</span><span>Precio, ubicación, fotos y paquetes visibles antes del contacto.</span></li>
+              <li><span class="check">✓</span><span>Solicitud por formulario cuando exista un servicio publicado.</span></li>
             </ul>
           </article>
 
@@ -1035,7 +1095,7 @@ function providerDemoPage(providerId) {
               ${
                 providerPackages.length
                   ? providerPackages.map(packageCard).join("")
-                  : '<article class="package-card"><p class="package-meta">Demo</p><h3>Paquetes por definir</h3><p>Este proveedor todavia no tiene paquetes cargados en data/packages.json.</p><div class="package-price">Consultar</div><button class="secondary-button" data-open-quote>Enviar solicitud</button></article>'
+                  : '<article class="package-card"><p class="package-meta">Referencia</p><h3>Paquetes por definir</h3><p>Este proveedor todavia no tiene paquetes cargados.</p><div class="package-price">Consultar</div><a class="secondary-button" href="#bodas" data-results-link>Elegir servicio</a></article>'
               }
             </div>
           </article>
@@ -1044,7 +1104,7 @@ function providerDemoPage(providerId) {
             <p class="eyebrow">Opiniones</p>
             <h2>Clientes recientes</h2>
             <div class="review-grid">
-              <article class="review-card"><h3>Excelente atencion</h3><p>Respondieron rapido, el montaje quedo igual a las fotos y el presupuesto fue claro.</p><strong>Mariana R.</strong></article>
+              <article class="review-card"><h3>Excelente atención</h3><p>Respondieron rápido, el montaje quedó igual a las fotos y el presupuesto fue claro.</p><strong>Mariana R.</strong></article>
               <article class="review-card"><h3>Muy buena experiencia</h3><p>Nos ayudaron con salon, cena y coordinacion. La ficha tenia todo lo necesario para decidir.</p><strong>Carlos M.</strong></article>
             </div>
           </article>
@@ -1055,10 +1115,10 @@ function providerDemoPage(providerId) {
           <ul class="feature-list">
             <li><span class="check">✓</span><span>${safeText(provider.location)}.</span></li>
             <li><span class="check">✓</span><span>${safeText(provider.price)}.</span></li>
-            <li><span class="check">✓</span><span>${providerPackages.length} paquete(s) demo disponible(s).</span></li>
-            <li><span class="check">✓</span><span>Cotizacion por formulario demo.</span></li>
+            <li><span class="check">✓</span><span>${providerPackages.length} paquete(s) disponible(s).</span></li>
+            <li><span class="check">✓</span><span>Solicitud por formulario asociada a servicio publicado.</span></li>
           </ul>
-          <button class="primary-button" data-open-quote>Contactar</button>
+          <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
         </aside>
       </div>
     </section>
@@ -1071,7 +1131,7 @@ function companiesPage() {
       <div class="subhero-inner">
         <div>
           <p class="eyebrow">Proveedores</p>
-          <h1>Recibi clientes interesados en tus servicios de eventos</h1>
+          <h1>Recibe clientes interesados en tus servicios de eventos</h1>
           <p>Crea un perfil profesional, publica paquetes, muestra fotos y recibe solicitudes de presupuesto desde un solo lugar.</p>
           <a class="primary-button" href="#registro-empresa" data-scroll-register>Crear perfil gratis</a>
         </div>
@@ -1082,12 +1142,12 @@ function companiesPage() {
     <section class="section split">
       <div>
         <p class="eyebrow">Valor para empresas</p>
-        <h2>Una pagina que vende antes del formulario</h2>
+        <h2>Una página que vende antes del formulario</h2>
         <ul class="feature-list">
-          <li><span class="check">✓</span><span>Perfil con galeria, paquetes, promociones y datos de contacto.</span></li>
+          <li><span class="check">✓</span><span>Perfil con galería, paquetes, promociones y datos de contacto.</span></li>
           <li><span class="check">✓</span><span>Solicitudes de presupuesto de personas con intencion real.</span></li>
           <li><span class="check">✓</span><span>Insignias y estadisticas para mejorar confianza y conversion.</span></li>
-          <li><span class="check">✓</span><span>Opciones destacadas para aparecer en categorias clave.</span></li>
+          <li><span class="check">✓</span><span>Opciones destacadas para aparecer en categorías clave.</span></li>
         </ul>
       </div>
       <div class="image-stack">
@@ -1102,7 +1162,7 @@ function companiesPage() {
           <p class="eyebrow">Alta gratuita</p>
           <h2 id="registroEmpresaTitle" tabindex="-1">Registra tu empresa y publica tu perfil</h2>
         </div>
-        <p>Por ahora el registro es gratis. El pago entraria despues solo para empresas que quieran mejor posicion, aparecer arriba o estar destacadas en categorias clave.</p>
+        <p>Por ahora el registro es gratis. El pago entraría después solo para empresas que quieran mejor posición, aparecer arriba o estar destacadas en categorías clave.</p>
       </div>
       <form class="company-form" id="companyForm">
         <div class="form-panel">
@@ -1153,11 +1213,11 @@ function companiesPage() {
 
         <div class="form-panel">
           <h3>Fotos del perfil</h3>
-          <p class="form-help">Sube logo, portada y fotos de galeria. En Azure se cargan para revision; en local solo se previsualizan si la API no esta disponible.</p>
+          <p class="form-help">Sube logo, portada y fotos de galería. En Azure se cargan para revisión; en local solo se previsualizan si la API no está disponible.</p>
           <label class="upload-box">
             <input id="companyPhotos" name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple>
             <span>Agregar fotos</span>
-            <small>Maximo 6 imagenes JPG, PNG o WEBP. Hasta 5 MB cada una.</small>
+            <small>Máximo 6 imágenes JPG, PNG o WEBP. Hasta 5 MB cada una.</small>
           </label>
           <div class="upload-preview" id="companyPhotoPreview" aria-live="polite">
             <div class="preview-empty">Las fotos cargadas apareceran aqui.</div>
@@ -1169,16 +1229,16 @@ function companiesPage() {
           <div class="publish-summary">
             <div>
               <strong>Plan gratis</strong>
-              <span>Perfil publicado en categoria principal, con fotos, descripcion y contacto.</span>
+              <span>Perfil publicado en categoría principal, con fotos, descripción y contacto.</span>
             </div>
             <div>
-              <strong>Destacado despues</strong>
-              <span>Pago unico o plan para aparecer arriba, en portada o en el top de resultados.</span>
+              <strong>Destacado después</strong>
+              <span>Pago único o plan para aparecer arriba, en portada o en el top de resultados.</span>
             </div>
           </div>
           <label class="consent-row">
             <input name="terms" type="checkbox" required>
-            Confirmo que tengo permiso para publicar esta informacion y estas imagenes.
+            Confirmo que tengo permiso para publicar esta información y estas imágenes.
           </label>
           <button class="primary-button" type="submit">Enviar registro gratis</button>
         </div>
@@ -1190,7 +1250,7 @@ function companiesPage() {
       <div class="section">
         <div class="section-header">
           <div>
-            <p class="eyebrow">Planes demo</p>
+            <p class="eyebrow">Planes para empresas</p>
             <h2>De registro gratis a visibilidad premium</h2>
           </div>
         </div>
@@ -1199,7 +1259,7 @@ function companiesPage() {
             <h3>Gratis</h3>
             <div class="plan-price">₡0</div>
             <ul>
-              <li>Perfil basico</li>
+              <li>Perfil básico</li>
               <li>Categoria principal</li>
               <li>Contacto directo</li>
             </ul>
@@ -1220,9 +1280,9 @@ function companiesPage() {
             <h3>Premium</h3>
             <div class="plan-price">₡59k</div>
             <ul>
-              <li>Portada en categorias</li>
-              <li>Campanas por temporada</li>
-              <li>Reportes y optimizacion</li>
+              <li>Portada en categorías</li>
+              <li>Campañas por temporada</li>
+              <li>Reportes y optimización</li>
             </ul>
             <button class="secondary-button" data-toast="Plan premium seleccionado.">Solicitar llamada</button>
           </article>
@@ -1238,8 +1298,8 @@ function companiesPageNew() {
       <div class="subhero-inner">
         <div>
           <p class="eyebrow">Proveedores</p>
-          <h1>Recibi clientes interesados en tus servicios de eventos</h1>
-          <p>Registra tu empresa gratis. Luego recibes acceso al panel para crear servicios, subir fotos y enviarlos a revision.</p>
+          <h1>Recibe clientes interesados en tus servicios de eventos</h1>
+          <p>Registra tu empresa gratis. Luego recibes acceso al panel para crear servicios, subir fotos y prepararlos para publicación.</p>
           <div class="card-actions">
             <a class="primary-button" href="#registro-empresa" data-scroll-register>Crear perfil gratis</a>
             <a class="secondary-button" href="panel.html">Ya tengo acceso</a>
@@ -1252,12 +1312,12 @@ function companiesPageNew() {
     <section class="section split">
       <div>
         <p class="eyebrow">Valor para empresas</p>
-        <h2>Una pagina que vende antes del formulario</h2>
+        <h2>Una página que vende antes del formulario</h2>
         <ul class="feature-list">
-          <li><span class="check">&#10003;</span><span>Registro gratis para iniciar la revision de la empresa.</span></li>
+          <li><span class="check">&#10003;</span><span>Registro gratis para preparar la publicación de la empresa.</span></li>
           <li><span class="check">&#10003;</span><span>Acceso posterior al panel para crear servicios y subir fotos.</span></li>
-            <li><span class="check">&#10003;</span><span>Publicacion despues de moderacion interna de Punto Evento CR.</span></li>
-          <li><span class="check">&#10003;</span><span>Opciones destacadas para aparecer en categorias clave.</span></li>
+            <li><span class="check">&#10003;</span><span>Publicación pronta con la información lista para mostrar.</span></li>
+          <li><span class="check">&#10003;</span><span>Opciones destacadas para aparecer en categorías clave.</span></li>
         </ul>
       </div>
       <div class="image-stack">
@@ -1272,7 +1332,7 @@ function companiesPageNew() {
           <p class="eyebrow">Alta gratuita</p>
           <h2 id="registroEmpresaTitle" tabindex="-1">Registra tu empresa</h2>
         </div>
-        <p>Luego de recibir tus datos, Punto Evento CR revisara la empresa y enviara acceso al panel para crear servicios, subir fotos y enviarlos a revision.</p>
+        <p>Luego de recibir tus datos, Punto Evento CR enviará acceso al panel para crear servicios, subir fotos y prepararlos para publicación.</p>
       </div>
       <form class="company-form" id="companyForm">
         <div class="form-panel">
@@ -1329,15 +1389,15 @@ function companiesPageNew() {
 
         <div class="form-panel">
           <h3>Siguiente paso</h3>
-          <p class="form-help">Cuando la empresa quede registrada, el equipo revisara la informacion y enviara acceso al panel.</p>
+          <p class="form-help">Cuando la empresa quede registrada, recibirás acceso al panel para preparar tus servicios.</p>
           <div class="publish-summary">
             <div>
               <strong>1. Registro</strong>
-              <span>Envias los datos basicos de la empresa.</span>
+              <span>Envías los datos básicos de la empresa.</span>
             </div>
             <div>
               <strong>2. Panel empresa</strong>
-              <span>Creas servicios, subes fotos y envias a revision.</span>
+              <span>Creas servicios, subes fotos y los preparas para publicación.</span>
             </div>
             <div>
               <strong>3. Publicacion</strong>
@@ -1355,13 +1415,13 @@ function companiesPageNew() {
               <span>Registro revisado por Punto Evento CR antes de activar el panel.</span>
             </div>
             <div>
-              <strong>Destacado despues</strong>
-              <span>Pago unico o plan para aparecer arriba, en portada o en el top de resultados.</span>
+              <strong>Destacado después</strong>
+              <span>Pago único o plan para aparecer arriba, en portada o en el top de resultados.</span>
             </div>
           </div>
           <label class="consent-row">
             <input name="terms" type="checkbox" required>
-            Confirmo que tengo permiso para registrar esta empresa y compartir esta informacion.
+            Confirmo que tengo permiso para registrar esta empresa y compartir esta información.
           </label>
           <button class="primary-button" type="submit">Enviar registro gratis</button>
           <p class="form-help company-submit-status" data-company-submit-status aria-live="polite"></p>
@@ -1374,7 +1434,7 @@ function companiesPageNew() {
       <div class="section">
         <div class="section-header">
           <div>
-            <p class="eyebrow">Planes demo</p>
+            <p class="eyebrow">Opciones de visibilidad</p>
             <h2>De registro gratis a visibilidad premium</h2>
           </div>
         </div>
@@ -1383,7 +1443,7 @@ function companiesPageNew() {
             <h3>Gratis</h3>
             <div class="plan-price">CRC 0</div>
             <ul>
-              <li>Perfil basico</li>
+              <li>Perfil básico</li>
               <li>Servicios desde panel empresa</li>
               <li>Revision antes de publicar</li>
             </ul>
@@ -1404,9 +1464,9 @@ function companiesPageNew() {
             <h3>Premium</h3>
             <div class="plan-price">CRC 59k</div>
             <ul>
-              <li>Portada en categorias</li>
-              <li>Campanas por temporada</li>
-              <li>Reportes y optimizacion</li>
+              <li>Portada en categorías</li>
+              <li>Campañas por temporada</li>
+              <li>Reportes y optimización</li>
             </ul>
             <button class="secondary-button" data-toast="Plan premium seleccionado.">Solicitar llamada</button>
           </article>
@@ -1568,7 +1628,7 @@ function bindCompanyRegistration() {
   const renderCompanyConfirmation = ({
     companyName,
     category = "Registro",
-    location = "Demo local",
+    location = "Prueba local",
     photosCount = 0,
     providerId = "",
     mode = "demo",
@@ -1576,20 +1636,20 @@ function bindCompanyRegistration() {
     const isAzure = mode === "azure";
     const title = isAzure
       ? "Registro recibido"
-      : "Registro demo recibido";
+      : "Registro local recibido";
     const message = isAzure
-      ? "Registro recibido. Punto Evento CR revisara la empresa y enviara acceso al panel para crear servicios, subir fotos y enviarlos a revision."
-      : "Esta demo no guarda datos en Azure. Puedes editar el formulario o limpiar la simulacion.";
+      ? "Registro recibido. Punto Evento CR enviará acceso al panel para crear servicios, subir fotos y prepararlos para publicación."
+      : "Esta prueba local no guarda datos en Azure. Puedes editar el formulario o limpiar la simulacion.";
     confirmation.innerHTML = `
       <div class="form-panel">
-        <p class="eyebrow">${isAzure ? "Registro recibido" : "Registro demo recibido"}</p>
+        <p class="eyebrow">${isAzure ? "Registro recibido" : "Registro local recibido"}</p>
         <h3>${escapeHtml(title)}</h3>
         <p class="form-help">${escapeHtml(message)}</p>
         ${isAzure ? `<p class="form-help">Te contactaremos si necesitamos confirmar algun dato de ${escapeHtml(companyName)}.</p>` : ""}
         ${!isAzure ? `<p class="form-help">${escapeHtml(category)} · ${escapeHtml(location)} · ${photosCount} archivo(s)</p>` : ""}
         <div class="card-actions">
           <button class="${isAzure ? "primary-button" : "secondary-button"}" type="button" data-edit-company>${isAzure ? "Registrar otra empresa" : "Editar datos"}</button>
-          ${!isAzure ? `<button class="primary-button" type="button" data-reset-company>Limpiar demo</button>` : ""}
+          ${!isAzure ? `<button class="primary-button" type="button" data-reset-company>Limpiar prueba</button>` : ""}
         </div>
       </div>
     `;
@@ -1675,7 +1735,7 @@ function bindCompanyRegistration() {
       (file) => !isAllowedProviderImage(file) || file.size > CONFIG.maxProviderImageSize,
     );
     if (allFiles.length > CONFIG.maxProviderImages || invalidFiles.length) {
-      showToast("Usa maximo 6 imagenes JPG, PNG o WEBP de hasta 5 MB.");
+      showToast("Usa máximo 6 imágenes JPG, PNG o WEBP de hasta 5 MB.");
     }
     const files = selectedValidFiles();
     if (!files.length) {
@@ -1713,7 +1773,7 @@ function bindCompanyRegistration() {
     const files = selectedValidFiles();
     const submitButton = form.querySelector('button[type="submit"]');
     if ((photoInput?.files?.length || 0) !== files.length) {
-      showToast("Algunas imagenes no cumplen formato o peso maximo.");
+      showToast("Algunas imágenes no cumplen formato o peso máximo.");
       return;
     }
 
@@ -1724,7 +1784,7 @@ function bindCompanyRegistration() {
     confirmation.classList.add("is-hidden");
     confirmation.innerHTML = "";
     setButtonLoading(submitButton, true, "Enviando registro...");
-    const companyName = formData.get("companyName") || "Empresa demo";
+    const companyName = formData.get("companyName") || "Empresa de referencia";
     const province = formData.get("province") || "Provincia pendiente";
     const canton = formData.get("canton") || "";
 
@@ -1743,13 +1803,13 @@ function bindCompanyRegistration() {
         providerId: result.companyId,
         mode: "azure",
       });
-      showToast("Datos recibidos. Validaremos la informacion.");
+      showToast("Datos recibidos. Prepararemos el acceso al panel.");
     } catch (error) {
       console.warn(error);
       if (submitStatus) {
         submitStatus.textContent = "No se pudo completar el registro. Los datos siguen en el formulario.";
       }
-      renderCompanyError("El registro no pudo completarse. Revisa los datos e intentalo de nuevo en unos minutos.");
+      renderCompanyError("El registro no pudo completarse. Revisa los datos e inténtalo de nuevo en unos minutos.");
       showToast("No se pudo enviar el registro.");
     } finally {
       isSubmitting = false;
@@ -1809,31 +1869,65 @@ function quoteContextFromTrigger(trigger) {
   };
 }
 
+function goToServiceResults() {
+  closeQuote();
+  shouldFocusResults = true;
+  if (window.location.hash === "#bodas") {
+    render();
+  } else {
+    window.location.hash = "bodas";
+  }
+}
+
+function showQuoteGuidance() {
+  if (quoteTitle) {
+    quoteTitle.textContent = "Elige un servicio publicado";
+  }
+  if (quoteContextNode) {
+    quoteContextNode.textContent = "Para contactar a una empresa, primero selecciona un servicio publicado desde el listado o el perfil.";
+  }
+  quoteForm.classList.add("is-hidden");
+  quoteConfirmation.classList.remove("is-hidden");
+  quoteConfirmation.innerHTML = `
+    <p class="eyebrow">Servicio requerido</p>
+    <h3>Selecciona un servicio antes de enviar</h3>
+    <p>Las solicitudes reales necesitan empresa y servicio para llegar al proveedor correcto.</p>
+    <div class="card-actions">
+      <button class="primary-button" type="button" data-guidance-results>Ver servicios</button>
+      <button class="secondary-button" type="button" data-guidance-close>Cerrar</button>
+    </div>
+  `;
+  quoteConfirmation.querySelector("[data-guidance-results]")?.addEventListener("click", goToServiceResults);
+  quoteConfirmation.querySelector("[data-guidance-close]")?.addEventListener("click", () => closeQuote());
+  setQuoteStatus("");
+}
+
 function openQuote(event) {
   lastFocusedElement = event?.currentTarget || document.activeElement;
   quoteContext = quoteContextFromTrigger(event?.currentTarget);
   const serviceName = quoteContext?.serviceName || event?.currentTarget?.dataset.serviceName || "";
-  if (quoteTitle) {
-    quoteTitle.textContent = serviceName ? `Contactar por ${serviceName}` : "Contactar empresa";
-  }
-  if (quoteContextNode) {
-    quoteContextNode.textContent = quoteContext?.companyName
-      ? `Solicitud por formulario/email dirigida a ${quoteContext.companyName}.`
-      : "Abre un servicio publicado para dirigir la solicitud a una empresa.";
-  }
-  setQuoteStatus(
-    quoteContext
-      ? ""
-      : "Para enviar una solicitud real, abre un servicio publicado desde el listado o perfil de empresa.",
-    quoteContext ? "" : "error",
-  );
-  quoteForm.classList.remove("is-hidden");
-  quoteConfirmation.classList.add("is-hidden");
   drawer.classList.add("is-open");
   drawer.setAttribute("aria-hidden", "false");
 
-  const firstField = quoteForm.querySelector("input, select, textarea, button");
   const dialog = drawer.querySelector('[role="dialog"]');
+  if (!quoteContext) {
+    showQuoteGuidance();
+    quoteConfirmation.focus();
+    return;
+  }
+
+  if (quoteTitle) {
+    quoteTitle.textContent = serviceName ? `Contactar por ${serviceName}` : "Contactar proveedor";
+  }
+  if (quoteContextNode) {
+    quoteContextNode.textContent = quoteContext.companyName
+      ? `Solicitud por formulario/email dirigida a ${quoteContext.companyName}.`
+      : "Solicitud asociada al servicio seleccionado.";
+  }
+  setQuoteStatus("");
+  quoteForm.classList.remove("is-hidden");
+  quoteConfirmation.classList.add("is-hidden");
+  const firstField = quoteForm.querySelector("input, select, textarea, button");
   (firstField || dialog)?.focus();
 }
 
@@ -1852,6 +1946,13 @@ function closeQuote({ submitted = false } = {}) {
   drawer.setAttribute("aria-hidden", "true");
   quoteForm.classList.remove("is-hidden");
   quoteConfirmation.classList.add("is-hidden");
+  quoteConfirmation.innerHTML = `
+    <p class="eyebrow">Solicitud enviada</p>
+    <h3>Solicitud lista para revisar</h3>
+    <p>Recibimos tu solicitud y la enviaremos a la empresa correspondiente.</p>
+    <button class="primary-button" type="button" data-close-quote>Cerrar</button>
+  `;
+  quoteConfirmation.querySelector("[data-close-quote]")?.addEventListener("click", () => closeQuote());
   setQuoteStatus("");
   quoteContext = null;
 
@@ -1902,12 +2003,12 @@ async function submitPublicLead(form) {
 
 function quoteErrorMessage(error) {
   if (error.status === 400) return "Revisa los datos requeridos antes de enviar.";
-  if (error.status === 404) return "Este servicio ya no esta disponible para cotizar.";
+  if (error.status === 404) return "Este servicio ya no está disponible para cotizar.";
   if (error.status === 409) return "La empresa no tiene un canal operativo para recibir cotizaciones.";
   if (error.status === 502 && error.data?.leadId) {
     return "Recibimos la solicitud, pero no pudimos notificar a la empresa en este momento.";
   }
-  return error.message || "No se pudo enviar la solicitud. Intentalo de nuevo en unos minutos.";
+  return error.message || "No se pudo enviar la solicitud. Inténtalo de nuevo en unos minutos.";
 }
 
 function showToast(message) {
@@ -1989,8 +2090,8 @@ async function init() {
     render();
   } catch (error) {
     app.innerHTML =
-      '<div class="page"><section class="section"><p>No se pudieron cargar los proveedores demo. Revisa data/providers.json.</p></section></div>';
-    showToast("No se pudieron cargar los proveedores demo.");
+      '<div class="page"><section class="section"><p>No se pudieron cargar los proveedores. Inténtalo de nuevo en unos minutos.</p></section></div>';
+    showToast("No se pudieron cargar los proveedores.");
     console.error(error);
   }
 }

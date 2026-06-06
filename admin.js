@@ -2,12 +2,12 @@ const API_BASE = "/api";
 const AUTH_KEY = "puntoEventoAdminAuth";
 const SERVICES_KEY = "puntoEventoDemoServices";
 const DEMO_PARAM_VALUE = "local";
-const INVALID_ADMIN_CREDENTIALS_MESSAGE = "Credenciales invalidas. Verifica usuario y password.";
+const INVALID_ADMIN_CREDENTIALS_MESSAGE = "Credenciales inválidas. Verifica usuario y contraseña.";
 const SERVICE_STATUSES = ["draft", "pending", "published", "rejected", "inactive"];
 const CATEGORY_OPTIONS = ["Bodas", "Salones", "Catering", "Corporativos", "Fiestas infantiles", "Decoracion"];
 const EVENT_TYPE_OPTIONS = [
   "Bodas",
-  "Cumpleanos",
+  "Cumpleaños",
   "Eventos corporativos",
   "Baby Shower",
   "Graduaciones",
@@ -26,7 +26,7 @@ const INTERNAL_MODERATION = {
   },
   uploads: {
     endpoint: "/internal/uploads/pending",
-    label: "uploads",
+    label: "imágenes",
     responseKey: "uploads",
   },
 };
@@ -36,7 +36,7 @@ const DEFAULT_SERVICES = [
     id: "service-queques",
     name: "Queques personalizados",
     category: "Catering",
-    eventTypes: ["Bodas", "Cumpleanos", "Baby Shower"],
+    eventTypes: ["Bodas", "Cumpleaños", "Baby Shower"],
     priceFrom: "CRC 85000",
     status: "published",
     photoCount: 6,
@@ -72,7 +72,7 @@ const DEFAULT_SERVICES = [
     id: "service-mesa-dulce",
     name: "Mesa dulce",
     category: "Catering",
-    eventTypes: ["Bodas", "Eventos corporativos", "Cumpleanos"],
+    eventTypes: ["Bodas", "Eventos corporativos", "Cumpleaños"],
     priceFrom: "CRC 120000",
     status: "draft",
     photoCount: 3,
@@ -82,7 +82,7 @@ const DEFAULT_SERVICES = [
       { name: "montaje-dulce.jpg", size: 0, type: "image/jpeg" },
     ],
     updatedAt: "2026-05-27",
-    description: "Mesa dulce personalizada con bocadillos, montaje y decoracion.",
+    description: "Mesa dulce personalizada con bocadillos, montaje y decoración.",
   },
 ];
 
@@ -219,7 +219,7 @@ function photoList(service) {
   if (Array.isArray(service?.photos)) return service.photos;
   const count = Number(service?.photoCount || 0);
   return Array.from({ length: count }, (_, index) => ({
-    name: `Foto demo ${index + 1}`,
+    name: `Foto de referencia ${index + 1}`,
     size: 0,
     type: "image/*",
   }));
@@ -335,7 +335,7 @@ async function adminFetchBlob(path) {
     throw new Error(INVALID_ADMIN_CREDENTIALS_MESSAGE);
   }
   if (!response.ok) {
-    throw new Error(`No se pudo cargar preview. HTTP ${response.status}`);
+    throw new Error(`No se pudo cargar la vista previa. HTTP ${response.status}`);
   }
   return response.blob();
 }
@@ -362,14 +362,14 @@ function showDemo() {
   state.activeTab = "empresa";
   setDemoMode(true);
   showAdmin();
-  setStatus("Modo demo local activo.");
+  setStatus("Modo local de referencia activo.");
   const count = $("[data-count]");
-  if (count) count.textContent = "Modo demo local";
+  if (count) count.textContent = "Modo local";
 }
 
 function imageMarkup(provider) {
   if (!provider.images.length) {
-    return '<div class="admin-empty">Este registro no tiene imagenes pendientes.</div>';
+    return '<div class="admin-empty">Este registro no tiene imágenes pendientes.</div>';
   }
 
   return `
@@ -570,15 +570,15 @@ function uploadItemMarkup(upload) {
       <div class="internal-item-header">
         <div>
           <span class="status-pill status-${statusClass(upload.status)}">${escapeHtml(internalStatusLabel(upload.status))}</span>
-          <h4>${escapeHtml(upload.fileName || uploadId || "Upload pendiente")}</h4>
+          <h4>${escapeHtml(upload.fileName || uploadId || "Imagen pendiente")}</h4>
         </div>
       </div>
       <div class="internal-item-meta">
-        <div><strong>Upload ID</strong><span>${escapeHtml(uploadId)}</span></div>
+        <div><strong>Imagen ID</strong><span>${escapeHtml(uploadId)}</span></div>
         <div><strong>Empresa ID</strong><span>${escapeHtml(companyId)}</span></div>
-        <div><strong>Scope</strong><span>${escapeHtml(upload.scope || "-")}</span></div>
+        <div><strong>Ambito</strong><span>${escapeHtml(upload.scope || "-")}</span></div>
         <div><strong>Servicio ID</strong><span>${escapeHtml(upload.serviceId || "-")}</span></div>
-        <div><strong>Tipo</strong><span>${escapeHtml(upload.imageType || "-")}</span></div>
+        <div><strong>Tipo</strong><span>${escapeHtml(imageTypeLabel(upload.imageType))}</span></div>
         <div><strong>Archivo</strong><span>${escapeHtml(upload.contentType || "-")} - ${escapeHtml(String(upload.size || "-"))} bytes</span></div>
       </div>
       <div class="internal-item-actions">
@@ -617,7 +617,7 @@ function getCaseCompanies() {
         companyId,
         name: upload.companyName || companyId,
         status: upload.companyStatus || "",
-        description: "Empresa incluida por imagenes pendientes.",
+        description: "Empresa incluida por imágenes pendientes.",
       });
     }
   });
@@ -673,16 +673,22 @@ function serviceImages(service) {
   });
 }
 
+function imageTypeLabel(value) {
+  const type = String(value || "").toLowerCase();
+  if (type === "cover") return "Portada";
+  if (type === "gallery") return "Galeria";
+  return value || "-";
+}
+
 function imageRoleLabel(image) {
-  if (image.imageType === "cover") return "Cover";
-  if (image.imageType === "gallery") return "Galeria";
-  return image.imageType || "Imagen";
+  const label = imageTypeLabel(image.imageType);
+  return label === "-" ? "Imagen" : label;
 }
 
 function serviceImagesMarkup(service) {
   const images = serviceImages(service);
   if (!images.length) {
-    return '<div class="admin-empty compact-empty">Este servicio no tiene imagenes pendientes asociadas.</div>';
+    return '<div class="admin-empty compact-empty">Este servicio no tiene imágenes pendientes asociadas.</div>';
   }
 
   return `
@@ -694,7 +700,7 @@ function serviceImagesMarkup(service) {
           const label = image.fileName || uploadId || "Imagen pendiente";
           const previewMarkup = previewUrl
             ? `<img alt="${escapeHtml(label)}" data-internal-preview-src="${escapeHtml(previewUrl)}">`
-            : '<div class="service-image-placeholder">Sin preview</div>';
+            : '<div class="service-image-placeholder">Sin vista previa</div>';
           return `
             <figure class="service-image-card" data-service-image="${escapeHtml(uploadId)}">
               ${previewMarkup}
@@ -730,7 +736,7 @@ function loadInternalPreviews() {
       .catch(() => {
         image.replaceWith(Object.assign(document.createElement("div"), {
           className: "service-image-placeholder",
-          textContent: "Preview no disponible",
+          textContent: "Vista previa no disponible",
         }));
       });
   });
@@ -802,7 +808,7 @@ function caseServiceMarkup(service, company) {
   const serviceId = serviceIdOf(service);
   const disabledReason = companyPublished ? "" : "Publica la empresa antes de aprobar servicios.";
   const images = serviceImages(service);
-  const approveLabel = images.length ? "Aprobar servicio e imagenes" : "Aprobar servicio";
+  const approveLabel = images.length ? "Aprobar servicio e imágenes" : "Aprobar servicio";
   return `
     <article class="internal-item">
       <div class="internal-item-header">
@@ -965,7 +971,7 @@ function companyApproveMessage(response = {}) {
   const inviteStatus = response?.invite?.status || "";
   if (inviteStatus === "email_sent") {
     return {
-      message: "Empresa aprobada e invitacion enviada.",
+    message: "Empresa aprobada e invitación enviada.",
       tone: "success",
     };
   }
@@ -977,7 +983,7 @@ function companyApproveMessage(response = {}) {
   }
   if (["email_failed", "missing_email", "invite_failed"].includes(inviteStatus) || response?.warning) {
     return {
-      message: "Empresa aprobada, pero no se pudo enviar la invitacion. Reintentar o enviar manualmente.",
+      message: "Empresa aprobada, pero no se pudo enviar la invitación. Reintentar o enviar manualmente.",
       tone: "warning",
     };
   }
@@ -1005,7 +1011,7 @@ function internalActionSuccessMessage(type, action, response = {}) {
 
 async function handleInternalAction(button) {
   if (state.demoMode) {
-    setStatus("La moderacion nueva requiere login admin real.");
+    setStatus("La moderación nueva requiere login admin real.");
     return;
   }
   const type = button.dataset.internalType;
@@ -1057,8 +1063,8 @@ function setActiveTab(tabName) {
   });
   if (state.demoMode) {
     const count = $("[data-count]");
-    if (count) count.textContent = "Modo demo local";
-    setStatus("Empresa demo y Servicios disponibles sin API.");
+    if (count) count.textContent = "Modo local";
+    setStatus("Empresa y servicios de referencia disponibles sin API.");
   } else if (tabName === "modelo" && state.auth) {
     const needsLoad = internalSections().some((section) => !section.loaded && !section.loading);
     renderInternalModeration();
@@ -1091,7 +1097,7 @@ function serviceMarkup(service) {
           </span>
           <h3>${escapeHtml(service.name)}</h3>
         </div>
-        <span class="admin-review-label">Revision</span>
+        <span class="admin-review-label">Revisión</span>
       </div>
       <p>${escapeHtml(service.description)}</p>
       <div class="service-meta">
@@ -1109,7 +1115,7 @@ function renderServices() {
   const list = $("[data-services-list]");
   if (!list) return;
   if (!state.services.length) {
-    list.innerHTML = '<div class="admin-empty">Todavia no hay servicios demo.</div>';
+    list.innerHTML = '<div class="admin-empty">Todavia no hay servicios de referencia.</div>';
     return;
   }
   list.innerHTML = state.services.map(serviceMarkup).join("");
@@ -1225,7 +1231,7 @@ document.addEventListener("submit", async (event) => {
     saveServices();
     renderServices();
     closeServiceForm();
-    setStatus("Servicio demo guardado localmente.");
+    setStatus("Servicio de referencia guardado localmente.");
   }
 });
 
@@ -1277,7 +1283,7 @@ document.addEventListener("click", async (event) => {
 
   if (event.target.matches("[data-refresh]")) {
     if (state.demoMode) {
-      setStatus("La revision interna requiere login admin real.");
+      setStatus("La revisión interna requiere login admin real.");
       return;
     }
     if (!state.auth) {
@@ -1319,7 +1325,7 @@ document.addEventListener("click", async (event) => {
 
   if (approveButton) {
     if (state.demoMode) {
-      setStatus("La revision interna requiere login admin real.");
+      setStatus("La revisión interna requiere login admin real.");
       return;
     }
     const { card, providerId } = providerFromButton(approveButton);
@@ -1350,7 +1356,7 @@ document.addEventListener("click", async (event) => {
 
   if (rejectButton) {
     if (state.demoMode) {
-      setStatus("La revision interna requiere login admin real.");
+      setStatus("La revisión interna requiere login admin real.");
       return;
     }
     const { providerId } = providerFromButton(rejectButton);

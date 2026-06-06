@@ -12,8 +12,8 @@
     <main class="admin-shell">
       <header class="admin-header">
         <div>
-          <p class="eyebrow">Administracion</p>
-          <h1>Aprobacion de empresas y servicios</h1>
+          <p class="eyebrow">Administración</p>
+          <h1>Aprobación de empresas y servicios</h1>
           <p>Revisa empresas nuevas y servicios enviados antes de publicarlos.</p>
         </div>
         <button class="ghost-button" type="button" data-refresh>Actualizar</button>
@@ -35,7 +35,7 @@
             <input name="password" type="password" autocomplete="current-password" required />
           </label>
           <button class="primary-button" type="submit">Entrar</button>
-          <button class="secondary-button" type="button" data-demo-login>Ver modo demo local</button>
+          <button class="secondary-button is-hidden" type="button" data-demo-login>Ver modo local</button>
           <p class="admin-message" data-login-message role="status" aria-live="polite">Las credenciales se validan contra la API de Azure.</p>
         </form>
       </section>
@@ -46,31 +46,31 @@
             <strong data-count>0 pendientes</strong>
             <span data-status>Esperando credenciales.</span>
           </div>
-          <button class="secondary-button" type="button" data-logout>Cerrar sesion</button>
+          <button class="secondary-button" type="button" data-logout>Cerrar sesión</button>
         </div>
 
         <div class="demo-banner is-hidden" data-demo-banner>
-          <strong>Modo demo local</strong>
-          <span>Admin muestra revision interna. La creacion de servicios vive en el panel empresa demo.</span>
+          <strong>Modo local de referencia</strong>
+          <span>Admin muestra revisión interna. La creación de servicios vive en el panel empresa.</span>
         </div>
 
         <nav class="admin-tabs" aria-label="Secciones admin">
           <button class="admin-tab is-active" type="button" data-tab-target="modelo">Empresas y servicios</button>
-          <button class="admin-tab support-tab" type="button" data-tab-target="revision">Legacy</button>
-          <button class="admin-tab support-tab" type="button" data-tab-target="empresa">Demo</button>
-          <button class="admin-tab support-tab" type="button" data-tab-target="servicios">Servicios demo</button>
+          <button class="admin-tab support-tab" type="button" data-tab-target="revision">Flujo anterior</button>
+          <button class="admin-tab support-tab" type="button" data-tab-target="empresa">Empresa de referencia</button>
+          <button class="admin-tab support-tab" type="button" data-tab-target="servicios">Servicios de referencia</button>
         </nav>
 
         <section class="admin-section is-hidden" data-tab-panel="revision">
           <div class="admin-empty is-hidden" data-demo-review-lock>
-            La revision interna requiere login admin real.
+            La revisión interna requiere login admin real.
           </div>
           <div class="section-heading">
             <div>
-              <p class="eyebrow">Revision interna</p>
+              <p class="eyebrow">Revisión interna</p>
               <h2>Proveedores pendientes</h2>
             </div>
-            <p>Flujo actual de aprobacion manual. Se mantiene separado del panel empresa demo.</p>
+            <p>Flujo actual de aprobación manual. Se mantiene separado del panel empresa.</p>
           </div>
           <div class="admin-list" data-provider-list></div>
         </section>
@@ -78,10 +78,10 @@
         <section class="admin-section" data-tab-panel="modelo">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">Company -> Services</p>
+              <p class="eyebrow">Empresas y servicios</p>
               <h2>Moderacion nueva</h2>
             </div>
-            <p>Revisa empresas y servicios. Las imagenes pendientes se validan dentro de cada servicio.</p>
+            <p>Revisa empresas y servicios. Las imágenes pendientes se validan dentro de cada servicio.</p>
           </div>
 
           <div class="internal-summary" aria-live="polite">
@@ -95,7 +95,7 @@
             </article>
             <article>
               <strong data-internal-count="uploads">0</strong>
-              <span>uploads pendientes</span>
+              <span>imágenes pendientes</span>
             </article>
           </div>
 
@@ -124,7 +124,7 @@
         <section class="admin-section is-hidden" data-tab-panel="empresa">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">Empresa demo</p>
+              <p class="eyebrow">Empresa de referencia</p>
               <h2 data-company-name>Aurisbel Eventos</h2>
             </div>
             <span class="status-pill status-pending">Perfil pendiente</span>
@@ -140,7 +140,7 @@
             </article>
             <article>
               <strong>Contacto</strong>
-              <span>empresa@demo.com</span>
+              <span>empresa@referencia.com</span>
             </article>
             <article>
               <strong>Plan</strong>
@@ -148,25 +148,25 @@
             </article>
           </div>
           <p class="admin-note">
-            Esta vista representa el futuro panel empresa. Por ahora usa datos demo y no cambia informacion real en Azure.
+            Esta vista representa el futuro panel empresa. Por ahora usa datos locales y no cambia información real en Azure.
           </p>
         </section>
 
         <section class="admin-section is-hidden" data-tab-panel="servicios">
           <div class="section-heading">
             <div>
-              <p class="eyebrow">Revision interna</p>
+              <p class="eyebrow">Revisión interna</p>
               <h2>Servicios enviados por empresas</h2>
             </div>
             <a class="ghost-button compact-button" href="panel.html">Abrir panel empresa</a>
           </div>
           <p class="admin-note">
-            Esta vista conserva el demo legacy. Las empresas crean y editan servicios reales desde `panel.html`.
+            Esta vista conserva el flujo anterior. Las empresas crean y editan servicios reales desde `panel.html`.
           </p>
           <div class="services-list" data-services-list></div>
         </section>
       </section>
     </main>
-    <script src="admin.js?v=19"></script>
+    <script src="admin.js?v=20"></script>
   </body>
 </html>

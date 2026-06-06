@@ -786,10 +786,13 @@
 
   .panel-sidebar {
     position: static;
+    display: grid;
+    grid-template-rows: auto auto;
+    gap: 12px;
     height: auto;
     border-right: 0;
     border-bottom: 1px solid var(--brand-line);
-    padding: 18px;
+    padding: 12px 14px 14px;
   }
 
   .panel-brand {
@@ -797,15 +800,42 @@
   }
 
   .brand-logo {
-    width: min(168px, 78vw);
+    width: min(150px, 48vw);
+    max-height: 56px;
   }
 
   .panel-nav {
-    grid-template-columns: 1fr;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    overflow-x: auto;
   }
 
   .panel-nav-item {
+    min-width: 0;
     min-height: 44px;
+    border-left: 0;
+    border-bottom: 3px solid transparent;
+    justify-items: center;
+    padding: 8px 10px;
+    text-align: center;
+  }
+
+  .panel-nav-item.is-active {
+    border-bottom-color: var(--brand-gold);
+  }
+
+  .panel-nav-item.is-disabled {
+    display: none;
+  }
+
+  .panel-nav-item .nav-label {
+    justify-content: center;
+  }
+
+  .panel-nav-item .nav-icon {
+    width: 28px;
+    height: 28px;
   }
 
   .sidebar-help {
@@ -813,7 +843,7 @@
   }
 
   .panel-workspace {
-    padding: 24px 16px 44px;
+    padding: 16px 14px 44px;
   }
 
   .panel-header,
@@ -825,6 +855,10 @@
   }
 
   .panel-header::after {
+    display: none;
+  }
+
+  .panel-body.is-auth-required .panel-header {
     display: none;
   }
 
@@ -853,12 +887,19 @@
   }
 
   .panel-header h1 {
-    font-size: 2.25rem;
+    margin-bottom: 6px;
+    font-size: 1.72rem;
     line-height: 1.04;
   }
 
   .panel-header p {
-    max-width: 34ch;
+    max-width: 38ch;
+    margin: 0;
+    font-size: 0.92rem;
+  }
+
+  .panel-header .eyebrow {
+    margin-bottom: 4px;
   }
 
   .service-actions {

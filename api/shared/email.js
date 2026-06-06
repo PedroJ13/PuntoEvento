@@ -273,9 +273,9 @@ async function sendInternalNotification(context, config, message) {
 async function notifyProviderRegistration(context, provider, config) {
   const details = [
     ["Empresa", provider.name],
-    ["Categoria", provider.category],
+    ["Categoría", provider.category],
     ["Zona", provider.location],
-    ["Telefono", provider.phone],
+    ["Teléfono", provider.phone],
     ["Email", provider.email],
     ["Precio", provider.price],
     ["Web", provider.website],
@@ -291,11 +291,11 @@ async function notifyProviderRegistration(context, provider, config) {
     replyTo: provider.email ? { email: provider.email, name: provider.name } : undefined,
     html: emailShell(`
       <h2 style="${EMAIL_STYLES.h2}">Nuevo registro de empresa</h2>
-      <p style="${EMAIL_STYLES.p}">Una empresa envio sus datos a Punto Evento CR y queda pendiente de revision interna.</p>
+      <p style="${EMAIL_STYLES.p}">Una empresa envió sus datos a Punto Evento CR y queda pendiente de revisión interna.</p>
       <table style="${EMAIL_STYLES.table}">${rows}</table>
-      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripcion</strong></p>
+      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripción</strong></p>
       <p style="${EMAIL_STYLES.p}">${escapeText(provider.description)}</p>
-      <p style="${EMAIL_STYLES.p}">Revisar la informacion y aprobar o rechazar la empresa desde el admin interno.</p>
+      <p style="${EMAIL_STYLES.p}">Revisar la información y aprobar o rechazar la empresa desde el admin interno.</p>
       ${appLink}
     `),
   });
@@ -306,9 +306,9 @@ async function notifyCompanyRegistration(context, company, config) {
     ["Empresa", company.name],
     ["Email", company.email],
     ["WhatsApp", company.whatsapp],
-    ["Telefono", company.phone],
+    ["Teléfono", company.phone],
     ["Provincia", company.province],
-    ["Canton", company.canton],
+    ["Cantón", company.canton],
     ["ID interno", company.id || company.rowKey],
   ]);
 
@@ -317,11 +317,11 @@ async function notifyCompanyRegistration(context, company, config) {
     replyTo: company.email ? { email: company.email, name: company.name } : undefined,
     html: emailShell(`
       <h2 style="${EMAIL_STYLES.h2}">Nueva empresa registrada</h2>
-      <p style="${EMAIL_STYLES.p}">Una empresa se registro en Punto Evento CR y queda pendiente de revision interna.</p>
+      <p style="${EMAIL_STYLES.p}">Una empresa se registró en Punto Evento CR y queda pendiente de revisión interna.</p>
       <table style="${EMAIL_STYLES.table}">${rows}</table>
-      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripcion</strong></p>
+      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripción</strong></p>
       <p style="${EMAIL_STYLES.p}">${escapeText(company.description)}</p>
-      <p style="${EMAIL_STYLES.p}">Revisar la informacion y aprobar o rechazar la empresa desde el admin interno.</p>
+      <p style="${EMAIL_STYLES.p}">Revisar la información y aprobar o rechazar la empresa desde el admin interno.</p>
     `),
   });
 }
@@ -331,22 +331,22 @@ async function notifyServiceSubmittedForReview(context, { company, service }, co
     ["Empresa", company.name],
     ["Email empresa", company.email],
     ["Servicio", service.name],
-    ["Categoria", service.category],
+    ["Categoría", service.category],
     ["Precio desde", service.priceFrom],
     ["Empresa ID", service.partitionKey],
     ["Servicio ID", service.rowKey],
   ]);
 
   await sendInternalNotification(context, config, {
-    subject: `Servicio enviado a revision en Punto Evento CR: ${plainText(service.name)}`,
+    subject: `Servicio enviado en Punto Evento CR: ${plainText(service.name)}`,
     replyTo: company.email ? { email: company.email, name: company.name } : undefined,
     html: emailShell(`
-      <h2 style="${EMAIL_STYLES.h2}">Servicio enviado a revision</h2>
-      <p style="${EMAIL_STYLES.p}">Una empresa envio un servicio a Punto Evento CR para moderacion interna.</p>
+      <h2 style="${EMAIL_STYLES.h2}">Servicio enviado</h2>
+      <p style="${EMAIL_STYLES.p}">Una empresa envió un servicio a Punto Evento CR para revisión interna.</p>
       <table style="${EMAIL_STYLES.table}">${rows}</table>
-      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripcion</strong></p>
+      <p style="${EMAIL_STYLES.sectionLabel}"><strong>Descripción</strong></p>
       <p style="${EMAIL_STYLES.p}">${escapeText(service.description)}</p>
-      <p style="${EMAIL_STYLES.p}">Revisar el servicio, sus datos publicos y sus imagenes antes de aprobarlo.</p>
+      <p style="${EMAIL_STYLES.p}">Revisar el servicio, sus datos públicos y sus imágenes antes de aprobarlo.</p>
     `),
   });
 }
@@ -369,7 +369,7 @@ async function sendLeadEmailToCompany({ company, service, lead }, config) {
     subject: `Nueva solicitud desde Punto Evento CR: ${plainText(service.name)}`,
     replyTo: lead.email ? { email: lead.email, name: lead.name } : undefined,
     html: emailShell(`
-      <h2 style="${EMAIL_STYLES.h2}">Nueva solicitud de cotizacion</h2>
+      <h2 style="${EMAIL_STYLES.h2}">Nueva solicitud de cotización</h2>
       <p style="${EMAIL_STYLES.p}">Hola ${escapeText(company.name)}.</p>
       <p style="${EMAIL_STYLES.p}">Recibiste una solicitud desde Punto Evento CR para el servicio <strong>${escapeText(service.name)}</strong>.</p>
       <p style="${EMAIL_STYLES.p}">Este correo queda como respaldo y trazabilidad del contacto. Puedes responder directo a este email o contactar al cliente por WhatsApp.</p>
@@ -383,14 +383,14 @@ async function sendLeadEmailToCompany({ company, service, lead }, config) {
 async function sendCompanyActivationInviteEmail({ company, inviteUrl }, config) {
   await sendEmail(config, {
     to: [company.email],
-    subject: "Tu empresa fue aprobada en Punto Evento CR",
+    subject: "Tu acceso a Punto Evento CR está listo",
     html: emailShell(`
-      <h2 style="${EMAIL_STYLES.h2}">Tu empresa fue aprobada en Punto Evento CR</h2>
+      <h2 style="${EMAIL_STYLES.h2}">Tu acceso a Punto Evento CR está listo</h2>
       <p style="${EMAIL_STYLES.p}">Hola ${escapeText(company.name)}.</p>
-      <p style="${EMAIL_STYLES.p}">Bienvenido a Punto Evento CR. Tu empresa fue aprobada y ya puedes activar tu acceso al panel.</p>
-      <p style="${EMAIL_STYLES.p}">Desde el panel podras revisar tu perfil, cargar servicios y mantener tu informacion actualizada.</p>
+      <p style="${EMAIL_STYLES.p}">Ya puedes activar tu acceso al panel.</p>
+      <p style="${EMAIL_STYLES.p}">Desde el panel podrás revisar tu perfil, cargar servicios y mantener tu información actualizada.</p>
       ${emailCta(inviteUrl, "Activar acceso")}
-      <p style="${EMAIL_STYLES.p}">Por seguridad, este enlace vence automaticamente.</p>
+      <p style="${EMAIL_STYLES.p}">Por seguridad, este enlace vence automáticamente.</p>
     `),
   });
 }

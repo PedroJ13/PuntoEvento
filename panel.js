@@ -4,23 +4,23 @@ const MAX_SERVICE_IMAGES = 10;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 const FALLBACK_CATEGORIES = [
-  "Salon y jardin",
+  "Salón y jardín",
   "Catering",
-  "Fotografia",
+  "Fotografía",
   "Video",
-  "Musica y DJ",
-  "Decoracion",
+  "Música y DJ",
+  "Decoración",
   "Flores",
   "Mesa dulce",
   "Queques",
   "Wedding planner",
   "Mobiliario",
-  "Animacion",
+  "Animación",
   "Alquiler de menaje",
 ];
 const FALLBACK_EVENT_TYPES = [
   "Bodas",
-  "Cumpleanos",
+  "Cumpleaños",
   "Eventos corporativos",
   "Baby Shower",
   "Graduaciones",
@@ -32,7 +32,7 @@ const DEMO_SERVICES = [
     slug: "queques-personalizados",
     name: "Queques personalizados",
     category: "Catering",
-  eventTypes: ["Bodas", "Cumpleanos"],
+    eventTypes: ["Bodas", "Cumpleaños"],
     priceFrom: "CRC 85000",
     status: "published",
     description: "Queques decorados para eventos sociales con entrega coordinada.",
@@ -48,7 +48,7 @@ const DEMO_SERVICES = [
     eventTypes: ["Bodas", "Eventos corporativos"],
     priceFrom: "CRC 120000",
     status: "draft",
-    description: "Mesa dulce personalizada con bocadillos, montaje y decoracion.",
+    description: "Mesa dulce personalizada con bocadillos, montaje y decoración.",
     coverUrl: "",
     gallery: [],
     updatedAt: "2026-05-27",
@@ -111,7 +111,7 @@ function panelViewContent(view) {
     },
     services: {
       title: "Carga tus servicios",
-      copy: "Completa la informacion que quieres mostrar a clientes cuando tu servicio este publicado.",
+      copy: "Completa la información que quieres mostrar a clientes cuando tu servicio esté publicado.",
     },
   };
   return content[view] || content.services;
@@ -174,9 +174,9 @@ function canSubmitReview(service) {
 
 function submitReviewStatusMessage(status) {
   const messages = {
-    pending: "Tu informacion ya fue recibida.",
-    published: "Este servicio ya esta publicado. Editalo si necesitas actualizarlo.",
-    inactive: "Este servicio esta inactivo. Activalo o crea uno nuevo para enviarlo.",
+    pending: "Tu información fue recibida. Se publicará lo antes posible.",
+    published: "Este servicio ya está publicado. Edítalo si necesitas actualizarlo.",
+    inactive: "Este servicio está inactivo. Actívalo o crea uno nuevo para enviarlo.",
   };
   return messages[normalizeStatus(status)] || "Este servicio no se puede enviar en su estado actual.";
 }
@@ -227,9 +227,9 @@ function cleanInviteParams() {
 }
 
 function genericAuthError(error) {
-  if (error.status === 400) return "Revisa los datos e intentalo de nuevo.";
-  if (error.status === 403) return "Este acceso no esta disponible. Contacta al equipo de Punto Evento CR.";
-  return "No pudimos validar el acceso. Revisa los datos e intentalo de nuevo.";
+  if (error.status === 400) return "Revisa los datos e inténtalo de nuevo.";
+  if (error.status === 403) return "Este acceso no está disponible. Contacta al equipo de Punto Evento CR.";
+  return "No pudimos validar el acceso. Revisa los datos e inténtalo de nuevo.";
 }
 
 function renderAuthMode(mode = "login", message = "") {
@@ -237,19 +237,20 @@ function renderAuthMode(mode = "login", message = "") {
   const section = $("[data-auth-section]");
   if (!section) return;
   section.hidden = false;
-  $("[data-auth-eyebrow]").textContent = isActivation ? "Activacion inicial" : "Acceso empresa";
-  $("[data-auth-title]").textContent = isActivation ? "Activa tu acceso" : "Iniciar sesion";
+  $("[data-auth-eyebrow]").textContent = isActivation ? "Activación inicial" : "Acceso empresa";
+  $("[data-auth-title]").textContent = isActivation ? "Activa tu acceso" : "Iniciar sesión";
   $("[data-auth-copy]").textContent = isActivation
-    ? "Define un password para entrar al panel ahora y volver despues con tu email."
-    : "Entra con el email y password activados para tu empresa.";
+    ? "Define una contraseña para entrar al panel ahora y volver después con tu correo."
+    : "Ingresa con el correo y la contraseña activados para tu empresa.";
   $("[data-login-form]")?.classList.toggle("is-hidden", isActivation);
   $("[data-activate-form]")?.classList.toggle("is-hidden", !isActivation);
   const tokenInput = $("[data-activate-form] input[name='token']");
   if (tokenInput) tokenInput.value = state.inviteToken || "";
-  setAuthMessage(message || (isActivation ? "Usa el enlace de invitacion para activar tu acceso." : ""), message ? "error" : "");
+  setAuthMessage(message || (isActivation ? "Usa el enlace de invitación para activar tu acceso." : ""), message ? "error" : "");
 }
 
 function setAuthenticatedView(isAuthenticated) {
+  document.body.classList.toggle("is-auth-required", !isAuthenticated);
   $$("[data-authenticated-only]").forEach((node) => {
     node.classList.toggle("is-hidden", !isAuthenticated);
   });
@@ -302,9 +303,9 @@ function renderCatalogControls() {
 function renderCompany() {
   const company = state.company || {};
   $("[data-panel-mode]").textContent = state.mode === "demo" ? "Panel empresa demo" : "Panel empresa";
-  $("[data-company-name]").textContent = company.name || "Empresa sin sesion";
+  $("[data-company-name]").textContent = company.name || "Empresa sin sesión";
   $("[data-company-description]").textContent =
-    company.description || "Necesitas abrir el enlace de invitacion para entrar al panel.";
+    company.description || "Necesitas abrir el enlace de invitación para entrar al panel.";
   $("[data-plan]").textContent = company.plan || "-";
   $("[data-company-status]").textContent = serviceStatusLabel(company.status || "draft");
   $("[data-service-count]").textContent = String(state.services.length);
@@ -319,8 +320,8 @@ function renderAuthRequired() {
   const list = $("[data-services-list]");
   list.innerHTML = `
     <div class="panel-empty">
-      <strong>Necesitas iniciar sesion para entrar al panel.</strong>
-      <p>Si recibiste invitacion, abre el enlace completo para activar tu password. Si ya activaste acceso, usa tu email y password.</p>
+      <strong>Necesitas iniciar sesión para entrar al panel.</strong>
+      <p>Si recibiste invitación, abre el enlace completo para activar tu contraseña. Si ya activaste acceso, usa tu correo y contraseña.</p>
       <a class="primary-button compact-button" href="index.html#empresas">Registrar empresa</a>
     </div>
   `;
@@ -331,10 +332,10 @@ function serviceMarkup(service) {
   const eventTypes = parseArray(service.eventTypes);
   const publicLink =
     normalizeStatus(service.status) === "published"
-      ? `<a class="ghost-button compact-button" href="${escapeHtml(publicCompanyHref(service))}">Ver publico</a>`
-      : `<span class="review-note">Aparecera cuando este publicado.</span>`;
+      ? `<a class="ghost-button compact-button" href="${escapeHtml(publicCompanyHref(service))}">Ver público</a>`
+      : `<span class="review-note">Aparecerá cuando esté publicado.</span>`;
   const reviewAction = canSubmitReview(service)
-    ? `<button class="primary-button compact-button" type="button" data-submit-review>Completar envio</button>`
+    ? `<button class="primary-button compact-button" type="button" data-submit-review>Enviar servicio</button>`
     : `<span class="review-note">${escapeHtml(submitReviewStatusMessage(service.status))}</span>`;
   return `
     <article class="service-card" data-service-id="${escapeHtml(service.id)}">
@@ -354,7 +355,7 @@ function serviceMarkup(service) {
       </div>
       <p>${escapeHtml(service.description)}</p>
       <div class="service-meta">
-        <div><strong>Categoria</strong><span>${escapeHtml(service.category)}</span></div>
+        <div><strong>Categoría</strong><span>${escapeHtml(service.category)}</span></div>
         <div><strong>Eventos</strong><span>${escapeHtml(eventTypes.join(", ") || "Sin eventos")}</span></div>
         <div><strong>Precio desde</strong><span>${escapeHtml(service.priceFrom || "Consultar")}</span></div>
         <div><strong>Fotos</strong><span>${serviceImageCount(service)} archivo(s)</span></div>
@@ -368,7 +369,7 @@ function renderServices() {
   renderCompany();
   const list = $("[data-services-list]");
   if (!state.services.length) {
-    list.innerHTML = '<div class="panel-empty">Todavia no hay servicios. Carga el primero para mostrar lo que ofreces.</div>';
+    list.innerHTML = '<div class="panel-empty">Todavía no hay servicios. Carga el primero para mostrar lo que ofreces.</div>';
     return;
   }
   list.innerHTML = state.services.map(serviceMarkup).join("");
@@ -396,7 +397,7 @@ async function loadRealPanel() {
   } catch (error) {
     if (error.status === 401) {
       renderAuthRequired();
-      setAuthMessage(state.inviteToken ? "Activa tu acceso para continuar." : "Inicia sesion para entrar al panel.", "");
+      setAuthMessage(state.inviteToken ? "Activa tu acceso para continuar." : "Inicia sesión para entrar al panel.", "");
     } else {
       renderAuthRequired();
       setAuthMessage("No pudimos cargar el panel. Intentalo de nuevo en unos minutos.", "error");
@@ -412,12 +413,12 @@ function loadDemoPanel() {
   state.company = {
     name: "Aurisbel Eventos",
     slug: "aurisbel-eventos",
-    description: "Demo local explicita. No guarda en Azure.",
+    description: "Modo local explícito. No guarda en Azure.",
     plan: "free",
     status: "pending",
   };
   state.services = JSON.parse(JSON.stringify(DEMO_SERVICES));
-  setPanelMessage("Modo demo local activo. No guarda en Azure.");
+  setPanelMessage("Modo local activo. No guarda en Azure.");
   renderServices();
 }
 
@@ -440,7 +441,7 @@ function currentServiceImages(service = null) {
     images.push({ name: "Portada publicada", src: service.coverUrl, type: "cover" });
   }
   parseArray(service?.gallery).forEach((src, index) => {
-    images.push({ name: `Galeria aprobada ${index + 1}`, src, type: "gallery" });
+    images.push({ name: `Galería publicada ${index + 1}`, src, type: "gallery" });
   });
   return images;
 }
@@ -518,7 +519,7 @@ function resetServiceForm(service = null) {
     reviewButton.dataset.serviceId = service?.id || "";
     reviewButton.title = service?.id
       ? canSubmitReview(service)
-        ? "Completar el envio de este servicio."
+        ? "Enviar este servicio."
         : submitReviewStatusMessage(service.status)
       : "Guarda el servicio antes de enviarlo.";
   }
@@ -554,13 +555,13 @@ function validateServicePayload(payload) {
     return "Completa el nombre del servicio.";
   }
   if (!payload.category) {
-    return "Selecciona la categoria del servicio.";
+    return "Selecciona la categoría del servicio.";
   }
   if (!payload.eventTypes.length) {
     return "Selecciona al menos un tipo de evento.";
   }
   if (!payload.description) {
-    return "Completa la descripcion del servicio.";
+    return "Completa la descripción del servicio.";
   }
   if (!payload.priceFrom) {
     return "Completa el precio desde antes de enviar.";
@@ -604,7 +605,7 @@ async function saveService(form) {
     return;
   }
 
-  setFormMessage("Guardando informacion...");
+  setFormMessage("Guardando información...");
   const saved =
     state.mode === "demo"
       ? {
@@ -630,7 +631,7 @@ async function saveService(form) {
   }
 
   const submitted = await sendSavedService(saved, existing);
-  setPanelMessage("Tu informacion fue recibida.", "success");
+  setPanelMessage("Tu información fue recibida. Se publicará lo antes posible.", "success");
 
   closeServiceForm();
   if (state.mode === "demo") {
@@ -645,10 +646,10 @@ async function saveService(form) {
 
 function reviewErrorMessage(error, service = null) {
   if (error.status === 400) {
-    return error.data?.error || validateServiceForReview(service) || "Completa los campos minimos antes de enviar.";
+    return error.data?.error || validateServiceForReview(service) || "Completa los campos mínimos antes de enviar.";
   }
   if (error.status === 401) {
-    return "Tu sesion expiro. Abre de nuevo el enlace de invitacion o inicia sesion otra vez.";
+    return "Tu sesión expiró. Abre de nuevo el enlace de invitación o inicia sesión otra vez.";
   }
   if (error.status === 404) {
     return "No encontramos este servicio en tu empresa. Recarga el panel e intenta de nuevo.";
@@ -656,7 +657,7 @@ function reviewErrorMessage(error, service = null) {
   if (error.status === 409) {
     return error.data?.error || submitReviewStatusMessage(service?.status);
   }
-  return "No se pudo enviar el servicio. Intentalo de nuevo en unos minutos.";
+  return "No se pudo enviar el servicio. Inténtalo de nuevo en unos minutos.";
 }
 
 async function submitServiceForReview(serviceId, trigger = null) {
@@ -695,7 +696,7 @@ async function submitServiceForReview(serviceId, trigger = null) {
 
     service.status = normalizeStatus(updated.status);
     service.updatedAt = updated.updatedAt || service.updatedAt;
-    setPanelMessage("Tu informacion fue recibida.", "success");
+    setPanelMessage("Tu información fue recibida. Se publicará lo antes posible.", "success");
     renderServices();
     const form = $("[data-service-form]");
     if (form && !form.classList.contains("is-hidden") && form.elements.id.value === serviceId) {
@@ -725,7 +726,7 @@ async function deleteService(serviceId) {
     service.status = "inactive";
     service.updatedAt = new Date().toISOString();
     renderServices();
-    setPanelMessage("Servicio demo desactivado.", "success");
+    setPanelMessage("Servicio desactivado.", "success");
     return;
   }
 
@@ -786,7 +787,7 @@ async function logout() {
     state.inviteToken = "";
     cleanInviteParams();
     renderAuthRequired();
-    setAuthMessage("Sesion cerrada.");
+    setAuthMessage("Sesión cerrada.");
   }
 }
 
@@ -794,11 +795,11 @@ async function activateAccess(form) {
   const password = String(form.elements.password.value || "");
   const passwordConfirm = String(form.elements.passwordConfirm.value || "");
   if (password.length < 8) {
-    setAuthMessage("Usa un password de al menos 8 caracteres.", "error");
+    setAuthMessage("Usa una contraseña de al menos 8 caracteres.", "error");
     return;
   }
   if (password !== passwordConfirm) {
-    setAuthMessage("Los passwords no coinciden.", "error");
+    setAuthMessage("Las contraseñas no coinciden.", "error");
     return;
   }
 
@@ -814,7 +815,7 @@ async function activateAccess(form) {
     state.inviteToken = "";
     cleanInviteParams();
     form.reset();
-    setPanelMessage("Acceso activado. Sesion iniciada.", "success");
+    setPanelMessage("Acceso activado. Sesión iniciada.", "success");
     await loadRealPanel();
   } catch (error) {
     console.warn(error);
@@ -829,7 +830,7 @@ async function loginCompany(form) {
   const email = String(form.elements.email.value || "").trim();
   const password = String(form.elements.password.value || "");
   if (!email || !password) {
-    setAuthMessage("Completa email y password.", "error");
+    setAuthMessage("Completa correo y contraseña.", "error");
     return;
   }
 
@@ -843,14 +844,14 @@ async function loginCompany(form) {
       body: JSON.stringify({ email, password }),
     });
     form.reset();
-    setPanelMessage("Sesion iniciada.", "success");
+    setPanelMessage("Sesión iniciada.", "success");
     await loadRealPanel();
   } catch (error) {
     console.warn(error);
     setAuthMessage(genericAuthError(error), "error");
   } finally {
     button.disabled = false;
-    button.textContent = "Iniciar sesion";
+    button.textContent = "Iniciar sesión";
   }
 }
 
@@ -873,7 +874,7 @@ document.addEventListener("submit", async (event) => {
     await saveService(event.target);
   } catch (error) {
     console.warn(error);
-    setFormMessage("No se pudo guardar el servicio. Revisa los datos e intentalo de nuevo.", "error");
+    setFormMessage("No se pudo guardar el servicio. Revisa los datos e inténtalo de nuevo.", "error");
   }
 });
 

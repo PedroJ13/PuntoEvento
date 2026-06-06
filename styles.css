@@ -1424,6 +1424,20 @@ button:disabled,
     text-wrap: balance;
   }
 
+  .provider-hero {
+    gap: 16px;
+    padding: 22px 0 48px;
+  }
+
+  .provider-summary {
+    order: -1;
+    padding: 18px;
+  }
+
+  .provider-summary .card-actions {
+    gap: 10px;
+  }
+
   .section,
   .trust-strip,
   .subhero-inner,
@@ -1476,22 +1490,40 @@ button:disabled,
   }
 
   .carousel-image {
-    height: 340px;
+    height: min(42vh, 280px);
+    min-height: 240px;
   }
 
   .carousel-thumbs {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 2px;
   }
 
   .thumb {
-    height: 74px;
+    flex: 0 0 64px;
+    height: 64px;
   }
 
   .quote-form {
     grid-template-columns: 1fr;
+    min-height: 0;
+    overflow: auto;
+    padding-bottom: 12px;
   }
 
   .drawer-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
     padding: 28px 18px;
+  }
+
+  .quote-form button.full {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    box-shadow: 0 -12px 18px rgba(255, 255, 255, 0.92);
   }
 }
