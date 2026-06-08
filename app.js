@@ -385,15 +385,18 @@ function quoteButtonAttributes(service) {
 
 function contactActionsMarkup(service, primaryClass = "primary-button") {
   const whatsappHref = whatsappUrl(service);
+  const companyName = service.company?.name || "la empresa";
   if (whatsappHref) {
     return `
-      <a class="${primaryClass}" href="${safeUrl(whatsappHref)}" target="_blank" rel="noopener">Contactar</a>
-      <button class="secondary-button" data-open-quote${quoteButtonAttributes(service)}>Enviar solicitud</button>
+      <a class="${primaryClass}" href="${safeUrl(whatsappHref)}" target="_blank" rel="noopener" data-whatsapp-contact>Solicitar cotización</a>
+      <p class="contact-note full-note">Te abriremos WhatsApp con ${safeText(service.name)} de ${safeText(companyName)}.</p>
+      <button class="secondary-button" data-open-quote${quoteButtonAttributes(service)}>Enviar por formulario</button>
+      <p class="contact-note full-note">También puedes enviar una solicitud registrada por Punto Evento CR.</p>
     `;
   }
   return `
     <button class="${primaryClass}" data-open-quote${quoteButtonAttributes(service)}>Solicitar cotización</button>
-    <span class="contact-note">Formulario por email</span>
+    <p class="contact-note full-note">Enviaremos tu solicitud a ${safeText(companyName)} y quedará registrada por Punto Evento CR.</p>
   `;
 }
 
@@ -485,7 +488,7 @@ function serviceCard(service) {
         </div>
         <div>
           <h3>${safeText(service.name)}</h3>
-          <p class="card-meta">${safeText(service.company?.name)}${meta ? ` · ${safeText(meta)}` : ""}</p>
+          <p class="card-meta">Servicio de ${safeText(service.company?.name)}${meta ? ` · ${safeText(meta)}` : ""}</p>
         </div>
         <p>${safeText(service.description)}</p>
         <strong>${safeText(service.priceFrom)}</strong>
@@ -536,7 +539,7 @@ function wideServiceCard(service) {
         </div>
         <div>
           <h3>${safeText(service.name)}</h3>
-          <p class="card-meta">${safeText(service.company?.name)}${meta ? ` · ${safeText(meta)}` : ""}</p>
+          <p class="card-meta">Servicio de ${safeText(service.company?.name)}${meta ? ` · ${safeText(meta)}` : ""}</p>
         </div>
         <p>${safeText(service.description)}</p>
         <strong>${safeText(service.priceFrom)}</strong>
@@ -633,7 +636,8 @@ function emptyServicesState() {
       <article class="empty-results" role="status">
         <p class="eyebrow">Catálogo en preparación</p>
         <h3>No hay servicios publicados todavía</h3>
-        <p>Estamos preparando el catálogo de proveedores para eventos.</p>
+        <p>Estamos preparando el catálogo de proveedores verificados. Si tienes una empresa de eventos, puedes solicitar acceso gratis.</p>
+        <a class="primary-button" href="#empresas">Solicitar acceso gratis</a>
       </article>
     `;
   }
@@ -844,8 +848,8 @@ async function providerPage(companySlug, serviceSlug = "") {
       <section class="section">
         <p class="eyebrow">Catálogo en preparación</p>
         <h1>No hay servicios publicados todavía</h1>
-        <p>Vuelve al listado cuando haya proveedores disponibles.</p>
-        <a class="primary-button" href="#bodas">Volver al listado</a>
+        <p>Estamos preparando el catálogo de proveedores verificados. Si tienes una empresa de eventos, puedes solicitar acceso gratis.</p>
+        <a class="primary-button" href="#empresas">Solicitar acceso gratis</a>
       </section>
     `;
   }
@@ -963,18 +967,19 @@ function companyProfilePage(company, selectedServiceSlug = "") {
       </div>
       <aside class="provider-summary">
         <div class="tag-row">
-          <span class="tag verified">Empresa publicada</span>
-          <span class="tag">${safeText(company.plan || "free")}</span>
+          <span class="tag verified">Servicio publicado</span>
+          <span class="tag">${safeText(selectedService.category || "Servicio")}</span>
         </div>
-        <h1 class="provider-title">${safeText(company.name)}</h1>
-        <p class="card-meta">${safeText(location || company.province || "Costa Rica")}</p>
+        <h1 class="provider-title">${safeText(selectedService.name)}</h1>
+        <p class="card-meta">De ${safeText(company.name)}${location ? ` · ${safeText(location)}` : ""}</p>
         <div class="summary-price">
-          <span>Servicio destacado</span>
-          <strong>${safeText(selectedService.name)}</strong>
+          <span>Precio desde</span>
+          <strong>${safeText(selectedService.priceFrom || "Consultar")}</strong>
         </div>
+        <p class="contact-note full-note">Estás cotizando este servicio de ${safeText(company.name)}.</p>
         <div class="card-actions">
           ${contactActionsMarkup(selectedService, "primary-button")}
-          <a class="secondary-button" href="#bodas">Ver mas servicios</a>
+          <a class="secondary-button" href="#bodas">Ver más servicios</a>
         </div>
       </aside>
     </section>
@@ -989,7 +994,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
             <ul class="feature-list">
               <li><span class="check">&#10003;</span><span>${safeText(selectedService.category || "Servicio para eventos")}.</span></li>
               <li><span class="check">&#10003;</span><span>${safeText(selectedService.priceFrom || "Precio a consultar")}.</span></li>
-              <li><span class="check">&#10003;</span><span>Cotizacion por servicio desde la ficha de empresa.</span></li>
+              <li><span class="check">&#10003;</span><span>Solicitud asociada a este servicio.</span></li>
             </ul>
           </article>
 
@@ -1542,6 +1547,9 @@ function bindPageEvents() {
   document.querySelectorAll("[data-toast]").forEach((button) => {
     button.addEventListener("click", () => showToast(button.dataset.toast));
   });
+  document.querySelectorAll("[data-whatsapp-contact]").forEach((link) => {
+    link.addEventListener("click", () => showToast("WhatsApp listo para enviar."));
+  });
   document.querySelectorAll("[data-scroll-register]").forEach((trigger) => {
     trigger.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1665,17 +1673,17 @@ function bindCompanyRegistration() {
   }) => {
     const isAzure = mode === "azure";
     const title = isAzure
-      ? "Registro recibido"
+      ? "Recibimos tu solicitud"
       : "Registro local recibido";
     const message = isAzure
-      ? "Registro recibido. Punto Evento CR enviará acceso al panel para crear servicios, subir fotos y prepararlos para publicación."
+      ? "Te enviaremos las instrucciones de acceso por correo cuando tu cuenta esté lista."
       : "Esta prueba local no guarda datos en Azure. Puedes editar el formulario o limpiar la simulacion.";
     confirmation.innerHTML = `
       <div class="form-panel">
-        <p class="eyebrow">${isAzure ? "Registro recibido" : "Registro local recibido"}</p>
+        <p class="eyebrow">${isAzure ? "Solicitud recibida" : "Registro local recibido"}</p>
         <h3>${escapeHtml(title)}</h3>
         <p class="form-help">${escapeHtml(message)}</p>
-        ${isAzure ? `<p class="form-help">Te contactaremos si necesitamos confirmar algun dato de ${escapeHtml(companyName)}.</p>` : ""}
+        ${isAzure ? `<p class="form-help">No necesitas crear contraseña ahora. El acceso al panel llega en un paso posterior.</p>` : ""}
         ${!isAzure ? `<p class="form-help">${escapeHtml(category)} · ${escapeHtml(location)} · ${photosCount} archivo(s)</p>` : ""}
         <div class="card-actions">
           <button class="${isAzure ? "primary-button" : "secondary-button"}" type="button" data-edit-company>${isAzure ? "Registrar otra empresa" : "Editar datos"}</button>
@@ -1833,7 +1841,7 @@ function bindCompanyRegistration() {
         providerId: result.companyId,
         mode: "azure",
       });
-      showToast("Datos recibidos. Prepararemos el acceso al panel.");
+      showToast("Solicitud recibida. Te enviaremos instrucciones por correo.");
     } catch (error) {
       console.warn(error);
       if (submitStatus) {
@@ -1947,12 +1955,12 @@ function openQuote(event) {
   }
 
   if (quoteTitle) {
-    quoteTitle.textContent = serviceName ? `Contactar por ${serviceName}` : "Contactar proveedor";
+    quoteTitle.textContent = serviceName ? `Solicitar cotización por ${serviceName}` : "Solicitar cotización";
   }
   if (quoteContextNode) {
     quoteContextNode.textContent = quoteContext.companyName
-      ? `Solicitud por formulario/email dirigida a ${quoteContext.companyName}.`
-      : "Solicitud asociada al servicio seleccionado.";
+      ? `Enviaremos tu solicitud a ${quoteContext.companyName} y quedará registrada por Punto Evento CR.`
+      : "Enviaremos tu solicitud a la empresa del servicio seleccionado y quedará registrada por Punto Evento CR.";
   }
   setQuoteStatus("");
   quoteForm.classList.remove("is-hidden");
@@ -1966,9 +1974,16 @@ function closeQuote({ submitted = false } = {}) {
     quoteForm.reset();
     quoteForm.classList.add("is-hidden");
     quoteConfirmation.classList.remove("is-hidden");
+    quoteConfirmation.innerHTML = `
+      <p class="eyebrow">Solicitud enviada</p>
+      <h3>Solicitud enviada por formulario</h3>
+      <p>Recibimos tu solicitud, la enviaremos a la empresa y quedará registrada por Punto Evento CR.</p>
+      <button class="primary-button" type="button" data-close-quote>Cerrar</button>
+    `;
+    quoteConfirmation.querySelector("[data-close-quote]")?.addEventListener("click", () => closeQuote());
     quoteConfirmation.focus();
     setQuoteStatus("");
-    showToast("Solicitud enviada.");
+    showToast("Solicitud enviada por formulario.");
     return;
   }
 
@@ -1978,8 +1993,8 @@ function closeQuote({ submitted = false } = {}) {
   quoteConfirmation.classList.add("is-hidden");
   quoteConfirmation.innerHTML = `
     <p class="eyebrow">Solicitud enviada</p>
-    <h3>Solicitud lista para revisar</h3>
-    <p>Recibimos tu solicitud y la enviaremos a la empresa correspondiente.</p>
+    <h3>Solicitud enviada por formulario</h3>
+    <p>Recibimos tu solicitud, la enviaremos a la empresa y quedará registrada por Punto Evento CR.</p>
     <button class="primary-button" type="button" data-close-quote>Cerrar</button>
   `;
   quoteConfirmation.querySelector("[data-close-quote]")?.addEventListener("click", () => closeQuote());

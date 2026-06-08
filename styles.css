@@ -571,6 +571,14 @@ button:focus-visible,
   text-align: center;
 }
 
+.contact-note.full-note {
+  flex: 1 0 100%;
+  justify-content: flex-start;
+  min-height: auto;
+  margin: 0;
+  text-align: left;
+}
+
 .package-card {
   display: grid;
   grid-template-rows: auto auto 1fr auto auto;

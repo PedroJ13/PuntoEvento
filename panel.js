@@ -159,10 +159,10 @@ function isAllowedServiceImage(file) {
 
 function serviceStatusLabel(status) {
   const labels = {
-    draft: "En carga",
+    draft: "Borrador",
     pending: "Recibido",
     published: "Publicado",
-    rejected: "Necesita ajuste",
+    rejected: "Necesita cambios",
     inactive: "Inactivo",
   };
   return labels[normalizeStatus(status)];
@@ -174,8 +174,10 @@ function canSubmitReview(service) {
 
 function submitReviewStatusMessage(status) {
   const messages = {
-    pending: "Tu información fue recibida. Se publicará lo antes posible.",
+    draft: "Solo tu empresa puede verlo. Envíalo cuando esté listo.",
+    pending: "Tu información fue recibida. Te avisaremos cuando esté lista para publicarse.",
     published: "Este servicio ya está publicado. Edítalo si necesitas actualizarlo.",
+    rejected: "Edita la información y vuelve a enviarlo.",
     inactive: "Este servicio está inactivo. Actívalo o crea uno nuevo para enviarlo.",
   };
   return messages[normalizeStatus(status)] || "Este servicio no se puede enviar en su estado actual.";
@@ -332,8 +334,8 @@ function serviceMarkup(service) {
   const eventTypes = parseArray(service.eventTypes);
   const publicLink =
     normalizeStatus(service.status) === "published"
-      ? `<a class="ghost-button compact-button" href="${escapeHtml(publicCompanyHref(service))}">Ver público</a>`
-      : `<span class="review-note">Aparecerá cuando esté publicado.</span>`;
+    ? `<a class="ghost-button compact-button" href="${escapeHtml(publicCompanyHref(service))}">Ver público</a>`
+    : `<span class="review-note">Aparecerá cuando esté publicado.</span>`;
   const reviewAction = canSubmitReview(service)
     ? `<button class="primary-button compact-button" type="button" data-submit-review>Enviar servicio</button>`
     : `<span class="review-note">${escapeHtml(submitReviewStatusMessage(service.status))}</span>`;
@@ -485,7 +487,7 @@ function renderReadonlySummary(service = null) {
   const statusNode = $("[data-current-service-status]");
   const photoCountNode = $("[data-current-photo-count]");
   if (statusNode) {
-    statusNode.textContent = service ? serviceStatusLabel(service.status) : "Servicio nuevo";
+    statusNode.textContent = service ? serviceStatusLabel(service.status) : "Borrador";
   }
   if (photoCountNode) {
   const count = serviceImageCount(service || {});
@@ -631,7 +633,7 @@ async function saveService(form) {
   }
 
   const submitted = await sendSavedService(saved, existing);
-  setPanelMessage("Tu información fue recibida. Se publicará lo antes posible.", "success");
+  setPanelMessage("Tu información fue recibida. Te avisaremos cuando esté lista para publicarse.", "success");
 
   closeServiceForm();
   if (state.mode === "demo") {
@@ -696,7 +698,7 @@ async function submitServiceForReview(serviceId, trigger = null) {
 
     service.status = normalizeStatus(updated.status);
     service.updatedAt = updated.updatedAt || service.updatedAt;
-    setPanelMessage("Tu información fue recibida. Se publicará lo antes posible.", "success");
+    setPanelMessage("Tu información fue recibida. Te avisaremos cuando esté lista para publicarse.", "success");
     renderServices();
     const form = $("[data-service-form]");
     if (form && !form.classList.contains("is-hidden") && form.elements.id.value === serviceId) {

@@ -766,6 +766,35 @@ function companyMetaRow(label, value) {
   return `<div><strong>${escapeHtml(label)}</strong><span>${escapeHtml(cleanValue)}</span></div>`;
 }
 
+function pendingCountLabel(count, singular, plural) {
+  if (count === 0) return `0 ${plural}`;
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function casePendingSummary(company) {
+  const companyId = companyIdOf(company);
+  const companyPendingCount = companyCanBeReviewed(company) ? 1 : 0;
+  const scopedServices = servicesForCompany(companyId);
+  const servicePendingCount = scopedServices.filter((service) =>
+    ["draft", "pending"].includes(String(service.status || "pending")),
+  ).length;
+  const imageIds = new Set();
+  scopedServices.forEach((service) => {
+    serviceImages(service)
+      .filter((image) => !image.status || ["draft", "pending"].includes(String(image.status)))
+      .forEach((image) => imageIds.add(image.uploadId || image.id || image.fileName || image.previewUrl));
+  });
+  uploadsForCompany(companyId)
+    .filter((upload) => !upload.status || ["draft", "pending"].includes(String(upload.status)))
+    .forEach((upload) => imageIds.add(upload.uploadId || upload.id || upload.fileName || upload.previewUrl));
+
+  return [
+    companyPendingCount ? "Empresa pendiente" : "Empresa sin acción pendiente",
+    pendingCountLabel(servicePendingCount, "servicio por revisar", "servicios por revisar"),
+    pendingCountLabel(imageIds.size, "foto pendiente", "fotos pendientes"),
+  ].join(" + ");
+}
+
 function caseCompanyDetail(company) {
   if (!company) return '<div class="admin-empty">Selecciona una empresa para revisar su expediente.</div>';
   const companyId = companyIdOf(company);
@@ -794,6 +823,7 @@ function caseCompanyDetail(company) {
         </div>
       </div>
       ${description ? `<p>${escapeHtml(truncateText(description, 240))}</p>` : ""}
+      <p class="admin-note case-priority-line">${escapeHtml(casePendingSummary(company))}</p>
       <div class="internal-item-meta">
         ${contactRows}
       </div>
@@ -999,7 +1029,9 @@ function internalActionSuccessMessage(type, action, response = {}) {
   }
   if (type === "services") {
     return {
-      message: action === "approve" ? "Servicio aprobado." : "Servicio rechazado.",
+      message: action === "approve"
+        ? "Servicio aprobado y publicado. Revisa el resumen del expediente para pendientes restantes."
+        : "Servicio rechazado. Revisa el resumen del expediente para pendientes restantes.",
       tone: action === "approve" ? "success" : "warning",
     };
   }
