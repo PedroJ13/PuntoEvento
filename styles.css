@@ -552,6 +552,7 @@ button:focus-visible,
 
 .card-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -574,8 +575,10 @@ button:focus-visible,
 .contact-note.full-note {
   flex: 1 0 100%;
   justify-content: flex-start;
+  max-width: 100%;
   min-height: auto;
   margin: 0;
+  overflow-wrap: anywhere;
   text-align: left;
 }
 
