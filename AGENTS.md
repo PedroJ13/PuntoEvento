@@ -47,6 +47,7 @@ No tratar cada chat como un equipo aislado. El repositorio y los documentos son 
 - Preferir cambios pequenos y verificables.
 - Mantener docs actualizados cuando cambie arquitectura, modelo de datos o flujo.
 - Separar decisiones de producto, frontend, backend, infra y QA.
+- El chat `Product / Architect / Release` coordina prioridades, handoffs, alcance MVP y estado de release.
 - Para datos de negocio, pensar en modelo `Empresa -> Servicios`.
 - La busqueda publica debe tender a resultados por servicio, con acceso al perfil completo de empresa.
 - El registro de empresas es gratis inicialmente.
@@ -103,6 +104,7 @@ Antes de trabajar, leer segun rol:
 - `docs/ARCHITECTURE.md`
 - `docs/DATA_MODEL.md`
 - `docs/WORKFLOW_CODEX.md`
+- `docs/MVP_RELEASE_STATUS.md`
 - `docs/DECISION_LOG.md`
 
 Documentos existentes importantes:
@@ -122,4 +124,3 @@ Documentos existentes importantes:
 - Si se cambia modelo de datos, actualizar docs.
 - Si se cambia UI publica, validar desktop y mobile.
 - Si se cambia admin, validar permisos, estados y errores.
-

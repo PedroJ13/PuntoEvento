@@ -86,8 +86,13 @@ Reglas de servicio MVP:
 - Crear o editar guarda como `draft`.
 - Un boton/accion explicita `Enviar a revision` cambia el servicio a `pending`.
 - Si un servicio `published` cambia campos publicos, vuelve a `draft` hasta enviarse de nuevo a revision.
-- `coverUrl` representa una sola imagen principal.
-- `gallery` representa hasta 6 imagenes publicas aprobadas.
+- Cada servicio puede tener hasta 10 imagenes en total.
+- `coverUrl` representa una sola imagen principal y cuenta dentro del maximo de 10.
+- `gallery` representa las imagenes publicas aprobadas que no son cover.
+- Si un servicio tiene imagenes, una y solo una debe actuar como cover.
+- Las imagenes nuevas o cambios de cover/galeria quedan pendientes hasta aprobacion admin.
+- En admin, las imagenes pendientes de un servicio se revisan dentro del expediente del servicio, con preview visible.
+- Aprobar un servicio publica las imagenes pendientes asociadas a ese servicio; el admin no debe tener que aprobar imagenes de servicio como una entidad separada.
 
 ## Catalogos
 
@@ -162,9 +167,19 @@ Recomendacion MVP:
   "email": "empresa@email.com",
   "role": "company_owner",
   "status": "active",
+  "passwordHash": "scrypt$salt$hash",
+  "passwordSetAt": "2026-05-31T00:00:00Z",
   "createdAt": "2026-05-27T00:00:00Z"
 }
 ```
+
+Reglas:
+
+- `passwordHash` se guarda solo cuando la empresa activa login recurrente con password.
+- Nunca guardar password plano.
+- Nunca devolver `passwordHash` en endpoints API.
+- Empresas `pending` y `published` pueden acceder al panel.
+- Empresas `rejected` y `suspended` no pueden iniciar sesion.
 
 ## CompanyInvite
 
@@ -220,14 +235,25 @@ Reglas:
   "companyId": "company_123",
   "serviceId": "service_123",
   "eventType": "Boda",
-  "date": "2026-08-15",
-  "guests": 80,
+  "eventDate": "2026-08-15",
+  "guests": "80",
   "name": "Cliente",
+  "email": "cliente@email.com",
   "phone": "8888-8888",
   "message": "...",
+  "status": "received",
+  "emailStatus": "sent",
+  "emailSentAt": "2026-05-27T00:00:00Z",
   "createdAt": "2026-05-27T00:00:00Z"
 }
 ```
+
+Reglas:
+
+- Lead publico se acepta solo para empresa y servicio publicados.
+- El email privado de la empresa se usa para entrega, pero no se devuelve en API publica.
+- `emailStatus` puede ser `pending`, `sent` o `failed`.
+- Para MVP, el lead se persiste en `Leads` antes de enviar email para dejar trazabilidad.
 
 ## Upload
 
@@ -262,13 +288,15 @@ Reglas:
 - Subidas empiezan como `reserved` en contenedor pendiente.
 - Al confirmar la subida, el estado pasa a `pending`, `size` se reemplaza por el tamano real del blob y `expiresAt` se limpia porque ya no aplica como vencimiento de reserva.
 - Al aprobar internamente, el estado pasa a `published`, se guarda `publicBlobUrl` y la URL se aplica a `Service.coverUrl`, `Service.gallery`, `Company.coverUrl` o `Company.logoUrl` segun `scope` e `imageType`.
+- Para `scope=service`, la aprobacion normal ocurre como parte de la aprobacion del servicio en admin.
 - Si `scope=company` e `imageType=gallery`, el upload queda publicado pero no se aplica a la empresa porque el modelo MVP no define `Company.gallery`.
 - Publicar o asociar la imagen al perfil/servicio requiere validacion posterior.
 
 Limites MVP:
 
+- Imagenes de servicio: maximo 10 en total, incluyendo cover.
 - Cover de servicio: maximo 1 imagen activa.
-- Galeria de servicio: maximo 6 imagenes activas.
+- Galeria de servicio: imagenes aprobadas que no son cover, dentro del maximo total de 10.
 - Formatos permitidos: JPG, PNG, WEBP.
 - Tamano maximo: 5 MB por imagen.
 

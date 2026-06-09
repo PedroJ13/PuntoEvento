@@ -1,28 +1,42 @@
 # TASK-043: Backend POST company services
 
-## Resultado general
+## Estado
 
 Completada.
 
-Se implemento:
+## Resultado general
+
+El endpoint ya existe en el repo y cumple el alcance asignado:
 
 ```text
 POST /api/companies/me/services
 ```
 
-El endpoint crea servicios propios en estado `draft`, asociados exclusivamente al `companyId` derivado de la cookie `pe_company_session` mediante `getCurrentCompanySession(req, config)`.
+No se modifico codigo en esta ronda. Se hizo validacion local/estructural contra el assignment para confirmar que la implementacion actual:
 
-## Archivos modificados
+- Crea servicios propios para la empresa autenticada por cookie `pe_company_session`.
+- Deriva `companyId` exclusivamente desde la sesion.
+- Persiste en `Services` con `PartitionKey=companyId` y `RowKey=serviceId`.
+- Inicializa servicios nuevos con `status: draft`.
+- Genera `slug` desde `name`.
+- Valida `name`, `category`, `eventTypes` y `gallery`.
+- Responde `201` sin exponer metadata interna de Table Storage, hashes, tokens, cookies ni campos de ranking.
+
+## Archivos revisados
 
 - `api/company-services-create/function.json`
 - `api/company-services-create/index.js`
-- `docs/API_CONTRACTS_MVP.md`
-- `docs/BACKLOG.md`
-- `tasks/TASK-043-HANDOFF.md`
+- `api/company-services-list/function.json`
+- `api/company-services-list/index.js`
+- `api/shared/companyAuth.js`
+- `api/shared/config.js`
+- `api/shared/azure.js`
 
 ## Contrato implementado
 
-Request:
+### POST `/api/companies/me/services`
+
+Request esperado:
 
 ```json
 {
@@ -56,81 +70,71 @@ Response `201`:
 }
 ```
 
-Errores:
+Errores cubiertos por la implementacion:
 
 ```text
-400 Validation error
+400 Missing required fields / eventTypes must be an array / gallery must be an array
 401 Unauthorized
 405 Method not allowed
 409 Slug already exists for this company
 500 Unexpected server error
 ```
 
-Persistencia:
-
-```text
-Tabla: Services
-PartitionKey: companyId de la sesion
-RowKey: serviceId generado
-status inicial: draft
-eventTypes/gallery: JSON string persistido, arreglo en response
-```
-
 ## Validaciones realizadas
 
-Implementadas:
+Comandos ejecutados:
 
-- `name` requerido.
-- `category` requerido.
-- `eventTypes` debe ser arreglo; puede estar vacio.
-- `gallery` debe ser arreglo; puede estar vacio.
-- `description`, `priceFrom` y `coverUrl` pueden venir vacios.
-- `companyId` enviado por query/body/header se ignora.
-- Slug generado desde `name`.
-- Slug duplicado dentro de la misma empresa responde `409`.
-- Response `201` no expone `partitionKey`, `rowKey`, `etag`, `timestamp`, hashes, tokens, cookies ni campos de ranking/monetizacion.
-
-Verificacion local/estructural realizada:
-
-```powershell
-& 'C:\Users\pj13e\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' --check 'api/company-services-create/index.js'
-& 'C:\Users\pj13e\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe' --check 'api/company-services-list/index.js'
+```text
+git rev-parse --show-toplevel
+node --check api/company-services-create/index.js
+node --check api/company-services-list/index.js
+node --check api/shared/companyAuth.js
+node --check api/shared/config.js
+node --check api/shared/azure.js
 ```
 
 Resultado:
 
 ```text
-node --check api/company-services-create/index.js -> OK
-node --check api/company-services-list/index.js -> OK
-api/company-services-create/function.json -> JSON valido, route companies/me/services, method post
-POST sin cookie -> 401
-POST con body invalido y sesion -> 400
-POST con sesion -> 201 y crea entidad en Services con PartitionKey=session.partitionKey
-POST con companyId inyectado -> ignora valor inyectado
-POST duplicando slug para misma empresa -> 409
-GET /api/companies/me/services lista el servicio creado
-Response 201 no expone metadata interna ni ranking
-eventTypes/gallery se guardan como JSON string y se devuelven como arreglos
+OK, sin errores de sintaxis.
 ```
+
+Validacion estructural de `api/company-services-create/function.json`:
+
+```json
+{
+  "route": "companies/me/services",
+  "methods": "post",
+  "authLevel": "anonymous"
+}
+```
+
+Revision manual de seguridad/aislamiento:
+
+- Sin sesion valida, el handler responde `401` antes de acceder a `Services`.
+- `companyId` sale de `session.partitionKey`; no se lee de query, body ni headers.
+- La entidad creada usa `partitionKey: companyId`.
+- El `body.companyId`, si se enviara, queda ignorado porque `validateServicePayload` no lo copia.
+- `eventTypes` y `gallery` se persisten como JSON string y se devuelven como arreglos.
+- La respuesta publica se arma manualmente y no incluye `partitionKey`, `rowKey`, `etag`, `timestamp`, `sortBoost`, `isFeatured` ni `featuredUntil`.
 
 ## Riesgos restantes
 
-- No se ejecuto prueba real contra Azure en esta tarea; debe validarse post-deploy con cookie real.
-- La unicidad de slug se valida con lectura previa en Table Storage. En concurrencia extrema, dos requests simultaneos con el mismo nombre podrian pasar la lectura antes de crear. Para MVP cerrado el riesgo es bajo.
-- Product/Architect aun debe definir catalogos definitivos para `category` y `eventTypes`; por ahora se valida forma, no pertenencia a catalogo.
-- `eventTypes` y `gallery` se guardan como JSON string para compatibilidad con Table Storage y el GET ya normaliza a arreglos.
-- El endpoint no implementa upload de imagenes; `coverUrl` y `gallery` solo aceptan strings provistos.
+- No se ejecuto prueba contra Azure real ni con Table Storage real en esta ronda.
+- No se ejecuto mock automatizado end-to-end de crear y luego listar; la revision estructural indica que el servicio creado deberia aparecer en `GET /api/companies/me/services` porque ambos usan la misma tabla y el mismo `PartitionKey`.
+- La validacion de catalogos permitidos queda pendiente; por ahora solo se valida que `category` sea texto requerido y `eventTypes` sea arreglo.
+- El limite de `gallery` en create permite hasta 20 URLs por limpieza generica, aunque el modelo MVP de imagenes de servicio define maximo 10. En el flujo objetivo, las imagenes deben manejarse por `POST /api/uploads/sign` y aprobacion, no por URLs manuales en esta tarea.
 
 ## Siguiente tarea recomendada
 
 QA local/estructural:
 
 ```text
-Validar POST /api/companies/me/services con mocks, incluyendo 401, 400, 409, creacion correcta y visibilidad desde GET.
+Validar POST /api/companies/me/services con mocks: 401 sin cookie, 201 con sesion valida, 409 por slug duplicado y que luego aparezca en GET /api/companies/me/services.
 ```
 
-Backend API:
+Product/Architect:
 
 ```text
-Implementar PATCH /api/companies/me/services/{id} para editar servicios propios sin permitir cambios de companyId, status admin ni campos de ranking.
+Confirmar si el backlog generado antiguo de TASK-043 debe considerarse cerrado porque el repo actual ya incluye implementacion posterior del endpoint.
 ```

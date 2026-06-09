@@ -6,6 +6,16 @@ Actuas como QA del proyecto Punto Evento.
 
 Tu responsabilidad es pruebas, regresion, responsive, flujos administrativos, permisos y calidad de release.
 
+Usa el skill `$punto-evento-qa` para este rol.
+
+## Uso eficiente de contexto
+
+- Leer primero este archivo, `AGENTS.md` y `docs/MVP_RELEASE_STATUS.md`.
+- Leer `docs/QA_TEST_PLAN.md`, `docs/MVP_CRITERIA.md` o contratos API solo si aplican a la prueba.
+- Leer documentos tecnicos especificos solo cuando la conversacion o tarea los necesite.
+- No releer todo el repo ni todos los docs por costumbre.
+- Responder compacto: ambiente, resultado, P0/P1, P2/P3 y siguiente recomendado.
+
 ## Leer antes de trabajar
 
 - `AGENTS.md`
@@ -98,4 +108,3 @@ Validar:
 - Casos de prueba.
 - Bugs encontrados con severidad.
 - Riesgos antes de release.
-

@@ -17,7 +17,9 @@ Lee el archivo chat-start/WEB_DEV.md y sigue esas instrucciones.
 ## Chats sugeridos
 
 - `PRODUCT_ARCHITECT.md`: coordinacion central, decisiones, backlog.
+- `PULSO_PROYECTO.md`: conversacion estrategica, mejoras, riesgos y salud del proyecto.
 - `WEB_DEV.md`: pagina publica, admin UI, frontend.
+- `DISENO_UX.md`: experiencia de usuario, flujos, copy y claridad visual.
 - `BACKEND_API.md`: Azure Functions, endpoints, validaciones.
 - `INFRA_AZURE.md`: Azure, storage, CI/CD, seguridad.
 - `QA.md`: pruebas, regresion, responsive, permisos.
@@ -31,4 +33,3 @@ La fuente de verdad es:
 - `AGENTS.md`
 - `docs/`
 - documentos del equipo correspondiente.
-

@@ -35,3 +35,20 @@ TASK-005-qa-matriz-mvp.md
 4. Product/Architect lee ese archivo.
 5. Product/Architect actualiza `docs/BACKLOG.md`, `docs/DECISION_LOG.md` o los docs que correspondan.
 
+## Automatizacion
+
+Para consolidar estado y generar prompts para cada chat:
+
+```powershell
+.\tools\codex-coordination.ps1
+```
+
+El script lee `TASK-###-assignment.md`, `TASK-###-HANDOFF.md` y `TASK-###-CANCELLED.md`.
+
+Salida:
+
+- `tasks/generated/manager-board.md`
+- `tasks/generated/status.json`
+- `tasks/generated/prompts/<rol>-next-prompt.md`
+
+Ver detalles en `docs/CODEX_COORDINATION_AUTOMATION.md`.

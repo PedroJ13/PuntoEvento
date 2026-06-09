@@ -41,6 +41,57 @@ Admin interno
 - Cosmos DB serverless si se requiere mas flexibilidad.
 - Servicio de email para notificaciones.
 
+## Dominio publico y hosting
+
+Dominio publico configurado el 2026-06-09:
+
+```text
+puntoeventocr.com
+www.puntoeventocr.com
+```
+
+Hosting:
+
+```text
+Azure Static Web Apps: puntoevento
+Resource group: resource_group_main
+Default hostname: zealous-field-08fdd720f.7.azurestaticapps.net
+```
+
+DNS:
+
+- Cloudflare administra DNS de `puntoeventocr.com`.
+- `www` usa CNAME hacia el hostname default de Azure Static Web Apps.
+- El apex `puntoeventocr.com` usa CNAME flattening de Cloudflare hacia el hostname default de Azure Static Web Apps.
+- Los registros deben quedar en `DNS only` para la validacion/certificado base de Azure Static Web Apps.
+- El TXT de validacion apex se uso solo para validar propiedad ante Azure; no es un secreto.
+
+App settings publicos/no secretos relacionados:
+
+```text
+ALLOWED_ORIGINS=https://puntoeventocr.com,https://www.puntoeventocr.com,https://zealous-field-08fdd720f.7.azurestaticapps.net
+APP_PUBLIC_URL=https://puntoeventocr.com
+```
+
+URLs operativas validadas:
+
+```text
+https://puntoeventocr.com/
+https://puntoeventocr.com/panel.html
+https://puntoeventocr.com/admin.html
+https://puntoeventocr.com/api/public/services?limit=50
+https://www.puntoeventocr.com/
+https://www.puntoeventocr.com/panel.html
+https://www.puntoeventocr.com/admin.html
+https://www.puntoeventocr.com/api/public/services?limit=50
+```
+
+Estado al validar:
+
+- `puntoeventocr.com`: `Ready` en Azure Static Web Apps y HTTPS `200`.
+- `www.puntoeventocr.com`: `Ready` en Azure Static Web Apps y HTTPS `200`.
+- No se cambiaron email, codigo frontend, endpoints ni pipeline para conectar el dominio.
+
 ## Email operativo MVP
 
 Proveedor decidido para MVP:
@@ -65,6 +116,7 @@ Recursos Azure configurados:
 Usos actuales:
 
 - Notificacion interna cuando una empresa se registra.
+- Email de bienvenida/activacion cuando una empresa es aprobada.
 - Notificacion interna cuando un servicio se envia a revision.
 - Entrega de solicitud de cotizacion al email interno de la empresa publicada.
 

@@ -76,7 +76,7 @@ archivo-html.jpg     contenido HTML con extension .jpg
 ## Criterios de salida
 
 - Sin bugs P0/P1 abiertos.
-- Bugs P2 revisados y aceptados por Product/Architect si no se corrigen.
+- Bugs P2 revisados y aceptados por Product / Architect / Release si no se corrigen.
 - Registro, login, servicios, upload, busqueda y regresion publica validados.
 - Riesgos de release documentados.
 

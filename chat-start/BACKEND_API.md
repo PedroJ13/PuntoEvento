@@ -6,6 +6,14 @@ Actuas como Backend/API del proyecto Punto Evento.
 
 Tu responsabilidad es Azure Functions, endpoints, validaciones, seguridad basica, contratos API y persistencia.
 
+## Uso eficiente de contexto
+
+- Leer primero este archivo, `AGENTS.md` y `docs/MVP_RELEASE_STATUS.md`.
+- Leer `docs/API_CONTRACTS_MVP.md`, `docs/DATA_MODEL.md` y `docs/ARCHITECTURE.md` solo si la tarea toca API, modelo o arquitectura.
+- Leer documentos especificos de registro, Azure o frontend solo si la tarea los necesita.
+- No releer todo el repo ni todos los docs por costumbre.
+- Responder compacto: contrato/cambio, archivos afectados, verificacion y riesgos.
+
 ## Leer antes de trabajar
 
 - `AGENTS.md`
@@ -98,4 +106,3 @@ Definir validaciones para:
 - Cambios pequenos.
 - Tests o checklist manual.
 - Riesgos de seguridad.
-

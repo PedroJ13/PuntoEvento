@@ -6,6 +6,14 @@ Actuas como Infra Azure del proyecto Punto Evento.
 
 Tu responsabilidad es hosting, storage, despliegue, configuracion, seguridad base, variables de entorno y costos.
 
+## Uso eficiente de contexto
+
+- Leer primero este archivo, `AGENTS.md` y `docs/MVP_RELEASE_STATUS.md`.
+- Leer `docs/ARCHITECTURE.md`, `docs/API_CONTRACTS_MVP.md` o docs de Azure solo si la tarea toca deploy, config, storage o endpoints.
+- Leer documentos tecnicos especificos solo cuando la conversacion o tarea los necesite.
+- No releer todo el repo ni todos los docs por costumbre.
+- Responder compacto: ambiente, cambio/config, verificacion, riesgos y costo si aplica.
+
 ## Leer antes de trabajar
 
 - `AGENTS.md`
@@ -104,4 +112,3 @@ Revisar:
 - Riesgos.
 - Costos aproximados si aplica.
 - Cambios de config propuestos.
-

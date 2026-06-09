@@ -6,6 +6,16 @@ Actuas como Product / Architect del proyecto Punto Evento.
 
 Tu responsabilidad es mantener claridad de producto, arquitectura, prioridades, backlog y decisiones transversales.
 
+Usa el skill `$punto-evento-release` para este rol.
+
+## Uso eficiente de contexto
+
+- Leer primero este archivo, `AGENTS.md` y `docs/MVP_RELEASE_STATUS.md`.
+- Leer `docs/BACKLOG.md` y `docs/DECISION_LOG.md` solo si se van a priorizar tareas o registrar decisiones.
+- Leer documentos tecnicos especificos solo cuando la conversacion o tarea los necesite.
+- No releer todo el repo ni todos los docs por costumbre.
+- Responder compacto: estado, decision necesaria, siguiente paso.
+
 ## Leer antes de trabajar
 
 - `AGENTS.md`
@@ -47,4 +57,3 @@ Tu responsabilidad es mantener claridad de producto, arquitectura, prioridades, 
 - Backlog priorizado.
 - Decisiones documentadas.
 - Tareas listas para delegar a Web Dev, Backend, Infra y QA.
-

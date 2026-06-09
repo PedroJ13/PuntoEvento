@@ -6,6 +6,14 @@ Actuas como Web Dev del proyecto Punto Evento.
 
 Tu responsabilidad es la UI publica, la UI administrativa, formularios, interacciones frontend y responsive.
 
+## Uso eficiente de contexto
+
+- Leer primero este archivo, `AGENTS.md` y `docs/MVP_RELEASE_STATUS.md`.
+- Leer `docs/DATA_MODEL.md`, `docs/API_CONTRACTS_MVP.md` o UX docs solo si la tarea toca datos, API o experiencia.
+- Leer documentos tecnicos especificos solo cuando la conversacion o tarea los necesite.
+- No releer todo el repo ni todos los docs por costumbre.
+- Responder compacto: pantalla/flujo, archivos afectados, verificacion responsive y riesgos.
+
 ## Leer antes de trabajar
 
 - `AGENTS.md`
@@ -120,4 +128,3 @@ Tambien ofrece: Queques, Wedding Planner
 - Resumen de archivos tocados.
 - Verificacion realizada.
 - Riesgos o siguientes pasos.
-

@@ -1,5 +1,10 @@
 # Backlog Punto Evento
 
+## Pre-lanzamiento: dominio propio
+
+- [x] TASK-279 Infra Azure: permitir registro de empresa desde `puntoeventocr.com` y `www`, ajustando `ALLOWED_ORIGINS` / `APP_PUBLIC_URL` y limpiando el dato QA de comparacion.
+- [x] TASK-280 QA Azure: revalidar registro publico desde dominio propio y confirmar que no aparece `REGISTRO NO ENVIADO`.
+
 ## Sprint 0: Reinicio y baseline
 
 Objetivo: congelar lo que ya funciona y dejar reglas claras antes de seguir construyendo.
@@ -12,7 +17,7 @@ Objetivo: congelar lo que ya funciona y dejar reglas claras antes de seguir cons
 - [x] Inventariar API actual y compararla contra `Company -> Services`.
 - [x] Crear matriz QA MVP.
 - [x] Confirmar que la pagina publica actual funciona en Azure despues del ultimo deploy.
-- [ ] Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
+- [x] Documentar rutas actuales de pagina publica, admin y API en un solo mapa.
 
 Entregable:
 
@@ -197,8 +202,8 @@ Objetivo: validar que el flujo puede usarse por empresas reales.
 - [x] Definir campos de contacto/sociales de empresa y separar publicos vs internos.
 - [x] Cerrar taxonomia MVP: `Categoria` como servicio y `Tipos de evento` como ocasiones.
 - [x] Ajustar formulario de servicio: quitar estado editable, quitar cantidad manual de fotos y resolver `Como se revisa`.
-- [ ] Implementar alcance de imagenes por servicio: cover + galeria.
-- [ ] Disenar moderacion admin por expediente de empresa.
+- [x] Implementar alcance de imagenes por servicio: cover + galeria.
+- [x] Disenar moderacion admin por expediente de empresa.
 - [x] Definir reglas de cascada para aprobar/rechazar empresa, servicios e imagenes.
 - [x] Definir estrategia de datos QA antes de demo owner.
 - [x] Crear guion demo owner limpio con empresa demo dedicada.
@@ -206,10 +211,215 @@ Objetivo: validar que el flujo puede usarse por empresas reales.
 - [x] Inventariar datos QA Azure y proponer soft cleanup.
 - [x] Ejecutar soft cleanup de datos QA Azure si Product/Release lo aprueba.
 - [x] Verificacion pre-demo owner con limitacion aceptada.
+- [x] Triar hallazgos Product Owner Round 2 por superficie.
+- [x] Pagina publica Round 2: busqueda por empresa y limpieza de filtros.
+- [x] Panel empresa Round 2: hasta 10 imagenes por servicio y cover.
+- [x] Admin Round 2: moderacion por expediente de empresa.
+- [x] API Round 2: bloquear aprobaciones invalidas y validar imagenes/busqueda.
+- [x] Deploy Round 2 a Azure y confirmacion de versiones servidas.
+- [x] QA pagina publica Round 2 post-deploy.
+- [x] QA panel empresa Round 2 post-deploy.
+- [x] Corregir P1 admin UI: expediente no muestra pendientes reales.
+- [x] Deploy fix admin UI `admin.js?v=14`.
+- [x] QA admin UI Round 2 post-fix.
+- [x] Admin/API: imagenes de servicio dentro del servicio, con preview visible y aprobacion junto al servicio.
+- [x] Admin UI: quitar bloque viejo final de empresas/servicios/uploads globales.
+- [x] Registro empresa: provincia como select alineado con filtro publico.
+- [x] Registro empresa: contactos ampliados, persistidos y visibles donde corresponde.
+- [x] Deploy ajustes Product Owner `TASK-138` a `TASK-141`.
+- [x] QA Azure ajustes Product Owner post-deploy: no aprobado por P1 admin contactos.
+- [x] Admin UI: mostrar contactos ampliados en expediente de empresa.
+- [x] Deploy fix admin contactos `admin.js?v=16` / `admin.css?v=10`.
+- [x] QA Azure enfocada admin contactos post-fix.
+- [x] QA admin/API Round 2 post-deploy: P0 backend cerrado.
 
 Entregable:
 
 - MVP listo para invitar primeras empresas.
+
+## Pre-lanzamiento controlado
+
+Objetivo: habilitar uso recurrente por primeras empresas reales y cerrar el flujo operativo de leads/notificaciones sin redisenio completo.
+
+- [x] P1 local/estructural: Login empresa con email/password, manteniendo invite como activacion inicial.
+- [x] P1 local/estructural: UI de activacion/login recurrente en panel empresa.
+- [x] P1 local/estructural: QA de login recurrente empresa.
+- [x] P1 local/estructural: Email de cotizacion a empresa.
+- [x] P1 local/estructural: UI/formulario de cotizacion conectado.
+- [x] P1 local/estructural: QA de email de cotizacion.
+- [x] P1/P2 local/estructural: Email interno cuando una empresa se registra o envia servicios a revision.
+- [x] P1/P2 local/estructural: QA de emails internos.
+- [x] P2 local/estructural: Mejora UX/diseno enfocada, sin redisenio completo.
+- [x] P2 local/estructural: QA visual/responsive pre-lanzamiento.
+- [x] Infra Azure: deploy pre-lanzamiento y preparacion parcial SendGrid/mailbox observable.
+- [x] QA Azure: login recurrente empresa.
+- [x] QA Azure: email de cotizacion a empresa.
+- [x] QA/Product: evidencia/status de emails internos ACS aceptada para pre-lanzamiento.
+- [x] QA Azure: visual/responsive pre-lanzamiento final.
+- [x] Product / Architect: decidir proveedor email MVP.
+- [x] Infra Azure: configurar Azure Communication Services Email.
+- [x] Backend/API: cambiar provider email MVP a Azure Communication Services Email.
+- [x] Infra Azure: deploy backend ACS Email.
+- [x] QA Azure: validar email real de cotizacion con ACS Email.
+- [x] Product/QA: confirmar o aceptar evidencia de emails internos ACS.
+- [x] P1 local/estructural: al aprobar empresa, generar invite y enviar email de activacion.
+- [x] P1 local/estructural: admin muestra feedback de invite al aprobar empresa.
+- [x] Infra Azure: deploy auto-invite al aprobar empresa.
+- [x] QA Azure: aprobar empresa genera invite automatico y feedback admin.
+- [x] QA/Product: confirmar email recibido y activar password desde enlace.
+- [x] Backend/API local/estructural: corregir login recurrente cuando existen emails duplicados en `Users`.
+- [x] Infra Azure: desplegar fix de login recurrente con emails duplicados.
+- [x] QA Azure: revalidar activacion y login recurrente post-deploy.
+- [x] Infra/API: inventario de empresas no QA.
+- [x] Infra/API: aplicar soft cleanup aprobado de `SMASH Costa Rica`.
+- [x] Infra Azure: limpieza pre-lote real de companias QA/test/demo acumuladas en Azure.
+- [x] Product/Release: procesar hallazgos prueba cliente 2026-06-03 y cerrar tareas pequenas por superficie.
+- [x] Web Dev local/estructural: CTA publico `Contactar`, WhatsApp primario y email como respaldo.
+- [x] Backend/API local/estructural: contrato contacto/cotizacion para WhatsApp + email.
+- [x] Web Dev local/estructural: lenguaje simple del panel empresa.
+- [x] Web Dev local/estructural: admin separa aprobacion de empresa vs servicios pendientes.
+- [x] Web Dev local/estructural: categorias publicas alineadas a servicios y foco en resultados.
+- [x] Backend/API local/estructural: copy y comportamiento de emails transaccionales MVP.
+- [x] Infra Azure: verificar ACS Email/base URLs para bloque cliente.
+- [x] Infra Azure: deploy ajustes cliente 2026-06-03.
+- [x] QA Azure: revalidar hallazgos cliente 2026-06-03 post-deploy.
+- [x] Product/Release: aceptar P2/P3 de `TASK-202` y declarar go de pre-lanzamiento controlado.
+- [x] Diseno/UX: guia visual minima implementable para marca y panel empresa.
+- [x] Product/Release: aprobar alcance refresh visual antes de Web Dev.
+- [x] Web Dev local/estructural: implementar branding base aprobado y refresh panel empresa.
+- [x] Infra Azure: deploy refresh visual panel empresa.
+- [x] QA Azure: revalidar refresh visual panel empresa post-deploy.
+- [x] Product/Release: aceptar P2/P3 de `TASK-208` y cerrar refresh visual panel empresa.
+- [x] Web Dev local/estructural: ajustes finales panel empresa, incluyendo `Tipos de evento` como seleccion multiple, logo de referencia e iconos de menu.
+- [x] QA local/estructural: validar ajustes finales panel empresa.
+- [x] Infra Azure: deploy ajustes finales panel empresa.
+- [x] QA Azure: revalidar ajustes finales panel empresa post-deploy.
+- [x] Web Dev local/estructural: corregir overflow del sidebar, convertir botones superiores a icon buttons e integrar fondo del logo.
+- [x] Web Dev local/estructural: corregir P1 de logout en icon button detectado por QA.
+- [x] QA local/estructural: revalidar fix visual final panel empresa.
+- [x] Infra Azure: deploy fix visual final panel empresa cuando QA apruebe.
+- [x] QA Azure: revalidar fix visual final panel empresa post-deploy.
+- [x] Web Dev local/estructural: renombrar marca visible frontend a `Punto Evento CR`.
+- [x] Backend/API local/estructural: renombrar marca en emails/copy transaccional a `Punto Evento CR`.
+- [x] QA local/estructural: validar renombre `Punto Evento CR`.
+- [x] Infra Azure: deploy renombre `Punto Evento CR`.
+- [x] QA Azure: revalidar renombre `Punto Evento CR`.
+- [x] Diseno/UX: preparar asset web limpio del nuevo logo `Punto Evento CR`.
+- [x] Web Dev local/estructural: actualizar panel empresa con nuevo logo `Punto Evento CR`.
+- [x] QA local/estructural: validar nuevo logo en panel empresa.
+- [x] Infra Azure: deploy nuevo logo `Punto Evento CR`.
+- [x] QA Azure: revalidar nuevo logo `Punto Evento CR`.
+- [x] Diseno/UX: definir guia de paleta global basada en panel empresa.
+- [x] Web Dev local/estructural: aplicar paleta global a pagina publica y admin sin redisenio.
+- [x] Backend/API local/estructural: alinear colores minimos de emails.
+- [x] QA local/estructural: validar paleta global.
+- [x] Infra Azure: deploy paleta global.
+- [x] QA Azure: revalidar paleta global post-deploy.
+- [x] Diseno/UX: definir guia visual publica premium alineada al panel empresa.
+- [x] Web Dev local/estructural: aplicar refresh visual a pagina publica y ficha publica.
+- [x] QA local/estructural: validar refresh visual publico.
+- [x] Infra Azure: deploy refresh visual publico.
+- [x] QA Azure: revalidar refresh visual publico post-deploy.
+- [ ] Web Dev local/estructural: ajustar nombres largos, escala home, logo, nav publica y tipografia.
+- [x] Backend/API local/estructural: evitar prompt nativo en credenciales admin invalidas.
+- [x] Web Dev local/estructural: mostrar mensaje inline de credenciales admin invalidas.
+- [x] QA local/estructural: validar ajustes visuales publicos y login admin.
+- [x] Infra Azure: deploy ajustes visuales publicos y login admin.
+- [x] QA Azure: revalidar ajustes visuales publicos y login admin.
+- [x] Infra Azure: limpieza total controlada de empresas y servicios en Azure antes de nuevo test/pre-lote.
+- [x] Web Dev: copy publico P1 pre-lanzamiento sin demo, metricas dudosas ni cotizacion multiple.
+- [x] Web Dev: CTAs publicos sin servicio seleccionado no deben abrir lead real.
+- [x] Web Dev: ocultar legacy/demo del admin productivo y limpiar microcopy tecnico.
+- [x] Web Dev: fallback publico sin datos demo en productivo cuando falla API.
+- [x] Web Dev: CTA visible en drawer mobile.
+- [x] Diseno/UX: definicion mobile acotada para panel empresa y ficha publica.
+- [x] Web Dev: implementar mejoras mobile aprobadas por Diseno/UX.
+- [x] Web Dev: tildes y consistencia transversal de copy visible.
+- [x] Backend/API: pulido copy de emails transaccionales.
+- [x] Web Dev: microcopy panel empresa sin lenguaje tecnico/manual.
+- [x] QA: revalidacion pre-lanzamiento copy, flujo y responsive.
+- [ ] Web Dev: corregir P1 de paquetes/proveedores de referencia visibles cuando falla API publica en productivo.
+- [ ] QA: revalidar localmente P1 fallback publico corregido.
+- [x] Infra Azure: deploy bloque copy/flujo/mobile post-QA local.
+- [x] QA Azure: revalidar bloque copy/flujo/mobile post-deploy.
+- [x] Web Dev: ocultar banda de referencia cuando catalogo real esta vacio.
+- [x] Infra Azure: deploy fix catalogo vacio publico.
+- [x] QA Azure: revalidar catalogo real vacio sin referencias.
+- [x] Web Dev: aclarar contacto/cotizacion publica segun revision UX 2026-06-08.
+- [x] Web Dev: reforzar jerarquia servicio primero en pagina publica.
+- [x] Web Dev: mejorar confirmacion de registro y estados visibles del panel empresa.
+- [x] Web Dev: agregar resumen de pendientes en admin con datos existentes.
+- [x] Web Dev: pulir catalogo vacio publico con CTA controlado.
+- [x] QA: validar localmente bloque UX flujos web 2026-06-08.
+- [x] Infra Azure: desplegar bloque UX flujos web 2026-06-08.
+- [x] QA Azure: revalidar bloque UX flujos web 2026-06-08 post-deploy.
+- [x] Web Dev: corregir overflow desktop en ficha publica.
+- [x] QA: validar localmente fix overflow ficha publica.
+- [x] Infra Azure: desplegar fix overflow ficha publica.
+- [x] QA Azure: revalidar fix overflow ficha publica post-deploy.
+
+Tareas creadas:
+
+- `TASK-158` a `TASK-167` para implementacion/QA local-estructural.
+- `TASK-168` a `TASK-172` para deploy/configuracion y QA Azure real.
+- `TASK-173` y `TASK-174` canceladas por reemplazo de SendGrid.
+- `TASK-175` a `TASK-177` para configurar ACS Email, adaptar backend y validar emails reales.
+- `TASK-178` a `TASK-179` para desplegar backend ACS y reintentar QA real.
+- `TASK-180` a `TASK-182` para automatizar invite por email al aprobar empresa.
+- `TASK-183` para inventario de limpieza controlada de empresas no QA.
+- `TASK-184` a `TASK-186` para deploy/re-qa de invite automatico y soft cleanup aprobado.
+- `TASK-187` para cierre final coordinado de email recibido, activacion y login recurrente.
+- `TASK-188` y `TASK-189` para corregir y revalidar login recurrente con emails duplicados.
+- `TASK-190` y `TASK-191` para deploy y reintento final QA del fix de login recurrente.
+- `TASK-192` para limpieza pre-lote real de companias QA/test/demo acumuladas en Azure.
+- `TASK-193` a `TASK-200` para hallazgos de prueba cliente 2026-06-03.
+- `TASK-201` completo para deploy del bloque `TASK-193` a `TASK-198`.
+- `TASK-202` completo para revalidacion QA Azure post-deploy.
+- `TASK-203` para guia visual minima de Diseno/UX.
+- `TASK-204` completo para aprobacion Product/Release antes de crear tareas Web Dev/QA.
+- `TASK-205` para implementacion Web Dev del refresh visual aprobado.
+- `TASK-206` no aprobado en Azure por deploy pendiente.
+- `TASK-207` completo para deploy del refresh visual panel empresa.
+- `TASK-208` completo para revalidacion QA Azure post-deploy.
+- `TASK-209` completo para ajustes finales acotados del panel empresa.
+- `TASK-210` completo para QA local/estructural de ajustes finales.
+- `TASK-211` completo para deploy de ajustes finales panel empresa.
+- `TASK-212` completo para revalidacion QA Azure post-deploy.
+- `TASK-213` completo para corregir overflow visual del sidebar, botones superiores y fondo del logo en panel empresa.
+- `TASK-214` no aprobado por P1 en logout icon button.
+- `TASK-215` bloqueado/no desplegado por precondicion QA no aprobada.
+- `TASK-216` pendiente para revalidacion Azure cuando exista deploy aprobado.
+- `TASK-217` a `TASK-221` para renombrar marca visible a `Punto Evento CR`.
+- `TASK-222` a `TASK-225` para corregir P1 de logout del icon button y revalidar/deployar el fix visual final.
+- `TASK-221` completo para revalidacion QA Azure del renombre `Punto Evento CR`.
+- `TASK-225` completo para revalidacion QA Azure del fix visual final.
+- `TASK-226` a `TASK-230` completos para preparar, integrar, validar localmente, desplegar y revalidar en Azure el nuevo logo `Punto Evento CR`.
+- `TASK-231` a `TASK-236` completos para extender paleta global `Punto Evento CR` solo con colores, sin redisenio profundo.
+- `TASK-237` a `TASK-241` completos para refresh visual publico alineado al panel empresa, sin tocar funcionalidad ni cintillo/menu superior.
+- `TASK-242` a `TASK-247` completos para ajustes finales de visual publico, navegacion visible y login admin sin prompt nativo.
+- `TASK-248` completo para limpieza total controlada de empresas, servicios, accesos y uploads operativos en Azure.
+- `TASK-249` a `TASK-259` creados para procesar recomendaciones QA Flujo MVP, QA Visual y Copy/Gramatica del 2026-06-06.
+- `TASK-249` a `TASK-258` completadas local/estructuralmente.
+- `TASK-259` no aprobado por P1 de paquetes/proveedores estaticos visibles cuando falla la API publica en productivo simulado.
+- `TASK-260` a `TASK-263` creados para corregir P1, revalidar local, desplegar y revalidar Azure.
+- `TASK-262` completo para deploy Azure del bloque copy/flujo/mobile en `main/70c242c`.
+- `TASK-263` completo: QA Azure aprobo con P2 de banda estatica visible cuando catalogo real esta vacio.
+- `TASK-264` creado para ocultar banda de referencia cuando catalogo real esta vacio en productivo.
+- `TASK-264` completo local/estructuralmente; `TASK-265` y `TASK-266` creados para deploy y QA Azure.
+- `TASK-265` completo para deploy Azure del fix catalogo vacio publico en `main/7252b49`.
+- `TASK-266` completo: QA Azure aprobo catalogo real vacio sin referencias, sin P0/P1/P2/P3.
+- `TASK-267` a `TASK-274` creadas para procesar la revision UX de flujos web 2026-06-08 sin cambios de API/modelo.
+- `TASK-267` a `TASK-272` completadas local/estructuralmente.
+- `TASK-273` completo para deploy Azure del lote UX 2026-06-08 en `main/7286682`.
+- `TASK-274` completo: QA Azure aprobo el lote UX 2026-06-08 con observacion P2 de overflow horizontal en ficha publica desktop.
+- `TASK-275` a `TASK-278` creadas para corregir, validar, desplegar y revalidar el P2 de overflow.
+- `TASK-275` y `TASK-276` completaron fix y QA local/estructural del overflow.
+- `TASK-277` completo para deploy Azure del fix overflow ficha publica en `main/7ee2ab5`.
+- `TASK-278` completo: QA Azure aprobo el fix y cerro el P2 de overflow en ficha publica.
+
+Entregable:
+
+- Pre-lanzamiento listo para invitar primeras empresas con acceso recurrente, cotizaciones por email y riesgos P2 documentados.
 
 ## Backlog futuro
 
@@ -225,6 +435,5 @@ Entregable:
 
 Prioridad inmediata para los equipos:
 
-1. Product Owner: ejecutar prueba con guion enfocado en `docs/PRODUCT_OWNER_TEST_SCRIPT.md`.
-2. QA/Product: registrar hallazgos nuevos de la prueba owner, si aparecen.
-3. Product/Data: definir catalogo compartido final de categorias/tipos de evento.
+1. QA/Product: registrar primera empresa real desde cero y confirmar flujo manual con ambiente limpio.
+2. Repetir smoke de `#bodas` cuando exista el primer servicio real publicado.
