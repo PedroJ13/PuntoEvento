@@ -82,6 +82,14 @@ function escapeHtml(value) {
   });
 }
 
+function formatVisiblePrice(value) {
+  return String(value ?? "").replace(/\d[\d,]*/g, (match) => {
+    const digits = match.replaceAll(",", "");
+    if (!/^\d+$/.test(digits) || digits.length <= 3) return match;
+    return Number(digits).toLocaleString("en-US");
+  });
+}
+
 function setPanelMessage(message, tone = "") {
   const node = $("[data-panel-message]");
   if (!node) return;
@@ -421,7 +429,7 @@ function serviceMarkup(service) {
         <div class="service-meta">
           <div><strong>Categoría</strong><span>${escapeHtml(service.category || "Sin categoría")}</span></div>
           <div><strong>Eventos</strong><span>${escapeHtml(serviceEventsSummary(service.eventTypes))}</span></div>
-          <div><strong>Precio desde</strong><span>${escapeHtml(service.priceFrom || "Consultar")}</span></div>
+          <div><strong>Precio desde</strong><span>${escapeHtml(formatVisiblePrice(service.priceFrom || "Consultar"))}</span></div>
           <div><strong>Fotos</strong><span>${escapeHtml(servicePhotoCountLabel(service))}</span></div>
           <div><strong>Actualizado</strong><span>${escapeHtml(serviceUpdatedLabel(service.updatedAt))}</span></div>
         </div>

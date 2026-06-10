@@ -292,6 +292,18 @@ function safeText(value, fallback = "") {
   return escapeHtml(value ?? fallback);
 }
 
+function formatVisiblePrice(value) {
+  return String(value ?? "").replace(/\d[\d,]*/g, (match) => {
+    const digits = match.replaceAll(",", "");
+    if (!/^\d+$/.test(digits) || digits.length <= 3) return match;
+    return Number(digits).toLocaleString("en-US");
+  });
+}
+
+function safePrice(value, fallback = "") {
+  return safeText(formatVisiblePrice(value ?? fallback));
+}
+
 function safeUrl(value, fallback = "#") {
   try {
     const url = new URL(String(value || ""), window.location.href);
@@ -466,7 +478,7 @@ function providerCard(provider) {
           <p class="card-meta">${safeText(provider.category)} · ${safeText(provider.location)}</p>
         </div>
         <p>${safeText(provider.description)}</p>
-        <strong>${safeText(provider.price)}</strong>
+        <strong>${safePrice(provider.price)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
           <a class="secondary-button" href="#bodas" data-results-link>Elegir servicio</a>
@@ -491,7 +503,7 @@ function serviceCard(service) {
           <p class="card-meta">Servicio de ${safeText(service.company?.name)}${meta ? ` · ${safeText(meta)}` : ""}</p>
         </div>
         <p>${safeText(service.description)}</p>
-        <strong>${safeText(service.priceFrom)}</strong>
+        <strong>${safePrice(service.priceFrom)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver empresa</a>
           ${contactActionsMarkup(service, "secondary-button")}
@@ -516,7 +528,7 @@ function wideProviderCard(provider) {
           ${ratingStars(provider.rating, provider.reviews)}
         </div>
         <p>${safeText(provider.description)}</p>
-        <strong>${safeText(provider.price)}</strong>
+        <strong>${safePrice(provider.price)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
           <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
@@ -542,7 +554,7 @@ function wideServiceCard(service) {
           <p class="card-meta">Servicio de ${safeText(service.company?.name)}${meta ? ` · ${safeText(meta)}` : ""}</p>
         </div>
         <p>${safeText(service.description)}</p>
-        <strong>${safeText(service.priceFrom)}</strong>
+        <strong>${safePrice(service.priceFrom)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver empresa</a>
           ${contactActionsMarkup(service, "primary-button")}
@@ -569,7 +581,7 @@ function packageCard(pack) {
       <p class="package-meta">${safeText(pack.vendor)}</p>
       <h3>${safeText(pack.title)}</h3>
       <p>${safeText(pack.details)}</p>
-      <div class="package-price">${safeText(pack.price)}</div>
+      <div class="package-price">${safePrice(pack.price)}</div>
       <a class="secondary-button" href="#bodas" data-results-link>Elegir servicio</a>
     </article>
   `;
@@ -974,7 +986,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
         <p class="card-meta">De ${safeText(company.name)}${location ? ` · ${safeText(location)}` : ""}</p>
         <div class="summary-price">
           <span>Precio desde</span>
-          <strong>${safeText(selectedService.priceFrom || "Consultar")}</strong>
+          <strong>${safePrice(selectedService.priceFrom || "Consultar")}</strong>
         </div>
         <p class="contact-note full-note">Estás cotizando este servicio de ${safeText(company.name)}.</p>
         <div class="card-actions">
@@ -993,7 +1005,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
             <p>${safeText(selectedService.description || company.description)}</p>
             <ul class="feature-list">
               <li><span class="check">&#10003;</span><span>${safeText(selectedService.category || "Servicio para eventos")}.</span></li>
-              <li><span class="check">&#10003;</span><span>${safeText(selectedService.priceFrom || "Precio a consultar")}.</span></li>
+              <li><span class="check">&#10003;</span><span>${safePrice(selectedService.priceFrom || "Precio a consultar")}.</span></li>
               <li><span class="check">&#10003;</span><span>Solicitud asociada a este servicio.</span></li>
             </ul>
           </article>
@@ -1012,7 +1024,7 @@ function companyProfilePage(company, selectedServiceSlug = "") {
                         <p>${safeText(service.description)}</p>
                       </div>
                       <div>
-                        <strong>${safeText(service.priceFrom)}</strong>
+                        <strong>${safePrice(service.priceFrom)}</strong>
                         <a class="ghost-button" href="${safeText(serviceHref(service))}">Ver servicio</a>
                       </div>
                     </article>
@@ -1100,7 +1112,7 @@ function providerDemoPage(providerId) {
         ${ratingStars(provider.rating, provider.reviews)}
         <div class="summary-price">
           <span>Paquetes</span>
-          <strong>${safeText(provider.price)}</strong>
+          <strong>${safePrice(provider.price)}</strong>
         </div>
         <div class="card-actions">
           <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
@@ -1149,7 +1161,7 @@ function providerDemoPage(providerId) {
           <h3>Datos clave</h3>
           <ul class="feature-list">
             <li><span class="check">✓</span><span>${safeText(provider.location)}.</span></li>
-            <li><span class="check">✓</span><span>${safeText(provider.price)}.</span></li>
+            <li><span class="check">✓</span><span>${safePrice(provider.price)}.</span></li>
             <li><span class="check">✓</span><span>${providerPackages.length} paquete(s) disponible(s).</span></li>
             <li><span class="check">✓</span><span>Solicitud por formulario asociada a servicio publicado.</span></li>
           </ul>

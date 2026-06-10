@@ -117,6 +117,14 @@ function escapeHtml(value) {
   });
 }
 
+function formatVisiblePrice(value) {
+  return String(value ?? "").replace(/\d[\d,]*/g, (match) => {
+    const digits = match.replaceAll(",", "");
+    if (!/^\d+$/.test(digits) || digits.length <= 3) return match;
+    return Number(digits).toLocaleString("en-US");
+  });
+}
+
 function truncateText(value, maxLength = 180) {
   const text = String(value || "").trim();
   if (text.length <= maxLength) return text;
@@ -552,7 +560,7 @@ function serviceItemMarkup(service) {
         <div><strong>Servicio ID</strong><span>${escapeHtml(serviceId)}</span></div>
         <div><strong>Categoria</strong><span>${escapeHtml(service.category || "-")}</span></div>
         <div><strong>Eventos</strong><span>${escapeHtml(eventTypes.join(", ") || "-")}</span></div>
-        <div><strong>Precio</strong><span>${escapeHtml(service.priceFrom || "-")}</span></div>
+        <div><strong>Precio</strong><span>${escapeHtml(formatVisiblePrice(service.priceFrom || "-"))}</span></div>
         <div><strong>Imagenes</strong><span>${imageCount} archivo(s)</span></div>
       </div>
       <div class="internal-item-actions">
@@ -851,7 +859,7 @@ function caseServiceMarkup(service, company) {
       <div class="internal-item-meta">
         <div><strong>Servicio ID</strong><span>${escapeHtml(serviceId)}</span></div>
         <div><strong>Categoria</strong><span>${escapeHtml(service.category || "-")}</span></div>
-        <div><strong>Precio</strong><span>${escapeHtml(service.priceFrom || "-")}</span></div>
+        <div><strong>Precio</strong><span>${escapeHtml(formatVisiblePrice(service.priceFrom || "-"))}</span></div>
         <div><strong>Empresa</strong><span>${escapeHtml(company?.name || service.companyName || companyId || "-")}</span></div>
       </div>
       <div class="service-images-section">
@@ -1135,7 +1143,7 @@ function serviceMarkup(service) {
       <div class="service-meta">
         <div><strong>Categoria</strong><span>${escapeHtml(service.category)}</span></div>
         <div><strong>Eventos</strong><span>${escapeHtml(eventTypes.join(", "))}</span></div>
-        <div><strong>Precio desde</strong><span>${escapeHtml(service.priceFrom)}</span></div>
+        <div><strong>Precio desde</strong><span>${escapeHtml(formatVisiblePrice(service.priceFrom))}</span></div>
         <div><strong>Fotos</strong><span>${photos.length} archivo(s)</span></div>
         <div><strong>Actualizado</strong><span>${escapeHtml(service.updatedAt)}</span></div>
       </div>
