@@ -174,7 +174,7 @@ Pasos:
    - precio desde;
    - portada;
    - galeria/fotos.
-6. Guarda/carga el servicio segun el flujo vigente.
+6. Si presiona `Enviar servicio`, el flujo esperado es guardar el servicio, subir/confirmar portada o imagenes si aplica y enviarlo directo a revision en una sola accion.
 7. Puede editar o desactivar servicios.
 8. Cuando el servicio queda aprobado/publicado, aparece en la pagina publica.
 
@@ -184,6 +184,7 @@ Reglas UX:
 - Usar `portada`, no `cover`.
 - Evitar lenguaje tecnico o excesivamente burocratico.
 - Items futuros del menu pueden mostrarse opacos/deshabilitados como `Proximamente`.
+- Si el servicio se guarda como borrador pero no pasa a revision, la UI debe explicar el estado real y permitir recuperacion clara; no debe decir que no se guardo si el borrador existe.
 
 Rutas/API principales:
 
@@ -244,7 +245,7 @@ Pasos:
 3. Admin aprueba servicio.
 4. Backend cambia estado del servicio a publicado.
 5. Imagenes aprobadas quedan disponibles publicamente.
-6. `GET /api/public/services` incluye el servicio.
+6. `GET /api/public/services` incluye el servicio con imagen/portada publica cuando exista portada aprobada.
 7. Usuario publico puede verlo en catalogo/busqueda.
 8. Usuario puede abrir perfil de empresa con ese servicio destacado.
 
@@ -253,6 +254,7 @@ Reglas:
 - Empresa rechazada/inactiva no debe publicar servicios.
 - Servicio rechazado/inactivo/pendiente no aparece.
 - Las imagenes pendientes no deben exponerse por URL publica.
+- Si una portada fue cargada y aprobada, el catalogo publico no debe caer al placeholder por falta de publicacion de imagen.
 
 ## Flujo 7: Contacto/cotizacion
 

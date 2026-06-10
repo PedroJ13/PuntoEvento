@@ -6,7 +6,7 @@ Responsable: `Product / Architect / Release`.
 
 ## Estado actual
 
-Estado: `GO condicionado para primera empresa real`.
+Estado: `GO tecnico para pre-lanzamiento controlado; cleanup QA y mejora visual en curso`.
 
 Resumen:
 
@@ -14,6 +14,18 @@ Resumen:
 - Hallazgo 2026-06-09 cerrado: el registro publico de empresa fallaba desde `puntoeventocr.com` y `www` con `403` por configuracion de origen permitido. `TASK-279` ajusto `ALLOWED_ORIGINS` / `APP_PUBLIC_URL` y `TASK-280` aprobo registro funcional desde apex y `www`.
 - `TASK-279` completo Infra Azure: `ALLOWED_ORIGINS` incluye apex, `www` y hostname anterior; `APP_PUBLIC_URL` apunta a `https://puntoeventocr.com`; smokes de registro desde apex y `www` respondieron `201`; empresas QA de Infra quedaron `rejected`.
 - `TASK-280` completo QA Azure: registro desde `https://puntoeventocr.com/#empresas` y `https://www.puntoeventocr.com/#empresas` respondio `201`, la UI mostro confirmacion productiva y no reaparecio `REGISTRO NO ENVIADO`. Observaciones P2: limpiar/rechazar dos empresas QA pendientes y confirmar con credencial admin que el enlace de activacion usa `https://puntoeventocr.com`.
+- Incidente productivo 2026-06-09: empresa real no pudo completar el envio directo de servicio desde panel empresa y vio `No se pudo guardar el servicio. Revisa los datos e intentalo de nuevo.` Evidencia nueva: el servicio si queda como borrador y desde ese borrador si se puede enviar a revision. Evidencia adicional: servicios publicados de la misma empresa aparecen con placeholders en lugar de imagen real. Se mantiene como P1 candidato porque el flujo esperado es `crear servicio con portada -> enviar directo a revision -> publicar con portada visible`, sin workaround manual.
+- `TASK-281` completo QA Azure como inconcluso/no aprobado funcional: sin sesion autenticada no pudo validar flujo completo; endpoints privados sin cookie devuelven `401`, no `403`; no hay evidencia de bloqueo `ALLOWED_ORIGINS`; el usuario afectado reporto luego que si logro completar. No se abre fix directo a Infra/Backend/Web Dev.
+- `TASK-282` queda cancelada/reemplazada por `TASK-283` porque la evidencia nueva acota el incidente a la secuencia automatica de creacion con portada y envio directo.
+- `TASK-283` completo QA Azure como no aprobado/bloqueado: no se pudo reproducir ni descartar el P1 candidato porque QA no tenia empresa aprobada, login recurrente, sesion controlada ni HAR redactado.
+- `TASK-284` completo por precondicion operativa: Product indico empresa existente `Aurisbel Pasteleria` con email de login para prueba controlada; la credencial no se documenta en repo.
+- `TASK-285` completo QA Azure como no aprobado con evidencia P1: el flujo sin imagen llega directo a revision, pero el flujo con portada falla porque el `PUT` al blob firmado es bloqueado por CORS/preflight en Azure Blob Storage. No se ejecutan `uploads/confirm` ni `submit-review`.
+- `TASK-286` queda cancelada/reemplazada porque `TASK-285` ya clasifico la causa.
+- `TASK-287` completo Infra Azure: CORS de Blob Storage corregido para `PUT` firmado desde apex, `www` y hostname anterior; preflight tecnico `OPTIONS` devuelve `200` para origenes permitidos y `403` para origen no permitido. Falta QA funcional `TASK-288`.
+- `TASK-288` completo QA Azure como aprobado: crear servicio con portada desde `puntoeventocr.com` ejecuta `POST services -> sign -> PUT blob -> uploads/confirm -> submit-review`; el servicio queda `pending` sin workaround manual y no aparece el error generico. Queda P2: validar que al aprobar desde admin la portada aparece en catalogo publico.
+- Se crea `TASK-289` para QA Azure: aprobar/validar el servicio QA de `TASK-288` desde admin y confirmar portada visible publicamente.
+- `TASK-289` completo QA Azure como aprobado: el servicio QA fue aprobado desde admin, aparece publicamente con `coverUrl`, la imagen responde `200 image/png` y la ficha publica usa imagen real, no placeholder.
+- Se crea `TASK-290` para cleanup no destructivo de servicios QA visibles en Aurisbel y `TASK-291` para iniciar la especificacion UX del nuevo listado/drawer de servicios.
 - Pagina publica preservada como base.
 - Modelo `Empresa -> Servicios` definido y parcialmente implementado.
 - Busqueda publica por servicios implementada y validada en local/Azure segun backlog.
@@ -171,13 +183,15 @@ Fuera del MVP inicial:
 - P0 operacional cerrado: `ADMIN_PASSWORD` expuesto durante la prueba Product Owner fue rotado en `TASK-108`.
 - Sin P0/P1 abiertos para los ajustes Product Owner recientes.
 - P1 configuracion cerrado por Infra en `TASK-279` y aprobado por QA en `TASK-280`.
+- P1 de upload con portada cerrado funcionalmente por `TASK-288` y `TASK-289`: el envio directo con portada llega a `pending`, la aprobacion admin publica la portada y la ficha publica no cae al placeholder.
+- P2 operativo: limpiar servicios QA visibles de Aurisbel (`TASK-290`) antes de revision publica amplia.
 - P2 operativo pendiente: limpiar/rechazar dos empresas QA de `TASK-280` y confirmar enlace de activacion canonico con credencial admin antes de aprobar empresa real.
 - Riesgos P2/P3 aceptados por Product / Architect / Release despues de `TASK-202`.
 - El mapa de rutas MVP quedo documentado en `docs/ROUTE_MAP_MVP.md`.
 
 ## Ambiente Azure
 
-Estado: dominio, lectura publica y registro desde dominio propio aprobados. Go condicionado a limpieza QA y validacion breve de enlace de activacion con credencial admin.
+Estado: dominio, lectura publica, registro desde dominio propio, envio directo con portada y portada publica post-aprobacion aprobados.
 
 Validado segun backlog:
 
@@ -192,7 +206,7 @@ Validado segun backlog:
 
 Pendiente:
 
-- Preparar primer lote de empresas reales con monitoreo cercano.
+- Preparar primer lote de empresas reales con monitoreo cercano despues de limpiar servicios QA visibles.
 - Mantener observaciones P2/P3 como seguimiento no bloqueante.
 
 ## Ultimo deploy validado
@@ -234,20 +248,32 @@ Este tablero decide que se trabaja hoy. Mantenerlo corto.
 
 ### Ahora
 
-- Product/QA/Admin: limpiar o rechazar las dos empresas QA de `TASK-280` y confirmar un enlace de activacion canonico antes de aprobar una empresa real.
+- Infra Azure: `TASK-290` cleanup no destructivo de servicios QA visibles de Aurisbel.
+- Diseno/UX: `TASK-291` especificar nuevo listado de servicios y drawer lateral para cargar/editar.
+- Product/QA/Admin: mantener pendiente la limpieza de empresas QA de `TASK-280` y activacion canonica hasta cerrar el P1 candidato del panel.
 
 ### Siguiente
 
-- QA/Product: registrar primera empresa real desde cero con monitoreo cercano.
+- Product / Architect / Release: cuando `TASK-291` entregue especificacion, activar `PLAN-TASK-292` Web Dev para implementar listado/drawer.
+- QA/Product: reintentar primera empresa real solo cuando el panel empresa quede aprobado.
 
 ### Bloqueado
 
-- Sin P0/P1 activos. Queda una condicion operativa P2 antes de aprobar empresa real.
+- Sin P0/P1 activos. Pendiente operativo P2: cleanup de servicios QA visibles.
 
 ### Hecho
 
+- `TASK-287` Infra Azure: CORS de Azure Blob Storage corregido para `PUT` firmado desde `puntoeventocr.com`, `www` y hostname anterior; preflight `OPTIONS` permitido para esos origenes y bloqueado para origen externo.
+- `TASK-288` QA Azure: upload de portada post-CORS aprobado; `PUT` Blob `201`, `uploads/confirm` `201`, `submit-review` `200`, estado final `pending` sin error generico.
+- `TASK-289` QA Azure: portada publica post-aprobacion aprobada; catalogo y ficha publica muestran imagen real con `coverUrl`, sin placeholder.
 - `TASK-279` Infra Azure: registro desde `puntoeventocr.com` y `www` habilitado via `ALLOWED_ORIGINS`; `APP_PUBLIC_URL` canonico actualizado; smokes `POST /api/companies/register` devolvieron `201`; empresas QA quedaron `rejected`.
 - `TASK-280` QA Azure: registro desde apex y `www` aprobado con `201`; la UI ya no muestra `REGISTRO NO ENVIADO`; quedan observaciones P2 de limpieza QA y activacion canonica.
+- `TASK-281` QA Azure: incidente panel no reproducido como `403`; endpoints privados sin sesion devuelven `401`; falta sesion autenticada controlada para cierre funcional.
+- `TASK-282` QA/Product: cancelada/reemplazada por `TASK-283` tras evidencia nueva de que el servicio se crea como borrador y el envio manual desde borrador funciona.
+- `TASK-283` QA Azure: no aprobada/bloqueada por falta de sesion autenticada controlada; el P1 candidato sigue abierto sin evidencia de request/status.
+- `TASK-284` Infra Azure/Product: precondicion operativa satisfecha con empresa existente para prueba controlada; credencial no documentada en repo.
+- `TASK-285` QA Azure: no aprobada; evidencia P1 capturada. El `PUT` al blob firmado falla por CORS/preflight en Azure Blob Storage; sin imagen el envio directo funciona.
+- `TASK-286` QA Azure: cancelada/reemplazada por fix Infra porque `TASK-285` ya clasifico la causa.
 - Dominio publico `puntoeventocr.com` conectado a Azure Static Web Apps con `www`, apex, HTTPS y rutas principales validadas (`/`, `/panel.html`, `/admin.html`, `/api/public/services?limit=50`).
 - Busqueda publica por servicio.
 - Endpoints publicos por servicio.

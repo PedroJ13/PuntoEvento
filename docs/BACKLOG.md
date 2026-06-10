@@ -4,6 +4,26 @@
 
 - [x] TASK-279 Infra Azure: permitir registro de empresa desde `puntoeventocr.com` y `www`, ajustando `ALLOWED_ORIGINS` / `APP_PUBLIC_URL` y limpiando el dato QA de comparacion.
 - [x] TASK-280 QA Azure: revalidar registro publico desde dominio propio y confirmar que no aparece `REGISTRO NO ENVIADO`.
+- [x] TASK-281 QA Azure: revalidar panel empresa completo desde dominio propio y capturar status HTTP del fallo al guardar/enviar servicio.
+- [x] TASK-282 QA/Product: cancelada/reemplazada por `TASK-283` porque la evidencia nueva acoto el incidente a envio directo con portada.
+- [x] TASK-283 QA Azure: no aprobada/bloqueada por falta de empresa QA autenticable; no se pudo reproducir el envio directo.
+- [x] TASK-284 Infra Azure/Product: precondicion satisfecha con empresa existente `Aurisbel Pasteleria`; credencial no documentada en repo.
+- [x] TASK-285 QA Azure: no aprobada; evidencia P1 capturada. Upload de portada falla por CORS/preflight en Azure Blob Storage; sin imagen el envio directo funciona.
+- [x] TASK-286 QA Azure: cancelada/reemplazada por fix Infra porque `TASK-285` ya clasifico la causa.
+- [x] TASK-287 Infra Azure: corregir CORS de Azure Blob Storage para permitir `PUT` de uploads firmados desde dominio propio.
+- [x] TASK-288 QA Azure: aprobada con pendiente P2; upload de portada, confirmacion y envio directo a revision funcionan post-CORS.
+- [x] TASK-289 QA Azure: aprobada; portada publica visible despues de aprobacion admin, sin placeholder.
+- [ ] TASK-290 Infra Azure: cleanup no destructivo de servicios QA de Aurisbel creados en `TASK-285`/`TASK-288`.
+
+## P2 post-P1: panel empresa - listado y carga de servicios
+
+Bloque visual activado despues de cerrar el P1 de upload y validar portada publica.
+
+- [ ] TASK-291 Diseno/UX: definir especificacion implementable del nuevo listado de servicios tipo card horizontal y drawer lateral para crear/editar servicios.
+- [ ] PLAN-TASK-292 Web Dev: implementar listado de servicios con portada, estado, metadata resumida, acciones con iconos y drawer lateral reutilizable para `Cargar servicio` / `Editar`.
+- [ ] PLAN-TASK-293 QA local/estructural: validar listado, drawer, crear/editar, responsive desktop/mobile y regresion del flujo `Enviar servicio`.
+- [ ] PLAN-TASK-294 Infra Azure: desplegar el ajuste visual del panel empresa cuando QA local apruebe.
+- [ ] PLAN-TASK-295 QA Azure: validar listado/drawer en dominio propio y confirmar que no se reabre el P1 del envio directo.
 
 ## Sprint 0: Reinicio y baseline
 

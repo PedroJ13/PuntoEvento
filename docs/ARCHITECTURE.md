@@ -165,6 +165,27 @@ Usar almacenamiento serverless/managed.
 
 Blob Storage sirve para imagenes, pero no es ideal como unica fuente de datos para empresas/servicios con login y edicion concurrente.
 
+## Blob Storage CORS
+
+Uploads pendientes:
+
+```text
+Storage account: storagepuntoevento
+Container: uploads-pending
+```
+
+El panel empresa sube imagenes con `PUT` a un blob firmado por SAS. CORS de Blob Storage debe permitir solo los origenes operativos:
+
+```text
+AllowedOrigins=https://puntoeventocr.com, https://www.puntoeventocr.com, https://zealous-field-08fdd720f.7.azurestaticapps.net
+AllowedMethods=OPTIONS, PUT
+AllowedHeaders=content-type, x-ms-blob-type
+ExposedHeaders=etag, x-ms-request-id, x-ms-version, x-ms-request-server-encrypted
+MaxAgeInSeconds=3600
+```
+
+No usar wildcard para origins/headers salvo necesidad futura documentada.
+
 ## Rutas publicas objetivo
 
 ```text
