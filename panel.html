@@ -6,7 +6,7 @@
     <title>Panel empresa | Punto Evento CR</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=20" />
-    <link rel="stylesheet" href="panel.css?v=13" />
+    <link rel="stylesheet" href="panel.css?v=14" />
   </head>
   <body class="panel-body">
     <main class="panel-shell">
@@ -182,60 +182,72 @@
 
           <div class="services-layout">
             <div class="services-list" data-services-list></div>
-            <form class="service-form is-hidden" data-service-form>
-              <div>
-                <p class="eyebrow" data-service-form-mode>Cargar servicio</p>
-                <h3>Información del servicio</h3>
-                <p>Completa los datos principales y las fotos que verán tus clientes.</p>
-              </div>
-              <input name="id" type="hidden" />
-              <div class="readonly-summary full-field" data-service-readonly-summary>
-                <div>
-                  <strong>Estado</strong>
-                  <span data-current-service-status>En carga</span>
+            <div class="service-drawer is-hidden" data-service-drawer aria-hidden="true">
+              <button class="service-drawer-backdrop" type="button" data-cancel-service aria-label="Cerrar formulario"></button>
+              <form class="service-form" data-service-form role="dialog" aria-modal="true" aria-labelledby="serviceDrawerTitle" tabindex="-1">
+                <div class="service-form-header">
+                  <div>
+                    <p class="eyebrow" data-service-form-mode>Cargar servicio</p>
+                    <h3 id="serviceDrawerTitle">Información del servicio</h3>
+                    <p data-service-form-copy>Completa la información que verán tus clientes.</p>
+                  </div>
+                  <button class="service-icon-action" type="button" data-cancel-service title="Cerrar" aria-label="Cerrar formulario">
+                    <span aria-hidden="true">×</span>
+                  </button>
                 </div>
-                <div>
-                  <strong>Fotos publicadas</strong>
-                  <span data-current-photo-count>0 archivo(s)</span>
+                <div class="service-form-scroll">
+                  <input name="id" type="hidden" />
+                  <div class="readonly-summary full-field" data-service-readonly-summary>
+                    <div>
+                      <strong>Estado</strong>
+                      <span data-current-service-status>En carga</span>
+                    </div>
+                    <div>
+                      <strong>Fotos publicadas</strong>
+                      <span data-current-photo-count>0 archivo(s)</span>
+                    </div>
+                  </div>
+                  <label>
+                    <span>Nombre</span>
+                    <input name="name" required maxlength="80" />
+                  </label>
+                  <label>
+                    <span>Categoría</span>
+                    <select name="category" required data-category-select></select>
+                  </label>
+                  <label class="full-field">
+                    <span>Tipos de evento</span>
+                    <select name="eventTypes" multiple data-event-type-options></select>
+                    <small>Selecciona uno o varios tipos de evento.</small>
+                  </label>
+                  <label>
+                    <span>Precio desde</span>
+                    <input name="priceFrom" required placeholder="CRC 120000" />
+                  </label>
+                  <label class="file-field full-field">
+                    <span>Fotos del servicio</span>
+                    <input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple data-service-photos />
+                    <small>Agrega hasta 10 fotos JPG, PNG o WEBP. Elige una como portada.</small>
+                  </label>
+                  <div class="photo-preview-grid full-field" data-photo-preview></div>
+                  <label class="full-field">
+                    <span>Descripción</span>
+                    <textarea name="description" rows="4" required maxlength="320"></textarea>
+                  </label>
                 </div>
-              </div>
-              <label>
-                <span>Nombre</span>
-                <input name="name" required maxlength="80" />
-              </label>
-              <label>
-                <span>Categoría</span>
-                <select name="category" required data-category-select></select>
-              </label>
-              <label class="full-field">
-                <span>Tipos de evento</span>
-                <select name="eventTypes" multiple data-event-type-options></select>
-                <small>Selecciona uno o varios tipos de evento.</small>
-              </label>
-              <label>
-                <span>Precio desde</span>
-                <input name="priceFrom" required placeholder="CRC 120000" />
-              </label>
-              <label class="file-field full-field">
-                <span>Fotos del servicio</span>
-                <input name="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple data-service-photos />
-                <small>Agrega hasta 10 fotos JPG, PNG o WEBP. Elige una como portada.</small>
-              </label>
-              <div class="photo-preview-grid full-field" data-photo-preview></div>
-              <label class="full-field">
-                <span>Descripción</span>
-                <textarea name="description" rows="4" required maxlength="320"></textarea>
-              </label>
-              <div class="form-actions">
-                <button class="primary-button" type="submit">Enviar servicio</button>
-                <button class="ghost-button" type="button" data-cancel-service>Cancelar</button>
-              </div>
-              <p class="panel-message" data-form-message></p>
-            </form>
+                <div class="service-form-footer">
+                  <p class="panel-message" data-form-message></p>
+                  <div class="form-actions">
+                    <button class="primary-button" type="submit">Enviar servicio</button>
+                    <button class="ghost-button" type="button" data-cancel-service>Cancelar</button>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         </section>
       </div>
     </main>
-    <script src="panel.js?v=14"></script>
+    <script src="panel.js?v=15"></script>
   </body>
 </html>

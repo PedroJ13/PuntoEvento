@@ -160,12 +160,23 @@ function isAllowedServiceImage(file) {
 function serviceStatusLabel(status) {
   const labels = {
     draft: "Borrador",
-    pending: "Recibido",
+    pending: "En revisión",
     published: "Publicado",
     rejected: "Necesita cambios",
     inactive: "Inactivo",
   };
   return labels[normalizeStatus(status)];
+}
+
+function serviceStatusHint(status) {
+  const messages = {
+    draft: "Aún no se ha enviado.",
+    pending: "Lo estamos revisando antes de publicarlo.",
+    published: "Visible en la página pública.",
+    rejected: "Edita la información y vuelve a enviarlo.",
+    inactive: "Este servicio está inactivo.",
+  };
+  return messages[normalizeStatus(status)] || "Revisa el estado de este servicio.";
 }
 
 function canSubmitReview(service) {
@@ -187,6 +198,55 @@ function publicCompanyHref(service = null) {
   if (!state.company?.slug) return "index.html#inicio";
   const serviceSlug = service?.slug ? `/${encodeURIComponent(service.slug)}` : "";
   return `index.html#proveedor/${encodeURIComponent(state.company.slug)}${serviceSlug}`;
+}
+
+function serviceEventsSummary(eventTypes) {
+  const events = parseArray(eventTypes);
+  if (!events.length) return "Sin eventos";
+  const visible = events.slice(0, 2).join(", ");
+  const remaining = events.length - 2;
+  return remaining > 0 ? `${visible} +${remaining}` : visible;
+}
+
+function servicePhotoCountLabel(service) {
+  const count = serviceImageCount(service);
+  if (!count) return "Sin fotos";
+  return count === 1 ? "1 foto" : `${count} fotos`;
+}
+
+function serviceUpdatedLabel(value) {
+  const date = String(value || "").slice(0, 10);
+  return date || "Sin fecha";
+}
+
+function serviceThumbnailMarkup(service) {
+  const cover = service.coverUrl || parseArray(service.gallery)[0] || "";
+  if (cover) {
+    return `
+      <div class="service-thumb">
+        <img src="${escapeHtml(cover)}" alt="${escapeHtml(service.name || "Servicio")}" loading="lazy">
+      </div>
+    `;
+  }
+  return `
+    <div class="service-thumb service-thumb-empty">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+        <path d="m7 15 3-3 3 3 2-2 3 3"></path>
+        <circle cx="8" cy="9" r="1.5"></circle>
+      </svg>
+      <span>Sin portada</span>
+    </div>
+  `;
+}
+
+function serviceActionIcon(name) {
+  const icons = {
+    public: '<path d="M7 17 17 7"></path><path d="M9 7h8v8"></path><path d="M15 17H6V8"></path>',
+    edit: '<path d="M4 20h4l10-10-4-4L4 16v4z"></path><path d="m13 7 4 4"></path>',
+    deactivate: '<path d="M6 7h12"></path><path d="M9 7v12"></path><path d="M15 7v12"></path><path d="M8 7l1-3h6l1 3"></path>',
+  };
+  return `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[name] || ""}</svg>`;
 }
 
 async function apiJson(path, options = {}) {
@@ -327,41 +387,55 @@ function renderAuthRequired() {
       <a class="primary-button compact-button" href="index.html#empresas">Registrar empresa</a>
     </div>
   `;
-  $("[data-service-form]")?.classList.add("is-hidden");
+  closeServiceForm();
 }
 
 function serviceMarkup(service) {
-  const eventTypes = parseArray(service.eventTypes);
+  const status = normalizeStatus(service.status);
   const publicLink =
-    normalizeStatus(service.status) === "published"
-    ? `<a class="ghost-button compact-button" href="${escapeHtml(publicCompanyHref(service))}">Ver público</a>`
-    : `<span class="review-note">Aparecerá cuando esté publicado.</span>`;
+    status === "published"
+      ? `
+        <a class="service-icon-action" href="${escapeHtml(publicCompanyHref(service))}" title="Ver público" aria-label="Ver público">
+          ${serviceActionIcon("public")}
+        </a>
+      `
+      : "";
   const reviewAction = canSubmitReview(service)
     ? `<button class="primary-button compact-button" type="button" data-submit-review>Enviar servicio</button>`
-    : `<span class="review-note">${escapeHtml(submitReviewStatusMessage(service.status))}</span>`;
+    : "";
+  const missingCoverNote = serviceImageCount(service) ? "" : '<span class="review-note">Agrega una portada antes de enviarlo.</span>';
   return `
     <article class="service-card" data-service-id="${escapeHtml(service.id)}">
-      <div class="service-card-header">
-        <div>
-          <span class="status-pill status-${escapeHtml(normalizeStatus(service.status))}">
-            ${escapeHtml(serviceStatusLabel(service.status))}
-          </span>
-          <h3>${escapeHtml(service.name)}</h3>
+      ${serviceThumbnailMarkup(service)}
+      <div class="service-card-main">
+        <div class="service-card-header">
+          <div class="service-title-block">
+            <span class="status-pill status-${escapeHtml(status)}">
+              ${escapeHtml(serviceStatusLabel(service.status))}
+            </span>
+            <h3>${escapeHtml(service.name)}</h3>
+          </div>
         </div>
-        <div class="service-actions">
-          ${publicLink}
-          ${reviewAction}
-          <button class="ghost-button compact-button" type="button" data-edit-service>Editar</button>
-          <button class="secondary-button compact-button" type="button" data-delete-service>Desactivar</button>
+        <p class="service-status-copy">${escapeHtml(serviceStatusHint(service.status))}</p>
+        <p class="service-description">${escapeHtml(service.description)}</p>
+        <div class="service-meta">
+          <div><strong>Categoría</strong><span>${escapeHtml(service.category || "Sin categoría")}</span></div>
+          <div><strong>Eventos</strong><span>${escapeHtml(serviceEventsSummary(service.eventTypes))}</span></div>
+          <div><strong>Precio desde</strong><span>${escapeHtml(service.priceFrom || "Consultar")}</span></div>
+          <div><strong>Fotos</strong><span>${escapeHtml(servicePhotoCountLabel(service))}</span></div>
+          <div><strong>Actualizado</strong><span>${escapeHtml(serviceUpdatedLabel(service.updatedAt))}</span></div>
         </div>
+        ${!serviceImageCount(service) && canSubmitReview(service) ? missingCoverNote : ""}
       </div>
-      <p>${escapeHtml(service.description)}</p>
-      <div class="service-meta">
-        <div><strong>Categoría</strong><span>${escapeHtml(service.category)}</span></div>
-        <div><strong>Eventos</strong><span>${escapeHtml(eventTypes.join(", ") || "Sin eventos")}</span></div>
-        <div><strong>Precio desde</strong><span>${escapeHtml(service.priceFrom || "Consultar")}</span></div>
-        <div><strong>Fotos</strong><span>${serviceImageCount(service)} archivo(s)</span></div>
-        <div><strong>Actualizado</strong><span>${escapeHtml(String(service.updatedAt || "").slice(0, 10))}</span></div>
+      <div class="service-actions">
+        ${reviewAction}
+        ${publicLink}
+        <button class="service-icon-action" type="button" data-edit-service title="Editar" aria-label="Editar servicio">
+          ${serviceActionIcon("edit")}
+        </button>
+        <button class="service-icon-action danger" type="button" data-delete-service title="Desactivar" aria-label="Desactivar servicio">
+          ${serviceActionIcon("deactivate")}
+        </button>
       </div>
     </article>
   `;
@@ -371,7 +445,13 @@ function renderServices() {
   renderCompany();
   const list = $("[data-services-list]");
   if (!state.services.length) {
-    list.innerHTML = '<div class="panel-empty">Todavía no hay servicios. Carga el primero para mostrar lo que ofreces.</div>';
+    list.innerHTML = `
+      <div class="panel-empty">
+        <strong>Todavía no tienes servicios cargados.</strong>
+        <p>Carga tu primer servicio para que podamos revisarlo y prepararlo para la página pública.</p>
+        <button class="primary-button compact-button" type="button" data-add-service>Cargar servicio</button>
+      </div>
+    `;
     return;
   }
   list.innerHTML = state.services.map(serviceMarkup).join("");
@@ -499,11 +579,20 @@ function renderReadonlySummary(service = null) {
 function resetServiceForm(service = null) {
   setActivePanelView("services");
   const form = $("[data-service-form]");
+  const drawer = $("[data-service-drawer]");
   form.reset();
-  form.classList.remove("is-hidden");
+  drawer?.classList.remove("is-hidden");
+  drawer?.setAttribute("aria-hidden", "false");
+  document.body.classList.add("service-drawer-open");
   revokePendingImageUrls();
   state.pendingImages = [];
   $("[data-service-form-mode]").textContent = service ? "Editar servicio" : "Cargar servicio";
+  const formCopy = $("[data-service-form-copy]");
+  if (formCopy) {
+    formCopy.textContent = service
+      ? "Actualiza la información y las fotos de este servicio."
+      : "Completa la información que verán tus clientes.";
+  }
   setFormMessage("");
   form.elements.id.value = service?.id || "";
   form.elements.name.value = service?.name || "";
@@ -531,10 +620,14 @@ function resetServiceForm(service = null) {
 
 function closeServiceForm() {
   const form = $("[data-service-form]");
+  const drawer = $("[data-service-drawer]");
+  if (!form) return;
   revokePendingImageUrls();
   state.pendingImages = [];
   form.reset();
-  form.classList.add("is-hidden");
+  drawer?.classList.add("is-hidden");
+  drawer?.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("service-drawer-open");
   renderPhotoPreview();
 }
 
@@ -701,7 +794,8 @@ async function submitServiceForReview(serviceId, trigger = null) {
     setPanelMessage("Tu información fue recibida. Te avisaremos cuando esté lista para publicarse.", "success");
     renderServices();
     const form = $("[data-service-form]");
-    if (form && !form.classList.contains("is-hidden") && form.elements.id.value === serviceId) {
+    const drawer = $("[data-service-drawer]");
+    if (form && drawer && !drawer.classList.contains("is-hidden") && form.elements.id.value === serviceId) {
       resetServiceForm(service);
     }
   } catch (error) {
@@ -887,11 +981,11 @@ document.addEventListener("click", async (event) => {
     return;
   }
 
-  if (event.target.matches("[data-add-service]")) {
+  if (event.target.closest("[data-add-service]")) {
     resetServiceForm();
   }
 
-  if (event.target.matches("[data-cancel-service]")) {
+  if (event.target.closest("[data-cancel-service]")) {
     closeServiceForm();
   }
 
@@ -990,6 +1084,14 @@ document.addEventListener("click", (event) => {
     renderReadonlySummary(service);
     renderPhotoPreview(service);
   }
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  const drawer = $("[data-service-drawer]");
+  if (!drawer || drawer.classList.contains("is-hidden")) return;
+  event.preventDefault();
+  closeServiceForm();
 });
 
 async function init() {
