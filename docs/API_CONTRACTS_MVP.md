@@ -523,13 +523,13 @@ Reglas:
 - Copia el blob desde el contenedor pendiente hacia el contenedor publico usando el mismo path `companies/...`.
 - Cambia `Uploads.status` a `published` y guarda `publicBlobName`, `publicBlobUrl` y `updatedAt`.
 - Intenta borrar el blob pendiente despues de publicar; si falla el borrado, no falla la publicacion.
-- Si `scope=service` e `imageType=cover`, actualiza `Services.coverUrl`.
+- Si `scope=service` e `imageType=cover`, actualiza `Services.coverUrl`, conserva la portada anterior en `Services.gallery` si no estaba incluida, y demueve uploads `published` anteriores de ese servicio de `imageType=cover` a `imageType=gallery`.
 - Si `scope=service` e `imageType=gallery`, agrega la URL a `Services.gallery`.
 - Si `scope=company` e `imageType=cover`, actualiza `Companies.coverUrl`.
 - Si `scope=company` e `imageType=logo`, actualiza `Companies.logoUrl`.
 - Si `scope=company` e `imageType=gallery`, solo deja el upload publicado porque `Company` no tiene campo `gallery` definido para MVP.
 - En servicios, no permitir mas de 10 imagenes publicadas en total incluyendo cover.
-- En servicios, debe existir maximo un cover publicado.
+- En servicios, debe existir maximo un cover publicado/activo; al aprobar un nuevo cover, los covers publicados anteriores dejan de ser cover y pasan a galeria.
 
 ### GET `/api/internal/uploads/pending`
 

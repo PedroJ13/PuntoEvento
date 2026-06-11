@@ -77,6 +77,28 @@ async function listPendingServiceUploads(uploadsTable, companyId, serviceId) {
   });
 }
 
+async function listPublishedServiceCoverUploads(uploadsTable, companyId, serviceId) {
+  const entities = uploadsTable.listEntities({
+    queryOptions: {
+      filter: odata`PartitionKey eq ${companyId} and scope eq ${"service"} and serviceId eq ${serviceId} and status eq ${"published"} and imageType eq ${"cover"}`,
+    },
+  });
+  const uploads = [];
+
+  for await (const upload of entities) {
+    if (
+      upload.status === "published" &&
+      upload.scope === "service" &&
+      upload.serviceId === serviceId &&
+      upload.imageType === "cover"
+    ) {
+      uploads.push(upload);
+    }
+  }
+
+  return uploads;
+}
+
 function validateServiceImageApproval(service, uploads) {
   const coverUploads = uploads.filter((upload) => upload.imageType === "cover");
   const galleryUploads = uploads.filter((upload) => upload.imageType === "gallery");
@@ -161,6 +183,25 @@ async function publishServiceUploadsToPublic(uploads, companyId, config) {
   }
 
   return { published };
+}
+
+async function demotePreviousPublishedCovers(uploadsTable, companyId, serviceId, exceptUploadIds, now) {
+  const publishedCovers = await listPublishedServiceCoverUploads(uploadsTable, companyId, serviceId);
+  await Promise.all(
+    publishedCovers
+      .filter((upload) => !exceptUploadIds.has(upload.rowKey || upload.id))
+      .map((upload) =>
+        uploadsTable.updateEntity(
+          {
+            partitionKey: companyId,
+            rowKey: upload.rowKey || upload.id,
+            imageType: "gallery",
+            updatedAt: now,
+          },
+          "Merge",
+        ),
+      ),
+  );
 }
 
 async function updateServiceImage(upload, publicBlobUrl, config, now) {
@@ -405,6 +446,11 @@ async function moderateService(context, action, req, config) {
 
     const nextGallery = parseStoredArray(service.gallery);
     let nextCoverUrl = service.coverUrl || "";
+    const newCoverItems = publishedUploads.published.filter((item) => item.upload.imageType === "cover");
+
+    if (newCoverItems.length && nextCoverUrl && !nextGallery.includes(nextCoverUrl)) {
+      nextGallery.push(nextCoverUrl);
+    }
 
     for (const item of publishedUploads.published) {
       if (item.upload.imageType === "cover") {
@@ -426,6 +472,13 @@ async function moderateService(context, action, req, config) {
         },
         "Merge",
       );
+    }
+
+    if (newCoverItems.length) {
+      const newCoverUploadIds = new Set(
+        newCoverItems.map((item) => item.upload.rowKey || item.upload.id).filter(Boolean),
+      );
+      await demotePreviousPublishedCovers(uploadsTable, companyId, serviceId, newCoverUploadIds, now);
     }
 
     await servicesTable.updateEntity(
