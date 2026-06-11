@@ -62,6 +62,8 @@ const state = {
   eventTypes: FALLBACK_EVENT_TYPES,
   mode: new URLSearchParams(window.location.search).get("demo") === "local" ? "demo" : "real",
   pendingImages: [],
+  existingImages: [],
+  existingImagesLoaded: false,
   inviteToken: "",
   activeView: "services",
 };
@@ -525,7 +527,7 @@ function setDefaultCoverImage() {
   }
 }
 
-function currentServiceImages(service = null) {
+function existingImagesFromService(service = null) {
   const images = [];
   if (service?.coverUrl) {
     images.push({ name: "Portada publicada", src: service.coverUrl, type: "cover" });
@@ -534,6 +536,11 @@ function currentServiceImages(service = null) {
     images.push({ name: `Galería publicada ${index + 1}`, src, type: "gallery" });
   });
   return images;
+}
+
+function currentServiceImages(service = null) {
+  if (state.existingImagesLoaded) return state.existingImages;
+  return existingImagesFromService(service);
 }
 
 function renderPhotoPreview(service = null) {
@@ -546,10 +553,14 @@ function renderPhotoPreview(service = null) {
   }
   const approvedMarkup = approvedImages
     .map(
-      (image) => `
-        <article class="photo-preview-item">
+      (image, index) => `
+        <article class="photo-preview-item ${image.type === "cover" ? "is-cover" : ""}">
           <img src="${escapeHtml(image.src)}" alt="${escapeHtml(image.name)}">
           <span>${escapeHtml(image.type === "cover" ? "Portada publicada" : image.name)}</span>
+          <div class="photo-actions">
+            <button class="ghost-button compact-button" type="button" data-set-existing-cover="${index}" ${image.type === "cover" ? "disabled" : ""}>${image.type === "cover" ? "Portada" : "Usar como portada"}</button>
+            <button class="secondary-button compact-button" type="button" data-remove-existing-photo="${index}">Quitar</button>
+          </div>
         </article>
       `,
     )
@@ -578,7 +589,7 @@ function renderReadonlySummary(service = null) {
     statusNode.textContent = service ? serviceStatusLabel(service.status) : "Borrador";
   }
   if (photoCountNode) {
-  const count = serviceImageCount(service || {});
+    const count = state.existingImagesLoaded ? state.existingImages.length : serviceImageCount(service || {});
     const pendingCount = state.pendingImages.length;
     photoCountNode.textContent = pendingCount ? `${count} publicada(s), ${pendingCount} nueva(s)` : `${count} archivo(s)`;
   }
@@ -594,6 +605,8 @@ function resetServiceForm(service = null) {
   document.body.classList.add("service-drawer-open");
   revokePendingImageUrls();
   state.pendingImages = [];
+  state.existingImages = existingImagesFromService(service);
+  state.existingImagesLoaded = true;
   $("[data-service-form-mode]").textContent = service ? "Editar servicio" : "Cargar servicio";
   const formCopy = $("[data-service-form-copy]");
   if (formCopy) {
@@ -632,6 +645,8 @@ function closeServiceForm() {
   if (!form) return;
   revokePendingImageUrls();
   state.pendingImages = [];
+  state.existingImages = [];
+  state.existingImagesLoaded = false;
   form.reset();
   drawer?.classList.add("is-hidden");
   drawer?.setAttribute("aria-hidden", "true");
@@ -651,6 +666,15 @@ function servicePayloadFromForm(form) {
     coverUrl: "",
     gallery: [],
   };
+}
+
+function applyExistingImagesToPayload(payload) {
+  const cover = state.existingImages.find((image) => image.type === "cover");
+  payload.coverUrl = cover?.src || "";
+  payload.gallery = state.existingImages
+    .filter((image) => image.type !== "cover")
+    .map((image) => image.src)
+    .filter(Boolean);
 }
 
 function validateServicePayload(payload) {
@@ -699,8 +723,7 @@ async function saveService(form) {
   const existing = state.services.find((service) => service.id === id);
   const payload = servicePayloadFromForm(form);
   if (existing) {
-    payload.coverUrl = existing.coverUrl || "";
-    payload.gallery = parseArray(existing.gallery);
+    applyExistingImagesToPayload(payload);
   }
   const error = validateServicePayload(payload);
   if (error) {
@@ -1039,7 +1062,7 @@ document.addEventListener("change", (event) => {
   if (!event.target.matches("[data-service-photos]")) return;
   const form = event.target.closest("[data-service-form]");
   const service = state.services.find((item) => item.id === form?.elements.id.value);
-  const existingCount = serviceImageCount(service || {});
+  const existingCount = state.existingImagesLoaded ? state.existingImages.length : serviceImageCount(service || {});
   const files = [...(event.target.files || [])];
   const invalid = files.filter((file) => !isAllowedServiceImage(file));
   if (invalid.length) {
@@ -1070,6 +1093,29 @@ document.addEventListener("change", (event) => {
 });
 
 document.addEventListener("click", (event) => {
+  const existingCoverButton = event.target.closest("[data-set-existing-cover]");
+  if (existingCoverButton) {
+    const index = Number(existingCoverButton.dataset.setExistingCover);
+    state.existingImages.forEach((image, imageIndex) => {
+      image.type = imageIndex === index ? "cover" : "gallery";
+      image.name = image.type === "cover" ? "Portada publicada" : image.name.replace(/^Portada publicada$/, "Galería publicada");
+    });
+    const form = existingCoverButton.closest("[data-service-form]");
+    const service = state.services.find((item) => item.id === form?.elements.id.value);
+    renderReadonlySummary(service);
+    renderPhotoPreview(service);
+  }
+
+  const existingRemoveButton = event.target.closest("[data-remove-existing-photo]");
+  if (existingRemoveButton) {
+    const index = Number(existingRemoveButton.dataset.removeExistingPhoto);
+    state.existingImages.splice(index, 1);
+    const form = existingRemoveButton.closest("[data-service-form]");
+    const service = state.services.find((item) => item.id === form?.elements.id.value);
+    renderReadonlySummary(service);
+    renderPhotoPreview(service);
+  }
+
   const coverButton = event.target.closest("[data-set-cover]");
   if (coverButton) {
     const index = Number(coverButton.dataset.setCover);

@@ -3,6 +3,7 @@ const { cleanText } = require("./validation");
 
 const MAX_SERVICE_IMAGES = 10;
 const COUNTED_SERVICE_UPLOAD_STATUSES = new Set(["reserved", "pending", "published"]);
+const REPLACEMENT_BLOCKING_UPLOAD_STATUSES = new Set(["reserved", "pending"]);
 
 function uploadEntityId(upload) {
   return cleanText(upload.rowKey || upload.id, 160);
@@ -11,6 +12,16 @@ function uploadEntityId(upload) {
 function isCountedServiceUpload(upload, now = Date.now()) {
   if (!upload || upload.scope !== "service") return false;
   if (!COUNTED_SERVICE_UPLOAD_STATUSES.has(upload.status)) return false;
+  if (upload.status === "reserved" && upload.expiresAt && Date.parse(upload.expiresAt) <= now) {
+    return false;
+  }
+  return true;
+}
+
+function isBlockingCoverReplacement(upload, now = Date.now()) {
+  if (!upload || upload.scope !== "service") return false;
+  if (upload.imageType !== "cover") return false;
+  if (!REPLACEMENT_BLOCKING_UPLOAD_STATUSES.has(upload.status)) return false;
   if (upload.status === "reserved" && upload.expiresAt && Date.parse(upload.expiresAt) <= now) {
     return false;
   }
@@ -52,10 +63,10 @@ async function validateServiceUploadCapacity(
     };
   }
 
-  if (imageType === "cover" && otherUploads.some((upload) => upload.imageType === "cover")) {
+  if (imageType === "cover" && otherUploads.some((upload) => isBlockingCoverReplacement(upload))) {
     return {
       status: 409,
-      error: "Service already has an active or pending cover image",
+      error: "Service already has a reserved or pending cover image",
     };
   }
 
