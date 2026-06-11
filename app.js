@@ -218,6 +218,146 @@ const CATEGORY_SEO_PAGES = [
     ],
   },
 ];
+const LOCATION_SEO_PAGES = [
+  {
+    slug: "san-jose",
+    route: "/san-jose",
+    eyebrow: "San Jose",
+    h1: "Proveedores para eventos en San Jose",
+    title: "Proveedores para eventos en San Jose | Punto Evento CR",
+    description: "Encuentra proveedores para bodas, fiestas y eventos corporativos en San Jose, Costa Rica.",
+    intro:
+      "Explora proveedores publicados para eventos en San Jose. Compara servicios disponibles por categoria, revisa detalles y contacta opciones que se ajusten a tu celebracion.",
+    aliases: ["San José", "San Jose", "SJ"],
+    emptyTitle: "Pronto mostraremos proveedores publicados en San Jose",
+    emptyText:
+      "Pronto mostraremos proveedores publicados en San Jose. Puedes explorar el catalogo general mientras sumamos nuevas opciones.",
+    faqs: [
+      {
+        question: "Que proveedores puedo encontrar en San Jose?",
+        answer:
+          "Servicios publicados para eventos, como catering, salones, decoracion, musica, fotografia o reposteria cuando esten disponibles.",
+      },
+      {
+        question: "Puedo contactar proveedores directamente?",
+        answer: "Si el proveedor tiene contacto publicado, puedes usar WhatsApp o enviar una solicitud desde Punto Evento CR.",
+      },
+      {
+        question: "La pagina muestra solo servicios aprobados?",
+        answer: "Si. La pagina publica debe mostrar solo servicios publicados.",
+      },
+    ],
+  },
+  {
+    slug: "heredia",
+    route: "/heredia",
+    eyebrow: "Heredia",
+    h1: "Proveedores para eventos en Heredia",
+    title: "Proveedores para eventos en Heredia | Punto Evento CR",
+    description: "Busca proveedores para bodas, fiestas y eventos en Heredia, Costa Rica.",
+    intro:
+      "Encuentra proveedores publicados para eventos en Heredia. Revisa servicios, ubicacion y formas de contacto antes de solicitar informacion.",
+    aliases: ["Heredia"],
+    emptyTitle: "Todavia no hay proveedores publicados en Heredia",
+    emptyText:
+      "Todavia no hay proveedores publicados en Heredia. Puedes explorar el catalogo general o registrar tu empresa para futuras publicaciones.",
+    faqs: [
+      {
+        question: "Puedo buscar proveedores por Heredia?",
+        answer: "Si. Esta pagina agrupa servicios publicados asociados a proveedores de Heredia.",
+      },
+      {
+        question: "Que pasa si no hay proveedores publicados?",
+        answer: "Se muestra un estado vacio controlado y puedes volver al catalogo general.",
+      },
+      {
+        question: "Puedo registrar mi empresa en Heredia?",
+        answer: "Si. Las empresas pueden solicitar registro desde la pagina publica.",
+      },
+    ],
+  },
+  {
+    slug: "alajuela",
+    route: "/alajuela",
+    eyebrow: "Alajuela",
+    h1: "Proveedores para eventos en Alajuela",
+    title: "Proveedores para eventos en Alajuela | Punto Evento CR",
+    description: "Encuentra proveedores de servicios para eventos en Alajuela, Costa Rica.",
+    intro:
+      "Busca servicios publicados para eventos en Alajuela. Punto Evento CR te ayuda a comparar proveedores y contactar opciones disponibles.",
+    aliases: ["Alajuela"],
+    emptyTitle: "Estamos preparando proveedores publicados en Alajuela",
+    emptyText: "Estamos preparando proveedores publicados en Alajuela. Mientras tanto, puedes revisar el catalogo general.",
+    faqs: [
+      {
+        question: "Que servicios se muestran en Alajuela?",
+        answer: "Solo servicios publicados de proveedores asociados a esta provincia.",
+      },
+      {
+        question: "Puedo ver precios?",
+        answer: "Cuando el proveedor publica precio desde, se muestra como referencia inicial.",
+      },
+      {
+        question: "Puedo contactar sin salir de Punto Evento CR?",
+        answer: "Puedes usar los canales visibles de contacto o solicitud segun cada servicio publicado.",
+      },
+    ],
+  },
+  {
+    slug: "cartago",
+    route: "/cartago",
+    eyebrow: "Cartago",
+    h1: "Proveedores para eventos en Cartago",
+    title: "Proveedores para eventos en Cartago | Punto Evento CR",
+    description: "Busca proveedores para eventos sociales y corporativos en Cartago, Costa Rica.",
+    intro:
+      "Encuentra proveedores publicados para eventos en Cartago. Revisa servicios disponibles y contacta opciones cuando encuentres una propuesta adecuada.",
+    aliases: ["Cartago"],
+    emptyTitle: "Pronto mostraremos proveedores publicados en Cartago",
+    emptyText: "Pronto mostraremos proveedores publicados en Cartago. Puedes explorar otras zonas o categorias del catalogo.",
+    faqs: [
+      {
+        question: "La pagina incluye proveedores de todo Cartago?",
+        answer: "Agrupa servicios publicados por proveedores asociados a la provincia de Cartago.",
+      },
+      {
+        question: "Puedo comparar categorias?",
+        answer: "Si hay servicios publicados, puedes revisar categoria, descripcion, precio desde y contacto.",
+      },
+      {
+        question: "Los proveedores pasan revision?",
+        answer: "La pagina publica muestra servicios publicados despues del flujo de revision interno.",
+      },
+    ],
+  },
+  {
+    slug: "guanacaste",
+    route: "/guanacaste",
+    eyebrow: "Guanacaste",
+    h1: "Proveedores para eventos en Guanacaste",
+    title: "Proveedores para eventos en Guanacaste | Punto Evento CR",
+    description: "Encuentra proveedores para bodas, fiestas y eventos en Guanacaste, Costa Rica.",
+    intro:
+      "Explora proveedores publicados para eventos en Guanacaste. Revisa servicios disponibles para celebraciones, bodas y eventos corporativos.",
+    aliases: ["Guanacaste"],
+    emptyTitle: "Todavia no hay proveedores publicados en Guanacaste",
+    emptyText: "Todavia no hay proveedores publicados en Guanacaste. Puedes explorar el catalogo general mientras se suman nuevas opciones.",
+    faqs: [
+      {
+        question: "Puedo encontrar proveedores para bodas en Guanacaste?",
+        answer: "Si existen servicios publicados en la zona, apareceran en esta pagina.",
+      },
+      {
+        question: "La pagina muestra servicios disponibles por categoria?",
+        answer: "Esta fase agrupa por ubicacion; las combinaciones ubicacion + categoria quedan para una fase posterior.",
+      },
+      {
+        question: "Que hago si no hay resultados?",
+        answer: "Puedes explorar el catalogo general o registrar tu empresa si ofreces servicios en Guanacaste.",
+      },
+    ],
+  },
+];
 const DEFAULT_SEO_METADATA = {
   title: "Punto Evento CR | Proveedores para eventos en Costa Rica",
   description: "Encuentra y contacta proveedores para eventos en Costa Rica.",
@@ -619,6 +759,7 @@ function analyticsSourceSurface(element = null) {
   if (route === "proveedor") return "company_profile";
   if (route === "bodas") return "services_list";
   if (categorySeoPageForPath()) return "seo_category";
+  if (locationSeoPageForPath()) return "seo_location";
   return "home";
 }
 
@@ -921,6 +1062,21 @@ function serviceMatchesAliases(service, aliases = []) {
   });
 }
 
+function serviceMatchesLocationAliases(service, aliases = []) {
+  const locationText = normalizeFilterValue(
+    [
+      service.company?.province,
+      service.company?.canton,
+      service.company?.location,
+      service.location,
+    ].join(" "),
+  );
+  return aliases.some((alias) => {
+    const normalizedAlias = normalizeFilterValue(alias);
+    return normalizedAlias && locationText.includes(normalizedAlias);
+  });
+}
+
 function hasActiveServiceFilters(filters = {}) {
   return ["q", "eventType", "province", "service"].some((key) => {
     const value = normalizeFilterValue(filters[key]);
@@ -993,6 +1149,11 @@ function serviceCategoryOptionsMarkup(currentValue = "") {
 function categorySeoPageForPath(pathname = window.location.pathname) {
   const cleanPath = pathname.replace(/\/+$/, "") || "/";
   return CATEGORY_SEO_PAGES.find((page) => page.route === cleanPath) || null;
+}
+
+function locationSeoPageForPath(pathname = window.location.pathname) {
+  const cleanPath = pathname.replace(/\/+$/, "") || "/";
+  return LOCATION_SEO_PAGES.find((page) => page.route === cleanPath) || null;
 }
 
 function setMetaContent(selector, content) {
@@ -1080,6 +1241,76 @@ function seoCategoryPage(page) {
       </div>
       <div class="result-list" id="providerResults" tabindex="-1" aria-live="polite">
         ${results.length ? results.map(wideServiceCard).join("") : categorySeoEmptyState(page)}
+      </div>
+      ${dataSourceNotice()}
+    </section>
+    <section class="band">
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Preguntas frecuentes</p>
+            <h2>Antes de contactar</h2>
+          </div>
+        </div>
+        <div class="seo-faq-grid">
+          ${page.faqs
+            .map(
+              (item) => `
+                <article class="step">
+                  <h3>${safeText(item.question)}</h3>
+                  <p>${safeText(item.answer)}</p>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function locationSeoEmptyState(page) {
+  return `
+    <article class="empty-results seo-empty" role="status">
+      <p class="eyebrow">Zona en preparacion</p>
+      <h3>${safeText(page.emptyTitle)}</h3>
+      <p>${safeText(page.emptyText)}</p>
+      <div class="seo-category-actions">
+        <a class="secondary-button" href="#bodas" data-results-link>Explorar catalogo general</a>
+        <a class="ghost-button" href="#empresas" data-publish-company-click data-source-surface="seo_location" data-target-section="company_register">Registrar empresa</a>
+      </div>
+    </article>
+  `;
+}
+
+function seoLocationPage(page) {
+  const results = services.filter((service) => serviceMatchesLocationAliases(service, page.aliases));
+  const resultLabel = results.length === 1 ? "1 servicio publicado" : `${results.length} servicios publicados`;
+  return `
+    <section class="subhero seo-category-hero">
+      <div class="subhero-inner">
+        <div>
+          <p class="eyebrow">Proveedores por ubicacion</p>
+          <h1>${safeText(page.h1)}</h1>
+          <p>${safeText(page.intro)}</p>
+          <div class="seo-category-actions">
+            <a class="primary-button" href="#bodas" data-results-link>Ver catalogo general</a>
+            <a class="secondary-button" href="#empresas" data-publish-company-click data-source-surface="seo_location" data-target-section="company_register">Publicar empresa</a>
+          </div>
+        </div>
+        <img src="${image("photo-1511795409834-ef04bbd61622")}" alt="${safeText(page.eyebrow)}">
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">${safeText(page.eyebrow)}</p>
+          <h2>${safeText(resultLabel)}</h2>
+        </div>
+        <a class="ghost-button" href="#inicio">Volver al inicio</a>
+      </div>
+      <div class="result-list" id="providerResults" tabindex="-1" aria-live="polite">
+        ${results.length ? results.map(wideServiceCard).join("") : locationSeoEmptyState(page)}
       </div>
       ${dataSourceNotice()}
     </section>
@@ -1955,6 +2186,18 @@ async function render() {
   if (cleanCategoryPage && !window.location.hash) {
     updateDocumentMetadata(cleanCategoryPage);
     app.innerHTML = `<div class="page">${seoCategoryPage(cleanCategoryPage)}</div>`;
+    document.querySelectorAll(".nav a").forEach((link) => {
+      link.classList.remove("is-active");
+    });
+    bindPageEvents();
+    window.scrollTo({ top: 0, behavior: "instant" });
+    return;
+  }
+
+  const cleanLocationPage = locationSeoPageForPath();
+  if (cleanLocationPage && !window.location.hash) {
+    updateDocumentMetadata(cleanLocationPage);
+    app.innerHTML = `<div class="page">${seoLocationPage(cleanLocationPage)}</div>`;
     document.querySelectorAll(".nav a").forEach((link) => {
       link.classList.remove("is-active");
     });
