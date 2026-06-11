@@ -73,6 +73,20 @@ const focusableSelector =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 let lastFocusedElement = null;
 
+const ANALYTICS_ALLOWED_PARAMS = {
+  search: ["search_term", "event_type", "province", "results_count"],
+  contact_click: ["channel", "company_id", "company_slug", "service_id", "service_slug", "source_surface"],
+  quote_submit: ["company_id", "company_slug", "service_id", "service_slug", "status", "source_surface"],
+  company_registration_submit: ["status", "province", "source_surface"],
+  publish_company_click: ["source_surface", "target_section"],
+};
+
+const analyticsState = {
+  initialized: false,
+  enabled: false,
+  measurementId: "",
+};
+
 async function loadProviderData() {
   const [providersResponse, packagesResponse, categoriesResponse] = await Promise.all([
     fetch(CONFIG.providersUrl),
@@ -348,6 +362,100 @@ function shouldShowReferenceCatalog() {
   return true;
 }
 
+function analyticsDebugEnabled() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("analytics") === "debug" || isLocalDemoEnvironment();
+}
+
+function analyticsMeasurementId() {
+  return document.querySelector('meta[name="ga-measurement-id"]')?.content.trim() || "";
+}
+
+function isValidGaMeasurementId(value) {
+  return /^G-[A-Z0-9]+$/i.test(String(value || "").trim());
+}
+
+function initAnalytics() {
+  if (analyticsState.initialized) return analyticsState.enabled;
+  analyticsState.initialized = true;
+  analyticsState.measurementId = analyticsMeasurementId();
+  window.__puntoEventoAnalyticsEvents = window.__puntoEventoAnalyticsEvents || [];
+
+  if (!isValidGaMeasurementId(analyticsState.measurementId)) {
+    analyticsState.enabled = false;
+    if (analyticsDebugEnabled()) {
+      console.info("Punto Evento analytics preparado sin GA_MEASUREMENT_ID real.");
+    }
+    return false;
+  }
+
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function gtag() {
+    window.dataLayer.push(arguments);
+  };
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(analyticsState.measurementId)}`;
+  document.head.appendChild(script);
+  window.gtag("js", new Date());
+  window.gtag("config", analyticsState.measurementId, {
+    send_page_view: true,
+    debug_mode: analyticsDebugEnabled(),
+  });
+  analyticsState.enabled = true;
+  return true;
+}
+
+function analyticsParamValue(value) {
+  if (value === undefined || value === null) return "";
+  if (typeof value === "number") return Number.isFinite(value) ? value : "";
+  if (typeof value === "boolean") return value;
+  return String(value).slice(0, 120);
+}
+
+function analyticsParams(eventName, params = {}) {
+  const allowed = ANALYTICS_ALLOWED_PARAMS[eventName] || [];
+  return allowed.reduce((payload, key) => {
+    const value = analyticsParamValue(params[key]);
+    if (value !== "") payload[key] = value;
+    return payload;
+  }, {});
+}
+
+function trackAnalyticsEvent(eventName, params = {}) {
+  if (!ANALYTICS_ALLOWED_PARAMS[eventName]) return false;
+  const payload = analyticsParams(eventName, params);
+  const eventRecord = { event: eventName, params: payload };
+  window.__puntoEventoAnalyticsEvents = window.__puntoEventoAnalyticsEvents || [];
+  if (analyticsDebugEnabled() || !analyticsState.enabled) {
+    window.__puntoEventoAnalyticsEvents.push(eventRecord);
+  }
+  if (!analyticsState.enabled || typeof window.gtag !== "function") {
+    return false;
+  }
+  window.gtag("event", eventName, payload);
+  return true;
+}
+
+function analyticsSourceSurface(element = null) {
+  const route = window.location.hash.replace("#", "").split("/")[0] || "inicio";
+  if (element?.closest?.("#registro-empresa") || route === "empresas") return "company_register";
+  if (route === "proveedor") return "company_profile";
+  if (route === "bodas") return "services_list";
+  return "home";
+}
+
+function contactAnalyticsParams(trigger = null, extra = {}) {
+  return {
+    company_id: trigger?.dataset.companyId || quoteContext?.companyId || "",
+    company_slug: trigger?.dataset.companySlug || quoteContext?.companySlug || "",
+    service_id: trigger?.dataset.serviceId || quoteContext?.serviceId || "",
+    service_slug: trigger?.dataset.serviceSlug || quoteContext?.serviceSlug || "",
+    source_surface: analyticsSourceSurface(trigger),
+    ...extra,
+  };
+}
+
 function isAllowedProviderImage(file) {
   return ["image/jpeg", "image/png", "image/webp"].includes(file.type);
 }
@@ -392,7 +500,7 @@ function quoteButtonAttributes(service) {
   const companyId = service.company?.id || "";
   const serviceId = service.id || "";
   if (!companyId || !serviceId || serviceDataSource !== "api") return "";
-  return ` data-company-id="${safeText(companyId)}" data-service-id="${safeText(serviceId)}" data-service-name="${safeText(service.name)}" data-company-name="${safeText(service.company?.name || "")}"`;
+  return ` data-company-id="${safeText(companyId)}" data-service-id="${safeText(serviceId)}" data-company-slug="${safeText(service.company?.slug || "")}" data-service-slug="${safeText(service.slug || "")}" data-service-name="${safeText(service.name)}" data-company-name="${safeText(service.company?.name || "")}"`;
 }
 
 function contactActionsMarkup(service, primaryClass = "primary-button") {
@@ -400,7 +508,7 @@ function contactActionsMarkup(service, primaryClass = "primary-button") {
   const companyName = service.company?.name || "la empresa";
   if (whatsappHref) {
     return `
-      <a class="${primaryClass}" href="${safeUrl(whatsappHref)}" target="_blank" rel="noopener" data-whatsapp-contact>Solicitar cotización</a>
+      <a class="${primaryClass}" href="${safeUrl(whatsappHref)}" target="_blank" rel="noopener" data-whatsapp-contact${quoteButtonAttributes(service)}>Solicitar cotización</a>
       <p class="contact-note full-note">Te abriremos WhatsApp con ${safeText(service.name)} de ${safeText(companyName)}.</p>
       <button class="secondary-button" data-open-quote${quoteButtonAttributes(service)}>Enviar por formulario</button>
       <p class="contact-note full-note">También puedes enviar una solicitud registrada por Punto Evento CR.</p>
@@ -649,7 +757,7 @@ function emptyServicesState() {
         <p class="eyebrow">Catálogo en preparación</p>
         <h3>No hay servicios publicados todavía</h3>
         <p>Estamos preparando el catálogo de proveedores verificados. Si tienes una empresa de eventos, puedes solicitar acceso gratis.</p>
-        <a class="primary-button" href="#empresas">Solicitar acceso gratis</a>
+        <a class="primary-button" href="#empresas" data-publish-company-click data-target-section="company_register">Solicitar acceso gratis</a>
       </article>
     `;
   }
@@ -792,7 +900,7 @@ function homePage() {
           <h2>Convierte visibilidad en solicitudes</h2>
           <p>Una página para vender el registro antes de mostrar formularios largos.</p>
         </div>
-        <a class="primary-button" href="#empresas">Crear perfil gratis</a>
+        <a class="primary-button" href="#empresas" data-publish-company-click data-target-section="company_register">Crear perfil gratis</a>
       </div>
     </section>
   `;
@@ -861,7 +969,7 @@ async function providerPage(companySlug, serviceSlug = "") {
         <p class="eyebrow">Catálogo en preparación</p>
         <h1>No hay servicios publicados todavía</h1>
         <p>Estamos preparando el catálogo de proveedores verificados. Si tienes una empresa de eventos, puedes solicitar acceso gratis.</p>
-        <a class="primary-button" href="#empresas">Solicitar acceso gratis</a>
+        <a class="primary-button" href="#empresas" data-publish-company-click data-target-section="company_register">Solicitar acceso gratis</a>
       </section>
     `;
   }
@@ -1310,7 +1418,7 @@ function companiesPage() {
               <li>Categoria principal</li>
               <li>Contacto directo</li>
             </ul>
-            <a class="ghost-button" href="#registro-empresa" data-scroll-register>Empezar</a>
+            <a class="ghost-button" href="#registro-empresa" data-scroll-register data-publish-company-click data-target-section="company_register">Empezar</a>
           </article>
           <article class="plan-card featured">
             <span class="tag verified">Recomendado</span>
@@ -1348,7 +1456,7 @@ function companiesPageNew() {
           <h1>Recibe clientes interesados en tus servicios de eventos</h1>
           <p>Registra tu empresa gratis. Luego recibes acceso al panel para crear servicios, subir fotos y prepararlos para publicación.</p>
           <div class="card-actions">
-            <a class="primary-button" href="#registro-empresa" data-scroll-register>Crear perfil gratis</a>
+            <a class="primary-button" href="#registro-empresa" data-scroll-register data-publish-company-click data-target-section="company_register">Crear perfil gratis</a>
             <a class="secondary-button" href="panel.html">Ya tengo acceso</a>
           </div>
         </div>
@@ -1494,7 +1602,7 @@ function companiesPageNew() {
               <li>Servicios desde panel empresa</li>
               <li>Revision antes de publicar</li>
             </ul>
-            <a class="ghost-button" href="#registro-empresa" data-scroll-register>Empezar</a>
+            <a class="ghost-button" href="#registro-empresa" data-scroll-register data-publish-company-click data-target-section="company_register">Empezar</a>
           </article>
           <article class="plan-card featured">
             <span class="tag verified">Recomendado</span>
@@ -1560,7 +1668,10 @@ function bindPageEvents() {
     button.addEventListener("click", () => showToast(button.dataset.toast));
   });
   document.querySelectorAll("[data-whatsapp-contact]").forEach((link) => {
-    link.addEventListener("click", () => showToast("WhatsApp listo para enviar."));
+    link.addEventListener("click", () => {
+      trackAnalyticsEvent("contact_click", contactAnalyticsParams(link, { channel: "whatsapp" }));
+      showToast("WhatsApp listo para enviar.");
+    });
   });
   document.querySelectorAll("[data-scroll-register]").forEach((trigger) => {
     trigger.addEventListener("click", (event) => {
@@ -1583,6 +1694,12 @@ function bindPageEvents() {
         eventType: formData.get("eventType"),
         province: formData.get("location"),
       };
+      trackAnalyticsEvent("search", {
+        search_term: currentSearchFilters.q,
+        event_type: currentSearchFilters.eventType,
+        province: currentSearchFilters.province,
+        results_count: filteredServices().length,
+      });
       shouldFocusResults = true;
       if (window.location.hash === "#bodas") {
         render();
@@ -1630,6 +1747,12 @@ function bindPageEvents() {
         service: formData.get("service"),
         province: formData.get("province"),
       };
+      trackAnalyticsEvent("search", {
+        search_term: currentSearchFilters.q,
+        event_type: currentSearchFilters.service,
+        province: currentSearchFilters.province,
+        results_count: filteredServices().length,
+      });
       shouldFocusResults = true;
       render();
       const resultCount = filteredServices().length;
@@ -1853,6 +1976,11 @@ function bindCompanyRegistration() {
         providerId: result.companyId,
         mode: "azure",
       });
+      trackAnalyticsEvent("company_registration_submit", {
+        status: "success",
+        province,
+        source_surface: "company_register",
+      });
       showToast("Solicitud recibida. Te enviaremos instrucciones por correo.");
     } catch (error) {
       console.warn(error);
@@ -1914,6 +2042,8 @@ function quoteContextFromTrigger(trigger) {
   return {
     companyId,
     serviceId,
+    companySlug: trigger.dataset.companySlug || "",
+    serviceSlug: trigger.dataset.serviceSlug || "",
     serviceName: trigger.dataset.serviceName || "servicio seleccionado",
     companyName: trigger.dataset.companyName || "",
   };
@@ -1955,6 +2085,9 @@ function showQuoteGuidance() {
 function openQuote(event) {
   lastFocusedElement = event?.currentTarget || document.activeElement;
   quoteContext = quoteContextFromTrigger(event?.currentTarget);
+  if (quoteContext) {
+    trackAnalyticsEvent("contact_click", contactAnalyticsParams(event?.currentTarget, { channel: "form" }));
+  }
   const serviceName = quoteContext?.serviceName || event?.currentTarget?.dataset.serviceName || "";
   drawer.classList.add("is-open");
   drawer.setAttribute("aria-hidden", "false");
@@ -2081,6 +2214,15 @@ document.querySelectorAll("[data-close-quote]").forEach((button) => {
   button.addEventListener("click", () => closeQuote());
 });
 
+document.addEventListener("click", (event) => {
+  const trigger = event.target.closest("[data-publish-company-click]");
+  if (!trigger) return;
+  trackAnalyticsEvent("publish_company_click", {
+    source_surface: trigger.dataset.sourceSurface || analyticsSourceSurface(trigger),
+    target_section: trigger.dataset.targetSection || "company_register",
+  });
+});
+
 quoteForm.addEventListener("submit", async (event) => {
   event.preventDefault();
 
@@ -2097,6 +2239,7 @@ quoteForm.addEventListener("submit", async (event) => {
 
   try {
     await submitPublicLead(quoteForm);
+    trackAnalyticsEvent("quote_submit", contactAnalyticsParams(null, { status: "success" }));
     closeQuote({ submitted: true });
   } catch (error) {
     console.warn(error);
@@ -2153,4 +2296,5 @@ async function init() {
   }
 }
 
+initAnalytics();
 init();
