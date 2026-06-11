@@ -2,10 +2,12 @@ const { odata } = require("@azure/data-tables");
 const {
   ensureCompaniesTable,
   ensureServicesTable,
+  ensureUploadsTable,
   getConfig,
   getTableClient,
 } = require("./azure");
 const { json, serverError } = require("./http");
+const { filterPubliclyVisibleServices, isPubliclyVisibleService } = require("./publicVisibility");
 const { cleanText } = require("./validation");
 
 const DEFAULT_LIMIT = 20;
@@ -199,6 +201,7 @@ async function handlePublicServices(context, req) {
     const config = getConfig();
     await ensureCompaniesTable(config);
     await ensureServicesTable(config);
+    await ensureUploadsTable(config);
 
     const query = req.query || {};
     const q = normalizeSearch(query.q, 160);
@@ -207,11 +210,13 @@ async function handlePublicServices(context, req) {
     const province = normalizeSearch(query.province, 120);
     const limit = normalizeLimit(query.limit);
     const companiesTable = getTableClient(config.companiesTable, config);
+    const uploadsTable = getTableClient(config.uploadsTable, config);
     const services = await listPublishedServices(config);
     const items = [];
     const companyCache = new Map();
 
     for (const service of services) {
+      if (!(await isPubliclyVisibleService(service, uploadsTable))) continue;
       if (!serviceMatchesFilter(service, "category", category)) continue;
       if (!serviceMatchesFilter(service, "eventType", eventType)) continue;
 
@@ -253,15 +258,20 @@ async function handlePublicCompanyProfile(context, req) {
     const config = getConfig();
     await ensureCompaniesTable(config);
     await ensureServicesTable(config);
+    await ensureUploadsTable(config);
 
     const companiesTable = getTableClient(config.companiesTable, config);
+    const uploadsTable = getTableClient(config.uploadsTable, config);
     const company = await findPublishedCompanyBySlug(slug, companiesTable);
     if (!company) {
       context.res = json(404, { error: "Company not found" });
       return;
     }
 
-    const services = await listPublishedServices(config, company.rowKey);
+    const services = await filterPubliclyVisibleServices(
+      await listPublishedServices(config, company.rowKey),
+      uploadsTable,
+    );
     const requestedServiceSlug = normalizeSearch(req.query?.service, 160);
     const selectedServiceSlug = services.some((service) => service.slug === requestedServiceSlug)
       ? requestedServiceSlug

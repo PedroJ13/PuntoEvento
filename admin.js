@@ -724,6 +724,67 @@ function serviceImages(service) {
   });
 }
 
+function cleanPublicUrl(value) {
+  return String(value || "").trim();
+}
+
+function servicePublicUrls(service) {
+  return [
+    cleanPublicUrl(service?.coverUrl),
+    ...parseList(service?.gallery).map(cleanPublicUrl),
+  ].filter(Boolean);
+}
+
+function imagePublicUrl(image) {
+  return cleanPublicUrl(image?.publicBlobUrl || image?.publicUrl || image?.url);
+}
+
+function serviceHasApprovedPublicImage(service) {
+  if (typeof service?.publicVisibility === "boolean") return service.publicVisibility;
+  if (typeof service?.isPubliclyVisible === "boolean") return service.isPubliclyVisible;
+
+  const publicUrls = new Set(servicePublicUrls(service));
+  if (!publicUrls.size) return false;
+
+  return serviceImages(service).some((image) =>
+    String(image.status || "") === "published" && publicUrls.has(imagePublicUrl(image)),
+  );
+}
+
+function servicePublicState(service) {
+  if (String(service?.status || "") !== "published") {
+    return {
+      status: "draft",
+      label: "No visible publico",
+      message: "Servicio pendiente de aprobacion interna; modera sus imagenes sin asumir visibilidad publica.",
+    };
+  }
+
+  if (serviceHasApprovedPublicImage(service)) {
+    return {
+      status: "published",
+      label: "Visible publico",
+      message: "Servicio aprobado internamente y con imagen aprobada para aparecer publicamente.",
+    };
+  }
+
+  return {
+    status: "pending",
+    label: "Pendiente de imagen",
+    message: "Servicio aprobado internamente, pendiente de imagen aprobada para aparecer publicamente.",
+  };
+}
+
+function servicePublicStateMarkup(service) {
+  const state = servicePublicState(service);
+  return `
+    <div class="service-public-state">
+      <span class="status-pill status-${statusClass(state.status)}">${escapeHtml(state.label)}</span>
+      <p>${escapeHtml(state.message)}</p>
+    </div>
+  `;
+}
+
 function imageTypeLabel(value) {
   const type = String(value || "").toLowerCase();
   if (type === "cover") return "Portada";
@@ -949,6 +1010,7 @@ function caseServiceMarkup(service, company) {
         <div><strong>Precio</strong><span>${escapeHtml(formatVisiblePrice(service.priceFrom || "-"))}</span></div>
         <div><strong>Empresa</strong><span>${escapeHtml(company?.name || service.companyName || companyId || "-")}</span></div>
       </div>
+      ${servicePublicStateMarkup(service)}
       <div class="service-images-section">
         <div>
           <strong>Imagenes del servicio</strong>
@@ -1125,7 +1187,7 @@ function internalActionSuccessMessage(type, action, response = {}) {
   if (type === "services") {
     return {
       message: action === "approve"
-        ? "Servicio aprobado y publicado. Las imagenes pendientes se moderan individualmente."
+        ? "Servicio aprobado internamente. Aprueba al menos una imagen para que pueda aparecer publicamente."
         : "Servicio rechazado. Revisa el resumen del expediente para pendientes restantes.",
       tone: action === "approve" ? "success" : "warning",
     };

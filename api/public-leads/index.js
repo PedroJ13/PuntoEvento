@@ -3,12 +3,14 @@ const {
   ensureCompaniesTable,
   ensureLeadsTable,
   ensureServicesTable,
+  ensureUploadsTable,
   getConfig,
   getTableClient,
 } = require("../shared/azure");
 const { sendLeadEmailToCompany } = require("../shared/email");
 const { enforceAllowedOrigin } = require("../shared/guard");
 const { badRequest, json, serverError } = require("../shared/http");
+const { isPubliclyVisibleService } = require("../shared/publicVisibility");
 const { cleanText } = require("../shared/validation");
 
 function isEmail(value) {
@@ -88,6 +90,7 @@ module.exports = async function createPublicLead(context, req) {
 
     await ensureCompaniesTable(config);
     await ensureServicesTable(config);
+    await ensureUploadsTable(config);
     await ensureLeadsTable(config);
 
     const lead = validation.lead;
@@ -96,6 +99,11 @@ module.exports = async function createPublicLead(context, req) {
       ? await getPublishedService(lead.companyId, lead.serviceId, config)
       : null;
     if (!company || !service) {
+      context.res = json(404, { error: "Service not found" });
+      return;
+    }
+    const uploadsTable = getTableClient(config.uploadsTable, config);
+    if (!(await isPubliclyVisibleService(service, uploadsTable))) {
       context.res = json(404, { error: "Service not found" });
       return;
     }

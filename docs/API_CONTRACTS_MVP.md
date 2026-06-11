@@ -465,6 +465,7 @@ Reglas:
 - Actualiza `Services.status` a `published`.
 - Actualiza `updatedAt`.
 - Limpia `rejectionReason`.
+- `Services.status=published` significa servicio aprobado internamente y apto para moderar/publicar imagenes; no garantiza visibilidad publica por si solo.
 - No publica, aprueba, rechaza ni modifica uploads pendientes asociados al servicio.
 - No cambia `Services.coverUrl` ni `Services.gallery`.
 - Las imagenes del servicio se moderan por separado con `POST /api/internal/uploads/{companyId}/{uploadId}/approve` o `reject`.
@@ -921,8 +922,11 @@ Response `200`:
 
 Reglas:
 
-- Solo servicios `published`.
+- Solo servicios `published` que sean visibles publicamente.
 - Solo empresas `published`.
+- Visibilidad publica del servicio se deriva en lectura; no se persiste un campo `publicVisibility`.
+- Un servicio es visible publicamente solo si la empresa esta `published`, el servicio esta `published` como aprobacion interna, existe al menos un `Upload` del servicio con `status=published` y esa imagen publicada esta aplicada en `Services.coverUrl` o `Services.gallery`.
+- Si todas las imagenes publicadas ligadas al servicio dejan de estar `published`, o el servicio pierde sus URLs publicas, el servicio deja de aparecer publicamente aunque `Services.status` siga siendo `published`.
 - `q` filtra de forma basica por `name`, `description`, `category` y `eventTypes`.
 - `q` tambien debe filtrar por `company.name` y `company.slug`.
 - `category`, `eventType` y `province` hacen match exacto normalizado.
@@ -930,7 +934,7 @@ Reglas:
 - `cursor` queda reservado para una iteracion futura; por ahora siempre responde `nextCursor: ""`.
 - Ordenar por `sortBoost`, `isFeatured`, relevancia y fecha segun decision de producto.
 - `company.whatsapp`, `company.website`, `company.instagram`, `company.facebook` y `company.tiktok` son canales publicos permitidos cuando existen.
-- No devolver datos privados ni imagenes pendientes.
+- No devolver datos privados, imagenes pendientes ni servicios aprobados internamente sin imagen publicada.
 - No devolver `company.email` en resultados publicos; el email interno solo se usa por `POST /api/public/leads`.
 - Implementacion MVP puede escanear servicios publicados y resolver empresas por `companyId`; migrar a `ServiceIndex` cuando se requiera ranking/paginacion real.
 
@@ -976,11 +980,11 @@ Response `200`:
 Reglas:
 
 - Si la empresa no esta `published`, responder `404`.
-- Solo incluir servicios `published`.
+- Solo incluir servicios `published` que cumplan la regla de visibilidad publica por imagen aprobada/publicada.
 - Permitir query opcional `?service=mesa-dulce`; si coincide con un servicio publicado devuelto, responder `selectedServiceSlug` con ese slug. Si no coincide, responder `selectedServiceSlug: ""`.
 - `whatsapp`, `website`, `instagram`, `facebook` y `tiktok` son canales publicos permitidos cuando existen.
 - Si `whatsapp` existe, Web Dev puede usarlo como canal primario de contacto/cotizacion.
-- No devolver `email`, hashes, `partitionKey`, `rowKey`, tokens, metadata interna ni imagenes pendientes.
+- No devolver `email`, hashes, `partitionKey`, `rowKey`, tokens, metadata interna, imagenes pendientes ni servicios aprobados internamente sin imagen publicada.
 
 ### POST `/api/public/leads`
 
@@ -1017,7 +1021,7 @@ Reglas:
 - `companyId`, `serviceId`, `name`, `email`, `phone` y `message` son requeridos.
 - Email de cliente debe tener formato valido.
 - La empresa debe existir con `status=published`.
-- El servicio debe existir bajo esa empresa con `status=published`.
+- El servicio debe existir bajo esa empresa con `status=published` y cumplir la misma regla de visibilidad publica por imagen aprobada/publicada usada por `GET /api/public/services`.
 - Persiste el lead en `Leads` antes de enviar email para trazabilidad.
 - Envia email via Azure Communication Services Email al `Company.email` interno.
 - No devuelve ni publica el email privado de la empresa.

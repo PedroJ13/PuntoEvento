@@ -85,6 +85,9 @@ Reglas de servicio MVP:
 - La empresa no edita `status` directamente.
 - Crear o editar guarda como `draft`.
 - Un boton/accion explicita `Enviar a revision` cambia el servicio a `pending`.
+- `status: published` significa aprobacion interna del servicio y habilita la moderacion/publicacion de imagenes, pero no implica visibilidad publica por si solo.
+- La visibilidad publica no se persiste como campo separado; se deriva en lectura de empresa `published`, servicio `published` y al menos un `Upload` del servicio con `status: published` aplicado en `coverUrl` o `gallery`.
+- Si todas las imagenes aprobadas/publicadas de un servicio dejan de estar `published`, o se remueven de `coverUrl`/`gallery`, el servicio deja de aparecer publicamente aunque siga aprobado internamente.
 - Si un servicio `published` cambia campos publicos, vuelve a `draft` hasta enviarse de nuevo a revision.
 - Cada servicio puede tener hasta 10 imagenes en total.
 - `coverUrl` representa una sola imagen principal y cuenta dentro del maximo de 10.
@@ -92,7 +95,7 @@ Reglas de servicio MVP:
 - Si un servicio tiene imagenes, una y solo una debe actuar como cover.
 - Las imagenes nuevas o cambios de cover/galeria quedan pendientes hasta aprobacion admin.
 - En admin, las imagenes pendientes de un servicio se revisan dentro del expediente del servicio, con preview visible.
-- Aprobar un servicio publica las imagenes pendientes asociadas a ese servicio; el admin no debe tener que aprobar imagenes de servicio como una entidad separada.
+- Aprobar un servicio no publica las imagenes pendientes asociadas a ese servicio; cada imagen de servicio se aprueba o rechaza individualmente.
 
 ## Catalogos
 
@@ -288,7 +291,7 @@ Reglas:
 - Subidas empiezan como `reserved` en contenedor pendiente.
 - Al confirmar la subida, el estado pasa a `pending`, `size` se reemplaza por el tamano real del blob y `expiresAt` se limpia porque ya no aplica como vencimiento de reserva.
 - Al aprobar internamente, el estado pasa a `published`, se guarda `publicBlobUrl` y la URL se aplica a `Service.coverUrl`, `Service.gallery`, `Company.coverUrl` o `Company.logoUrl` segun `scope` e `imageType`.
-- Para `scope=service`, la aprobacion normal ocurre como parte de la aprobacion del servicio en admin.
+- Para `scope=service`, la aprobacion normal ocurre como accion individual de imagen en admin, separada de la aprobacion interna del servicio.
 - Si `scope=company` e `imageType=gallery`, el upload queda publicado pero no se aplica a la empresa porque el modelo MVP no define `Company.gallery`.
 - Publicar o asociar la imagen al perfil/servicio requiere validacion posterior.
 

@@ -414,6 +414,21 @@
   font-weight: 750;
 }
 
+.service-public-state {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+}
+
+.service-public-state p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .service-images-section {
   display: grid;
   gap: 10px;
