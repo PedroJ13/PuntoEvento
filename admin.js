@@ -453,11 +453,13 @@ function internalStatusLabel(status) {
     rejected: "Rechazado",
     inactive: "Inactivo",
     suspended: "Suspendido",
+    reserved: "Reservado",
   };
   return labels[status] || status || "-";
 }
 
 function statusClass(status) {
+  if (status === "reserved") return "pending";
   return ["draft", "pending", "published", "rejected", "inactive"].includes(status) ? status : "draft";
 }
 
@@ -641,8 +643,49 @@ function selectedCaseCompany() {
   return companies.find((company) => companyIdOf(company) === state.internal.selectedCompanyId) || companies[0];
 }
 
+function serviceFromUploadGroup(companyId, serviceId, uploads) {
+  const firstUpload = uploads[0] || {};
+  return {
+    companyId,
+    serviceId,
+    id: serviceId,
+    name: firstUpload.serviceName || firstUpload.serviceTitle || `Servicio ${serviceId}`,
+    status: firstUpload.serviceStatus || "published",
+    category: firstUpload.serviceCategory || "-",
+    priceFrom: firstUpload.servicePriceFrom || "-",
+    companyName: firstUpload.companyName || companyId,
+    companyStatus: firstUpload.companyStatus || "published",
+    description: "Servicio incluido por imagenes pendientes de moderacion.",
+    images: uploads,
+    isUploadOnlyCase: true,
+  };
+}
+
 function servicesForCompany(companyId) {
-  return state.internal.services.items.filter((service) => companyIdOf(service) === companyId);
+  const servicesById = new Map();
+  state.internal.services.items
+    .filter((service) => companyIdOf(service) === companyId)
+    .forEach((service) => {
+      const serviceId = serviceIdOf(service);
+      if (serviceId) servicesById.set(serviceId, service);
+    });
+
+  const uploadsByServiceId = new Map();
+  uploadsForCompany(companyId)
+    .filter((upload) => upload.scope === "service" && upload.serviceId)
+    .forEach((upload) => {
+      const currentUploads = uploadsByServiceId.get(upload.serviceId) || [];
+      currentUploads.push(upload);
+      uploadsByServiceId.set(upload.serviceId, currentUploads);
+    });
+
+  uploadsByServiceId.forEach((uploads, serviceId) => {
+    if (!servicesById.has(serviceId)) {
+      servicesById.set(serviceId, serviceFromUploadGroup(companyId, serviceId, uploads));
+    }
+  });
+
+  return [...servicesById.values()];
 }
 
 function uploadsForCompany(companyId) {
@@ -693,10 +736,51 @@ function imageRoleLabel(image) {
   return label === "-" ? "Imagen" : label;
 }
 
-function serviceImagesMarkup(service) {
+function imageStatusNoteLabel(status) {
+  const labels = {
+    published: "publicada",
+    rejected: "rechazada",
+    reserved: "reservada",
+    draft: "en borrador",
+    inactive: "inactiva",
+  };
+  return labels[status] || internalStatusLabel(status).toLowerCase();
+}
+
+function imageModerationActionsMarkup(image, service, options = {}) {
+  const status = String(image.status || "");
+  const uploadId = image.uploadId || image.id || "";
+  const companyId = image.companyId || companyIdOf(service);
+  const servicePublished = String(service.status || "") === "published";
+  const companyPublished = options.companyPublished !== false;
+  const serviceWarning = servicePublished ? "" : "Aprueba el servicio antes de publicar imagenes.";
+  const companyWarning = companyPublished ? "" : "Publica la empresa antes de aprobar imagenes.";
+  const approveDisabledReason = companyWarning || serviceWarning;
+  const coverWarning = status === "pending" && image.imageType === "cover"
+    ? '<p class="dependency-note image-warning">Aprobar esta portada reemplaza la portada activa del servicio.</p>'
+    : "";
+
+  if (status !== "pending") {
+    return `
+      ${coverWarning}
+      <p class="admin-note image-status-note">Imagen ${escapeHtml(imageStatusNoteLabel(status))}; no tiene accion pendiente.</p>
+    `;
+  }
+
+  return `
+    ${coverWarning}
+    <div class="internal-item-actions image-actions">
+      ${internalActionButton("uploads", "approve", { "company-id": companyId, "upload-id": uploadId }, approveDisabledReason, "Aprobar imagen")}
+      ${internalActionButton("uploads", "reject", { "company-id": companyId, "upload-id": uploadId }, "", "Rechazar imagen")}
+    </div>
+    ${approveDisabledReason ? `<p class="dependency-note">${escapeHtml(approveDisabledReason)}</p>` : ""}
+  `;
+}
+
+function serviceImagesMarkup(service, options = {}) {
   const images = serviceImages(service);
   if (!images.length) {
-    return '<div class="admin-empty compact-empty">Este servicio no tiene imágenes pendientes asociadas.</div>';
+    return '<div class="admin-empty compact-empty">Este servicio no tiene imagenes asociadas en la cola interna.</div>';
   }
 
   return `
@@ -716,6 +800,7 @@ function serviceImagesMarkup(service) {
                 <span class="status-pill status-${statusClass(image.status)}">${escapeHtml(internalStatusLabel(image.status))}</span>
                 <strong>${escapeHtml(imageRoleLabel(image))}</strong>
                 <small>${escapeHtml(label)}</small>
+                ${imageModerationActionsMarkup(image, service, options)}
               </figcaption>
             </figure>
           `;
@@ -845,8 +930,9 @@ function caseServiceMarkup(service, company) {
   const companyId = companyIdOf(service);
   const serviceId = serviceIdOf(service);
   const disabledReason = companyPublished ? "" : "Publica la empresa antes de aprobar servicios.";
-  const images = serviceImages(service);
-  const approveLabel = images.length ? "Aprobar servicio e imágenes" : "Aprobar servicio";
+  const uploadOnlyNote = service.isUploadOnlyCase
+    ? '<p class="admin-note">Servicio incluido por imagenes pendientes. Modera cada imagen sin cambiar el estado del servicio.</p>'
+    : "";
   return `
     <article class="internal-item">
       <div class="internal-item-header">
@@ -855,6 +941,7 @@ function caseServiceMarkup(service, company) {
           <h4>${escapeHtml(service.name || "Servicio sin nombre")}</h4>
         </div>
       </div>
+      ${uploadOnlyNote}
       <p>${escapeHtml(truncateText(service.description))}</p>
       <div class="internal-item-meta">
         <div><strong>Servicio ID</strong><span>${escapeHtml(serviceId)}</span></div>
@@ -865,11 +952,11 @@ function caseServiceMarkup(service, company) {
       <div class="service-images-section">
         <div>
           <strong>Imagenes del servicio</strong>
-          <p>Se publican junto con el servicio aprobado.</p>
+          <p>La aprobacion del servicio no publica imagenes. Revisa cada imagen individualmente.</p>
         </div>
-        ${serviceImagesMarkup(service)}
+        ${serviceImagesMarkup(service, { companyPublished })}
       </div>
-      ${scopedInternalActionsMarkup("services", { "company-id": companyId, "service-id": serviceId }, disabledReason, approveLabel, "Rechazar servicio")}
+      ${service.isUploadOnlyCase ? "" : scopedInternalActionsMarkup("services", { "company-id": companyId, "service-id": serviceId }, disabledReason, "Aprobar servicio", "Rechazar servicio")}
     </article>
   `;
 }
@@ -1038,8 +1125,16 @@ function internalActionSuccessMessage(type, action, response = {}) {
   if (type === "services") {
     return {
       message: action === "approve"
-        ? "Servicio aprobado y publicado. Revisa el resumen del expediente para pendientes restantes."
+        ? "Servicio aprobado y publicado. Las imagenes pendientes se moderan individualmente."
         : "Servicio rechazado. Revisa el resumen del expediente para pendientes restantes.",
+      tone: action === "approve" ? "success" : "warning",
+    };
+  }
+  if (type === "uploads") {
+    return {
+      message: action === "approve"
+        ? "Imagen aprobada. Solo esta imagen cambio de estado."
+        : "Imagen rechazada. Solo esta imagen cambio de estado.",
       tone: action === "approve" ? "success" : "warning",
     };
   }
@@ -1083,8 +1178,8 @@ async function handleInternalAction(button) {
       body: action === "reject" ? JSON.stringify({ reason }) : "{}",
     });
     const result = internalActionSuccessMessage(type, action, response);
+    await loadInternalModeration();
     setStatus(result.message, result.tone);
-    await loadInternalList(type);
   } catch (error) {
     setStatus(error.message, "error");
     button.disabled = false;

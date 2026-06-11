@@ -472,6 +472,19 @@
   overflow-wrap: anywhere;
 }
 
+.image-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.image-warning,
+.image-status-note {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+}
+
 .compact-empty {
   padding: 16px;
 }

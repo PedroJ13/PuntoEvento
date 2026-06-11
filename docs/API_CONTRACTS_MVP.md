@@ -465,9 +465,10 @@ Reglas:
 - Actualiza `Services.status` a `published`.
 - Actualiza `updatedAt`.
 - Limpia `rejectionReason`.
-- Publica tambien los uploads pendientes asociados a ese servicio, aplicando reglas de cover y galeria.
-- Si un upload asociado no puede publicarse por validacion de imagenes, responder con error claro y no dejar el servicio en estado parcialmente publicado.
-- La UI interna debe mostrar las imagenes dentro del expediente del servicio, no como cola separada principal.
+- No publica, aprueba, rechaza ni modifica uploads pendientes asociados al servicio.
+- No cambia `Services.coverUrl` ni `Services.gallery`.
+- Las imagenes del servicio se moderan por separado con `POST /api/internal/uploads/{companyId}/{uploadId}/approve` o `reject`.
+- La UI interna debe permitir aprobar/rechazar cada imagen individualmente dentro del contexto del servicio.
 
 ### POST `/api/internal/services/{companyId}/{serviceId}/reject`
 
@@ -522,14 +523,15 @@ Reglas:
 - Si `scope=service`, el servicio asociado debe estar `published`; si no, responder `409`.
 - Copia el blob desde el contenedor pendiente hacia el contenedor publico usando el mismo path `companies/...`.
 - Cambia `Uploads.status` a `published` y guarda `publicBlobName`, `publicBlobUrl` y `updatedAt`.
-- Intenta borrar el blob pendiente despues de publicar; si falla el borrado, no falla la publicacion.
+- No borra blobs como parte de la moderacion normal; limpiezas futuras deben ser tareas operativas explicitas.
 - Si `scope=service` e `imageType=cover`, actualiza `Services.coverUrl`, conserva la portada anterior en `Services.gallery` si no estaba incluida, y demueve uploads `published` anteriores de ese servicio de `imageType=cover` a `imageType=gallery`.
 - Si `scope=service` e `imageType=gallery`, agrega la URL a `Services.gallery`.
 - Si `scope=company` e `imageType=cover`, actualiza `Companies.coverUrl`.
 - Si `scope=company` e `imageType=logo`, actualiza `Companies.logoUrl`.
 - Si `scope=company` e `imageType=gallery`, solo deja el upload publicado porque `Company` no tiene campo `gallery` definido para MVP.
-- En servicios, no permitir mas de 10 imagenes publicadas en total incluyendo cover.
+- En servicios, no permitir mas de 10 imagenes en total contando publicadas + pendientes/reservadas no rechazadas.
 - En servicios, debe existir maximo un cover publicado/activo; al aprobar un nuevo cover, los covers publicados anteriores dejan de ser cover y pasan a galeria.
+- Aprobar/rechazar un upload individual no cambia `Services.status`.
 
 ### GET `/api/internal/uploads/pending`
 
@@ -563,7 +565,7 @@ Reglas:
 - Lista solo `Uploads` con `status=pending`.
 - No devuelve `pendingBlobName`, SAS, `partitionKey`, `rowKey`, hashes, cookies, connection strings ni metadata interna.
 - Puede devolver una URL interna de preview sin SAS, por ejemplo `/api/internal/uploads/{companyId}/{uploadId}/preview`, protegida con credencial interna admin.
-- Este endpoint puede seguir existiendo como soporte tecnico, pero la moderacion visual principal debe agrupar las imagenes dentro del servicio.
+- Este endpoint soporta la moderacion individual de imagenes; Admin UI puede agrupar las imagenes dentro del servicio o mostrar cola de uploads pendientes.
 
 ### POST `/api/internal/uploads/{companyId}/{uploadId}/reject`
 
@@ -1080,10 +1082,12 @@ Upload/Image:
 
 - La moderacion operativa debe orientarse a expediente de empresa: empresa, servicios y uploads relacionados en un solo contexto.
 - Las listas globales pueden mantenerse como resumen tecnico, pero no deben quedar al final como flujo viejo de tres columnas para aprobar empresa/servicio/upload por separado.
-- Las imagenes de servicio se moderan dentro del servicio: el admin aprueba empresa y servicios; aprobar servicio publica sus imagenes pendientes asociadas.
+- Las imagenes de servicio se moderan como acciones individuales: el admin puede aprobar/rechazar el servicio y aprobar/rechazar cada imagen por separado.
 - No hay cascadas silenciosas:
   - aprobar empresa no publica servicios/uploads;
-  - aprobar servicio publica solo los uploads pendientes asociados a ese mismo servicio, de forma visible y esperada por el admin;
+  - aprobar servicio no publica uploads pendientes;
+  - aprobar upload publica solo esa imagen;
+  - rechazar upload rechaza solo esa imagen;
   - rechazar empresa no rechaza servicios/uploads;
   - rechazar servicio no rechaza uploads.
 - Las cascadas futuras deben ser acciones explicitas con resumen y confirmacion.

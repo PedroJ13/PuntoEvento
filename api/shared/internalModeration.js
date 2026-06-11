@@ -1,6 +1,5 @@
 const { odata } = require("@azure/data-tables");
 const {
-  deletePendingBlob,
   ensureCompanyAuthTables,
   ensureCompaniesTable,
   ensurePublicContainer,
@@ -18,9 +17,6 @@ const { enforceAllowedOrigin } = require("./guard");
 const { badRequest, json, serverError } = require("./http");
 const { validateServiceUploadCapacity } = require("./serviceUploadRules");
 const { cleanText } = require("./validation");
-
-const SERVICE_UPLOAD_IMAGE_TYPES = new Set(["cover", "gallery"]);
-const MAX_SERVICE_IMAGES = 10;
 
 function notFound(message = "Not found") {
   return json(404, { error: message });
@@ -52,31 +48,6 @@ function parseStoredArray(value) {
   return [];
 }
 
-async function listPendingServiceUploads(uploadsTable, companyId, serviceId) {
-  const entities = uploadsTable.listEntities({
-    queryOptions: {
-      filter: odata`PartitionKey eq ${companyId} and scope eq ${"service"} and serviceId eq ${serviceId} and status eq ${"pending"}`,
-    },
-  });
-  const uploads = [];
-
-  for await (const upload of entities) {
-    if (
-      upload.status === "pending" &&
-      upload.scope === "service" &&
-      upload.serviceId === serviceId
-    ) {
-      uploads.push(upload);
-    }
-  }
-
-  return uploads.sort((a, b) => {
-    const left = Date.parse(a.createdAt || a.updatedAt || "") || 0;
-    const right = Date.parse(b.createdAt || b.updatedAt || "") || 0;
-    return left - right;
-  });
-}
-
 async function listPublishedServiceCoverUploads(uploadsTable, companyId, serviceId) {
   const entities = uploadsTable.listEntities({
     queryOptions: {
@@ -97,30 +68,6 @@ async function listPublishedServiceCoverUploads(uploadsTable, companyId, service
   }
 
   return uploads;
-}
-
-function validateServiceImageApproval(service, uploads) {
-  const coverUploads = uploads.filter((upload) => upload.imageType === "cover");
-  const galleryUploads = uploads.filter((upload) => upload.imageType === "gallery");
-  const invalidUpload = uploads.find((upload) => !SERVICE_UPLOAD_IMAGE_TYPES.has(upload.imageType));
-  if (invalidUpload) {
-    return { error: conflict("Service upload imageType is invalid") };
-  }
-  if (coverUploads.length > 1) {
-    return { error: conflict("Service cannot publish more than one cover image") };
-  }
-
-  const existingGallery = parseStoredArray(service.gallery);
-  const hasCover = Boolean(coverUploads.length || cleanText(service.coverUrl, 600));
-  const nextImageCount = (hasCover ? 1 : 0) + existingGallery.length + galleryUploads.length;
-  if (nextImageCount > MAX_SERVICE_IMAGES) {
-    return { error: conflict(`Service image limit reached (${MAX_SERVICE_IMAGES})`) };
-  }
-  if (nextImageCount > 0 && !hasCover) {
-    return { error: conflict("Service images require one cover image") };
-  }
-
-  return {};
 }
 
 async function getEntity(table, partitionKey, rowKey) {
@@ -169,22 +116,6 @@ async function publishUploadBlob(upload, companyId, config) {
   }
 }
 
-async function publishServiceUploadsToPublic(uploads, companyId, config) {
-  const published = [];
-
-  for (const upload of uploads) {
-    const result = await publishUploadBlob(upload, companyId, config);
-    if (result.error) return { error: result.error };
-    published.push({
-      upload,
-      publicBlobName: result.publicBlobName,
-      publicBlobUrl: result.publicBlobUrl,
-    });
-  }
-
-  return { published };
-}
-
 async function demotePreviousPublishedCovers(uploadsTable, companyId, serviceId, exceptUploadIds, now) {
   const publishedCovers = await listPublishedServiceCoverUploads(uploadsTable, companyId, serviceId);
   await Promise.all(
@@ -221,6 +152,12 @@ async function updateServiceImage(upload, publicBlobUrl, config, now) {
 
   if (upload.imageType === "cover") {
     patch.coverUrl = publicBlobUrl;
+    const gallery = parseStoredArray(service.gallery);
+    const currentCoverUrl = cleanText(service.coverUrl, 600);
+    if (currentCoverUrl && currentCoverUrl !== publicBlobUrl && !gallery.includes(currentCoverUrl)) {
+      gallery.push(currentCoverUrl);
+    }
+    patch.gallery = JSON.stringify(gallery);
   } else if (upload.imageType === "gallery") {
     const gallery = parseStoredArray(service.gallery);
     if (!gallery.includes(publicBlobUrl)) gallery.push(publicBlobUrl);
@@ -428,83 +365,19 @@ async function moderateService(context, action, req, config) {
       return;
     }
 
-    await ensureUploadsTable(config);
-    const uploadsTable = getTableClient(config.uploadsTable, config);
-    const pendingUploads = await listPendingServiceUploads(uploadsTable, companyId, serviceId);
-    const imageValidation = validateServiceImageApproval(service, pendingUploads);
-    if (imageValidation.error) {
-      context.res = imageValidation.error;
-      return;
-    }
-
     const now = new Date().toISOString();
-    const publishedUploads = await publishServiceUploadsToPublic(pendingUploads, companyId, config);
-    if (publishedUploads.error) {
-      context.res = publishedUploads.error;
-      return;
-    }
-
-    const nextGallery = parseStoredArray(service.gallery);
-    let nextCoverUrl = service.coverUrl || "";
-    const newCoverItems = publishedUploads.published.filter((item) => item.upload.imageType === "cover");
-
-    if (newCoverItems.length && nextCoverUrl && !nextGallery.includes(nextCoverUrl)) {
-      nextGallery.push(nextCoverUrl);
-    }
-
-    for (const item of publishedUploads.published) {
-      if (item.upload.imageType === "cover") {
-        nextCoverUrl = item.publicBlobUrl;
-      } else if (item.upload.imageType === "gallery" && !nextGallery.includes(item.publicBlobUrl)) {
-        nextGallery.push(item.publicBlobUrl);
-      }
-    }
-
-    for (const item of publishedUploads.published) {
-      await uploadsTable.updateEntity(
-        {
-          partitionKey: companyId,
-          rowKey: item.upload.rowKey || item.upload.id,
-          status: "published",
-          publicBlobName: item.publicBlobName,
-          publicBlobUrl: item.publicBlobUrl,
-          updatedAt: now,
-        },
-        "Merge",
-      );
-    }
-
-    if (newCoverItems.length) {
-      const newCoverUploadIds = new Set(
-        newCoverItems.map((item) => item.upload.rowKey || item.upload.id).filter(Boolean),
-      );
-      await demotePreviousPublishedCovers(uploadsTable, companyId, serviceId, newCoverUploadIds, now);
-    }
-
     await servicesTable.updateEntity(
       {
         partitionKey: companyId,
         rowKey: serviceId,
         status: "published",
         rejectionReason: "",
-        coverUrl: nextCoverUrl,
-        gallery: JSON.stringify(nextGallery),
         updatedAt: now,
       },
       "Merge",
     );
 
-    await Promise.all(
-      publishedUploads.published.map((item) =>
-        deletePendingBlob(item.upload.pendingBlobName, config).catch((error) => {
-          context.log.warn("Could not delete published pending blob.", error);
-        }),
-      ),
-    );
-
-    context.res = success("published", {
-      publishedUploads: publishedUploads.published.length,
-    });
+    context.res = success("published");
     return;
   }
 
@@ -582,6 +455,10 @@ async function approveUpload(context, req, config) {
     return;
   }
 
+  if (upload.scope === "service" && upload.imageType === "cover") {
+    await demotePreviousPublishedCovers(uploadsTable, companyId, upload.serviceId, new Set([uploadId]), now);
+  }
+
   await uploadsTable.updateEntity(
     {
       partitionKey: companyId,
@@ -593,10 +470,6 @@ async function approveUpload(context, req, config) {
     },
     "Merge",
   );
-
-  await deletePendingBlob(upload.pendingBlobName, config).catch((error) => {
-    context.log.warn("Could not delete published pending blob.", error);
-  });
 
   context.res = success("published", {
     publicBlobUrl: publishedBlob.publicBlobUrl,
