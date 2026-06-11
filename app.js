@@ -364,6 +364,7 @@ const DEFAULT_SEO_METADATA = {
   canonical: `${SITE_ORIGIN}/`,
   image: `${SITE_ORIGIN}/assets/images/logo-punto-evento-cr-panel.png`,
 };
+const STRUCTURED_DATA_SCRIPT_ID = "punto-evento-json-ld";
 
 let providers = [];
 let providerGallery = [];
@@ -1186,6 +1187,73 @@ function updateDocumentMetadata(page = null) {
   setMetaContent('meta[name="twitter:title"]', metadata.title);
   setMetaContent('meta[name="twitter:description"]', metadata.description);
   setMetaContent('meta[name="twitter:image"]', metadata.image);
+}
+
+function baseStructuredData() {
+  const logoUrl = `${SITE_ORIGIN}/assets/images/logo-punto-evento-cr-panel.png`;
+  return [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_ORIGIN}/#organization`,
+      name: "Punto Evento CR",
+      url: `${SITE_ORIGIN}/`,
+      logo: {
+        "@type": "ImageObject",
+        url: logoUrl,
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_ORIGIN}/#website`,
+      url: `${SITE_ORIGIN}/`,
+      name: "Punto Evento CR",
+      publisher: {
+        "@id": `${SITE_ORIGIN}/#organization`,
+      },
+      inLanguage: "es-CR",
+    },
+  ];
+}
+
+function faqStructuredData(page) {
+  if (!page?.faqs?.length) return null;
+  return {
+    "@type": "FAQPage",
+    "@id": `${SITE_ORIGIN}${page.route}#faq`,
+    mainEntityOfPage: `${SITE_ORIGIN}${page.route}`,
+    inLanguage: "es-CR",
+    mainEntity: page.faqs.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: item.answer,
+      },
+    })),
+  };
+}
+
+function structuredDataPayload(page = null) {
+  const graph = baseStructuredData();
+  const faq = faqStructuredData(page);
+  if (faq) graph.push(faq);
+  return {
+    "@context": "https://schema.org",
+    "@graph": graph,
+  };
+}
+
+function safeJsonLd(schema) {
+  return JSON.stringify(schema).replace(/</g, "\\u003c");
+}
+
+function updateStructuredData(page = null) {
+  document.querySelector(`#${STRUCTURED_DATA_SCRIPT_ID}`)?.remove();
+  const script = document.createElement("script");
+  script.id = STRUCTURED_DATA_SCRIPT_ID;
+  script.type = "application/ld+json";
+  script.textContent = safeJsonLd(structuredDataPayload(page));
+  document.head.appendChild(script);
 }
 
 function categorySeoEmptyState(page) {
@@ -2185,6 +2253,7 @@ async function render() {
   const cleanCategoryPage = categorySeoPageForPath();
   if (cleanCategoryPage && !window.location.hash) {
     updateDocumentMetadata(cleanCategoryPage);
+    updateStructuredData(cleanCategoryPage);
     app.innerHTML = `<div class="page">${seoCategoryPage(cleanCategoryPage)}</div>`;
     document.querySelectorAll(".nav a").forEach((link) => {
       link.classList.remove("is-active");
@@ -2197,6 +2266,7 @@ async function render() {
   const cleanLocationPage = locationSeoPageForPath();
   if (cleanLocationPage && !window.location.hash) {
     updateDocumentMetadata(cleanLocationPage);
+    updateStructuredData(cleanLocationPage);
     app.innerHTML = `<div class="page">${seoLocationPage(cleanLocationPage)}</div>`;
     document.querySelectorAll(".nav a").forEach((link) => {
       link.classList.remove("is-active");
@@ -2207,6 +2277,7 @@ async function render() {
   }
 
   updateDocumentMetadata();
+  updateStructuredData();
   const pages = {
     inicio: homePage,
     bodas: weddingsPage,
