@@ -520,9 +520,27 @@ function revokePendingImageUrls() {
   });
 }
 
-function setDefaultCoverImage() {
-  if (!state.pendingImages.length) return;
-  if (!state.pendingImages.some((image) => image.isCover)) {
+function demoteExistingCover() {
+  state.existingImages.forEach((image) => {
+    if (image.type === "cover") {
+      image.type = "gallery";
+      image.name = image.name.replace(/^Portada publicada$/, "Galería publicada");
+    }
+  });
+}
+
+function ensureCoverSelection() {
+  if (state.pendingImages.some((image) => image.isCover)) {
+    demoteExistingCover();
+    return;
+  }
+  if (state.existingImages.some((image) => image.type === "cover")) return;
+  if (state.existingImages.length) {
+    state.existingImages[0].type = "cover";
+    state.existingImages[0].name = "Portada publicada";
+    return;
+  }
+  if (state.pendingImages.length) {
     state.pendingImages[0].isCover = true;
   }
 }
@@ -572,7 +590,7 @@ function renderPhotoPreview(service = null) {
           <img src="${escapeHtml(image.previewUrl)}" alt="${escapeHtml(image.name)}">
           <span>${escapeHtml(image.name)}</span>
           <div class="photo-actions">
-            <button class="ghost-button compact-button" type="button" data-set-cover="${index}">${image.isCover ? "Portada" : "Usar como portada"}</button>
+            <button class="ghost-button compact-button" type="button" data-set-cover="${index}" ${image.isCover ? "disabled" : ""}>${image.isCover ? "Portada" : "Usar como portada"}</button>
             <button class="secondary-button compact-button" type="button" data-remove-photo="${index}">Quitar</button>
           </div>
         </article>
@@ -607,6 +625,7 @@ function resetServiceForm(service = null) {
   state.pendingImages = [];
   state.existingImages = existingImagesFromService(service);
   state.existingImagesLoaded = true;
+  ensureCoverSelection();
   $("[data-service-form-mode]").textContent = service ? "Editar servicio" : "Cargar servicio";
   const formCopy = $("[data-service-form-copy]");
   if (formCopy) {
@@ -897,7 +916,7 @@ async function uploadOneServiceImage(serviceId, image) {
 }
 
 async function uploadServiceImages(serviceId) {
-  setDefaultCoverImage();
+  ensureCoverSelection();
   for (const image of state.pendingImages) {
     await uploadOneServiceImage(serviceId, image);
   }
@@ -1085,8 +1104,15 @@ document.addEventListener("change", (event) => {
       isCover: false,
     });
   });
-  setDefaultCoverImage();
-    setFormMessage("Fotos listas. Marca una como portada antes de guardar.");
+  ensureCoverSelection();
+  const hasCurrentCover =
+    state.existingImages.some((image) => image.type === "cover") ||
+    state.pendingImages.some((image) => image.isCover);
+  setFormMessage(
+    hasCurrentCover
+      ? "Fotos listas. Puedes mantener la portada actual o elegir otra."
+      : "Fotos listas. Marca una como portada antes de guardar.",
+  );
   renderReadonlySummary(service);
   renderPhotoPreview(service);
   event.target.value = "";
@@ -1100,6 +1126,9 @@ document.addEventListener("click", (event) => {
       image.type = imageIndex === index ? "cover" : "gallery";
       image.name = image.type === "cover" ? "Portada publicada" : image.name.replace(/^Portada publicada$/, "Galería publicada");
     });
+    state.pendingImages.forEach((image) => {
+      image.isCover = false;
+    });
     const form = existingCoverButton.closest("[data-service-form]");
     const service = state.services.find((item) => item.id === form?.elements.id.value);
     renderReadonlySummary(service);
@@ -1110,6 +1139,7 @@ document.addEventListener("click", (event) => {
   if (existingRemoveButton) {
     const index = Number(existingRemoveButton.dataset.removeExistingPhoto);
     state.existingImages.splice(index, 1);
+    ensureCoverSelection();
     const form = existingRemoveButton.closest("[data-service-form]");
     const service = state.services.find((item) => item.id === form?.elements.id.value);
     renderReadonlySummary(service);
@@ -1122,8 +1152,10 @@ document.addEventListener("click", (event) => {
     state.pendingImages.forEach((image, imageIndex) => {
       image.isCover = imageIndex === index;
     });
+    demoteExistingCover();
     const form = coverButton.closest("[data-service-form]");
     const service = state.services.find((item) => item.id === form?.elements.id.value);
+    renderReadonlySummary(service);
     renderPhotoPreview(service);
   }
 
@@ -1132,7 +1164,7 @@ document.addEventListener("click", (event) => {
     const index = Number(removeButton.dataset.removePhoto);
     const [removed] = state.pendingImages.splice(index, 1);
     if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl);
-    setDefaultCoverImage();
+    ensureCoverSelection();
     const form = removeButton.closest("[data-service-form]");
     const service = state.services.find((item) => item.id === form?.elements.id.value);
     renderReadonlySummary(service);
