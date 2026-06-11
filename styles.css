@@ -765,6 +765,40 @@ button:focus-visible,
   justify-self: start;
 }
 
+.seo-category-hero .subhero-inner {
+  align-items: center;
+}
+
+.seo-category-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.seo-empty .seo-category-actions {
+  margin-top: 4px;
+}
+
+.seo-faq-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.seo-faq-grid .step {
+  min-height: 190px;
+}
+
+.seo-faq-grid h3 {
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.seo-faq-grid p {
+  color: var(--muted);
+}
+
 .wide-card {
   display: grid;
   grid-template-columns: 230px 1fr;
@@ -1461,6 +1495,7 @@ button:disabled,
   .category-grid,
   .cards-grid,
   .steps,
+  .seo-faq-grid,
   .plan-grid,
   .review-grid,
   .company-form,

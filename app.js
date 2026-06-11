@@ -48,6 +48,182 @@ const PUBLIC_SERVICE_CATEGORIES = [
     image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80",
   },
 ];
+const SITE_ORIGIN = "https://puntoeventocr.com";
+const CATEGORY_SEO_PAGES = [
+  {
+    slug: "salones-eventos",
+    route: "/proveedores/salones-eventos",
+    eyebrow: "Salones y espacios",
+    h1: "Salones y espacios para eventos en Costa Rica",
+    title: "Salones para eventos en Costa Rica | Punto Evento CR",
+    description: "Encuentra salones, jardines y espacios para bodas, fiestas y eventos corporativos en Costa Rica.",
+    intro:
+      "Compara salones, jardines y espacios para celebrar eventos en Costa Rica. Revisa opciones publicadas y contacta proveedores cuando encuentres una propuesta que se ajuste a tu evento.",
+    aliases: ["Salones", "Salon", "Salon y jardin", "Jardin", "Espacios"],
+    emptyTitle: "Pronto mostraremos salones y espacios publicados",
+    emptyText:
+      "Pronto mostraremos salones y espacios publicados para eventos en Costa Rica. Puedes explorar el catalogo general mientras sumamos nuevas opciones.",
+    faqs: [
+      {
+        question: "Como elegir un salon para eventos?",
+        answer: "Revisa ubicacion, capacidad, servicios incluidos, fotos y condiciones antes de contactar.",
+      },
+      {
+        question: "Puedo contactar directamente al proveedor?",
+        answer: "Si el proveedor tiene contacto publicado, puedes usar WhatsApp o enviar una solicitud desde Punto Evento CR.",
+      },
+      {
+        question: "Aparecen solo salones publicados?",
+        answer: "Si. La pagina publica debe mostrar solo servicios aprobados/publicados.",
+      },
+    ],
+  },
+  {
+    slug: "catering",
+    route: "/proveedores/catering",
+    eyebrow: "Catering y banquetes",
+    h1: "Catering y banquetes para eventos en Costa Rica",
+    title: "Catering para eventos en Costa Rica | Punto Evento CR",
+    description: "Busca proveedores de catering, banquetes y comida para bodas, fiestas y eventos corporativos en Costa Rica.",
+    intro:
+      "Encuentra opciones de catering y banquetes para eventos sociales o corporativos. Compara servicios publicados, precios desde cuando esten disponibles y formas de contacto.",
+    aliases: ["Catering", "Banquetes", "Comida", "Alimentos"],
+    emptyTitle: "Todavia no hay proveedores de catering publicados",
+    emptyText:
+      "Todavia no hay proveedores de catering publicados en esta categoria. Vuelve pronto o explora otros servicios del catalogo.",
+    faqs: [
+      {
+        question: "Que debo revisar antes de contratar catering?",
+        answer: "Revisa tipo de menu, cobertura, cantidad de invitados, precio desde y condiciones del proveedor.",
+      },
+      {
+        question: "Puedo solicitar informacion por servicio?",
+        answer: "Si. El contacto debe estar asociado a un servicio publicado especifico.",
+      },
+      {
+        question: "Punto Evento CR cobra por contactar?",
+        answer: "El MVP permite contactar proveedores publicados desde la pagina publica.",
+      },
+    ],
+  },
+  {
+    slug: "decoracion",
+    route: "/proveedores/decoracion",
+    eyebrow: "Decoracion y ambientacion",
+    h1: "Decoracion y ambientacion para eventos en Costa Rica",
+    title: "Decoracion para eventos en Costa Rica | Punto Evento CR",
+    description: "Encuentra proveedores de decoracion, flores, ambientacion y montaje para eventos en Costa Rica.",
+    intro:
+      "Explora proveedores de decoracion y ambientacion para bodas, fiestas y eventos corporativos. Revisa servicios publicados y contacta opciones que se ajusten al estilo de tu evento.",
+    aliases: ["Decoracion", "Decoración", "Decoracion floral", "Ambientacion", "Flores", "Montaje"],
+    emptyTitle: "Estamos sumando proveedores de decoracion",
+    emptyText: "Estamos sumando proveedores de decoracion y ambientacion. Mientras tanto, puedes revisar el catalogo general.",
+    faqs: [
+      {
+        question: "Que incluye un servicio de decoracion?",
+        answer: "Depende del proveedor; puede incluir flores, centros de mesa, montaje, ambientacion o elementos decorativos.",
+      },
+      {
+        question: "Puedo comparar estilos?",
+        answer: "Si hay fotos publicadas, la ficha del proveedor debe ayudar a comparar estilos y propuestas.",
+      },
+      {
+        question: "La decoracion se solicita por evento?",
+        answer: "Si. El contacto debe partir de un servicio publicado y del tipo de evento que necesitas.",
+      },
+    ],
+  },
+  {
+    slug: "musica-dj",
+    route: "/proveedores/musica-dj",
+    eyebrow: "Musica y DJ",
+    h1: "Musica y DJ para eventos en Costa Rica",
+    title: "Musica y DJ para eventos en Costa Rica | Punto Evento CR",
+    description: "Busca DJs, musica, sonido e iluminacion para bodas, fiestas y eventos corporativos en Costa Rica.",
+    intro:
+      "Encuentra proveedores de musica, DJ, sonido e iluminacion para crear el ambiente de tu evento. Compara servicios publicados y contacta opciones disponibles.",
+    aliases: ["Musica y DJ", "Musica", "Música", "DJ", "Sonido", "Luces", "Musica y luces", "Entretenimiento"],
+    emptyTitle: "Pronto mostraremos proveedores de musica y DJ",
+    emptyText:
+      "Pronto mostraremos proveedores de musica, DJ, sonido y luces. Por ahora puedes explorar el catalogo general.",
+    faqs: [
+      {
+        question: "Como elegir DJ o musica para un evento?",
+        answer: "Revisa experiencia, tipo de evento, cobertura, equipo incluido y referencias visuales si estan disponibles.",
+      },
+      {
+        question: "Esta categoria incluye sonido y luces?",
+        answer: "Puede incluirlos si el proveedor los publica como parte del servicio.",
+      },
+      {
+        question: "Puedo contactar por WhatsApp?",
+        answer: "Si el proveedor tiene WhatsApp disponible, debe mostrarse como canal primario.",
+      },
+    ],
+  },
+  {
+    slug: "fotografia-video",
+    route: "/proveedores/fotografia-video",
+    eyebrow: "Fotografia y video",
+    h1: "Fotografia y video para eventos en Costa Rica",
+    title: "Fotografia y video para eventos en Costa Rica | Punto Evento CR",
+    description: "Encuentra fotografos y proveedores de video para bodas, fiestas y eventos en Costa Rica.",
+    intro:
+      "Busca proveedores de fotografia y video para documentar tu evento. Revisa servicios publicados, ubicacion y formas de contacto antes de solicitar informacion.",
+    aliases: ["Fotografia", "Fotografía", "Video", "Foto y video", "Fotografia y video"],
+    emptyTitle: "Todavia no hay servicios de fotografia y video publicados",
+    emptyText:
+      "Todavia no hay servicios de fotografia y video publicados en esta categoria. Puedes revisar otros proveedores del catalogo.",
+    faqs: [
+      {
+        question: "Que debo comparar en fotografia y video?",
+        answer: "Revisa estilo, cobertura, entregables, precio desde y fotos o ejemplos publicados.",
+      },
+      {
+        question: "Puedo ver trabajos antes de contactar?",
+        answer: "Si el proveedor cargo imagenes, la ficha publica debe mostrarlas.",
+      },
+      {
+        question: "La solicitud se asocia a un servicio?",
+        answer: "Si. El contacto debe salir desde un servicio publicado especifico.",
+      },
+    ],
+  },
+  {
+    slug: "pasteleria-reposteria",
+    route: "/proveedores/pasteleria-reposteria",
+    eyebrow: "Pasteleria y reposteria",
+    h1: "Pasteleria y reposteria para eventos en Costa Rica",
+    title: "Pasteleria y reposteria para eventos en Costa Rica | Punto Evento CR",
+    description: "Encuentra queques, mesas dulces, postres y reposteria para bodas, fiestas y eventos en Costa Rica.",
+    intro:
+      "Explora proveedores de pasteleria, queques, mesas dulces y reposteria para eventos. Compara servicios publicados y contacta opciones para tu celebracion.",
+    aliases: ["Pasteleria", "Reposteria", "Queques", "Pastel", "Pasteles", "Mesa dulce", "Postres", "Candy bar"],
+    emptyTitle: "Estamos preparando proveedores de pasteleria y reposteria",
+    emptyText:
+      "Estamos preparando proveedores de pasteleria y reposteria para eventos. Puedes explorar el catalogo general mientras se publican nuevas opciones.",
+    faqs: [
+      {
+        question: "Que servicios incluye pasteleria y reposteria?",
+        answer: "Puede incluir queques, postres, mesas dulces, cupcakes, candy bar u otras opciones publicadas por cada proveedor.",
+      },
+      {
+        question: "Puedo pedir informacion por un producto especifico?",
+        answer: "Si. El contacto debe estar asociado al servicio publicado que estas revisando.",
+      },
+      {
+        question: "Los precios son finales?",
+        answer: "Los precios visibles son desde cuando el proveedor los publica. La confirmacion depende del detalle del evento.",
+      },
+    ],
+  },
+];
+const DEFAULT_SEO_METADATA = {
+  title: "Punto Evento CR | Proveedores para eventos en Costa Rica",
+  description: "Encuentra y contacta proveedores para eventos en Costa Rica.",
+  canonical: `${SITE_ORIGIN}/`,
+  image: `${SITE_ORIGIN}/assets/images/logo-punto-evento-cr-panel.png`,
+};
 
 let providers = [];
 let providerGallery = [];
@@ -442,6 +618,7 @@ function analyticsSourceSurface(element = null) {
   if (element?.closest?.("#registro-empresa") || route === "empresas") return "company_register";
   if (route === "proveedor") return "company_profile";
   if (route === "bodas") return "services_list";
+  if (categorySeoPageForPath()) return "seo_category";
   return "home";
 }
 
@@ -728,6 +905,22 @@ function serviceMatchesFilters(service, filters = {}) {
   return true;
 }
 
+function serviceMatchesAliases(service, aliases = []) {
+  const serviceText = normalizeFilterValue(
+    [
+      service.name,
+      service.category,
+      service.description,
+      service.company?.name,
+      ...(service.eventTypes || []),
+    ].join(" "),
+  );
+  return aliases.some((alias) => {
+    const normalizedAlias = normalizeFilterValue(alias);
+    return normalizedAlias && serviceText.includes(normalizedAlias);
+  });
+}
+
 function hasActiveServiceFilters(filters = {}) {
   return ["q", "eventType", "province", "service"].some((key) => {
     const value = normalizeFilterValue(filters[key]);
@@ -794,6 +987,124 @@ function serviceCategoryOptionsMarkup(currentValue = "") {
     ${PUBLIC_SERVICE_CATEGORIES.map(
       (category) => `<option value="${safeText(category.label)}" ${selectedOption(currentValue, category.label)}>${safeText(category.label)}</option>`,
     ).join("")}
+  `;
+}
+
+function categorySeoPageForPath(pathname = window.location.pathname) {
+  const cleanPath = pathname.replace(/\/+$/, "") || "/";
+  return CATEGORY_SEO_PAGES.find((page) => page.route === cleanPath) || null;
+}
+
+function setMetaContent(selector, content) {
+  const element = document.querySelector(selector);
+  if (element) element.setAttribute("content", content);
+}
+
+function setCanonicalHref(href) {
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) canonical.setAttribute("href", href);
+}
+
+function updateDocumentMetadata(page = null) {
+  const metadata = page
+    ? {
+        title: page.title,
+        description: page.description,
+        canonical: `${SITE_ORIGIN}${page.route}`,
+        image: DEFAULT_SEO_METADATA.image,
+      }
+    : DEFAULT_SEO_METADATA;
+
+  document.title = metadata.title;
+  setMetaContent('meta[name="description"]', metadata.description);
+  setCanonicalHref(metadata.canonical);
+  setMetaContent('meta[property="og:title"]', metadata.title);
+  setMetaContent('meta[property="og:description"]', metadata.description);
+  setMetaContent('meta[property="og:url"]', metadata.canonical);
+  setMetaContent('meta[property="og:image"]', metadata.image);
+  setMetaContent('meta[name="twitter:title"]', metadata.title);
+  setMetaContent('meta[name="twitter:description"]', metadata.description);
+  setMetaContent('meta[name="twitter:image"]', metadata.image);
+}
+
+function categorySeoEmptyState(page) {
+  return `
+    <article class="empty-results seo-empty" role="status">
+      <p class="eyebrow">Catalogo en preparacion</p>
+      <h3>${safeText(page.emptyTitle)}</h3>
+      <p>${safeText(page.emptyText)}</p>
+      <div class="seo-category-actions">
+        <a class="secondary-button" href="#bodas" data-results-link>Explorar catalogo general</a>
+        <a class="ghost-button" href="#empresas" data-publish-company-click data-source-surface="seo_category" data-target-section="company_register">Registrar empresa</a>
+      </div>
+    </article>
+  `;
+}
+
+function categorySeoHeroImage(page) {
+  const category = PUBLIC_SERVICE_CATEGORIES.find((item) =>
+    page.aliases.some((alias) => {
+      const categoryLabel = normalizeFilterValue(item.label);
+      const categoryAlias = normalizeFilterValue(alias);
+      return categoryLabel.includes(categoryAlias) || categoryAlias.includes(categoryLabel);
+    }),
+  );
+  return category?.image || PUBLIC_SERVICE_CATEGORIES[0].image;
+}
+
+function seoCategoryPage(page) {
+  const results = services.filter((service) => serviceMatchesAliases(service, page.aliases));
+  const resultLabel = results.length === 1 ? "1 servicio publicado" : `${results.length} servicios publicados`;
+  return `
+    <section class="subhero seo-category-hero">
+      <div class="subhero-inner">
+        <div>
+          <p class="eyebrow">${safeText(page.eyebrow)}</p>
+          <h1>${safeText(page.h1)}</h1>
+          <p>${safeText(page.intro)}</p>
+          <div class="seo-category-actions">
+            <a class="primary-button" href="#bodas" data-results-link>Ver catalogo general</a>
+            <a class="secondary-button" href="#empresas" data-publish-company-click data-source-surface="seo_category" data-target-section="company_register">Publicar empresa</a>
+          </div>
+        </div>
+        <img src="${safeImageUrl(categorySeoHeroImage(page))}" alt="${safeText(page.eyebrow)}">
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Resultados por categoria</p>
+          <h2>${safeText(resultLabel)}</h2>
+        </div>
+        <a class="ghost-button" href="#inicio">Volver al inicio</a>
+      </div>
+      <div class="result-list" id="providerResults" tabindex="-1" aria-live="polite">
+        ${results.length ? results.map(wideServiceCard).join("") : categorySeoEmptyState(page)}
+      </div>
+      ${dataSourceNotice()}
+    </section>
+    <section class="band">
+      <div class="section">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Preguntas frecuentes</p>
+            <h2>Antes de contactar</h2>
+          </div>
+        </div>
+        <div class="seo-faq-grid">
+          ${page.faqs
+            .map(
+              (item) => `
+                <article class="step">
+                  <h3>${safeText(item.question)}</h3>
+                  <p>${safeText(item.answer)}</p>
+                </article>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    </section>
   `;
 }
 
@@ -1640,6 +1951,19 @@ function focusResultsArea(behavior = "smooth") {
 
 async function render() {
   const [route = "inicio", providerId, serviceSlug] = window.location.hash.replace("#", "").split("/");
+  const cleanCategoryPage = categorySeoPageForPath();
+  if (cleanCategoryPage && !window.location.hash) {
+    updateDocumentMetadata(cleanCategoryPage);
+    app.innerHTML = `<div class="page">${seoCategoryPage(cleanCategoryPage)}</div>`;
+    document.querySelectorAll(".nav a").forEach((link) => {
+      link.classList.remove("is-active");
+    });
+    bindPageEvents();
+    window.scrollTo({ top: 0, behavior: "instant" });
+    return;
+  }
+
+  updateDocumentMetadata();
   const pages = {
     inicio: homePage,
     bodas: weddingsPage,
