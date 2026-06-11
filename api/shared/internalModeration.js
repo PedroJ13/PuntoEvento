@@ -70,6 +70,34 @@ async function listPublishedServiceCoverUploads(uploadsTable, companyId, service
   return uploads;
 }
 
+async function listPublishedServiceUploads(uploadsTable, companyId, serviceId, excludedUploadId = "") {
+  const entities = uploadsTable.listEntities({
+    queryOptions: {
+      filter: odata`PartitionKey eq ${companyId} and scope eq ${"service"} and serviceId eq ${serviceId} and status eq ${"published"}`,
+    },
+  });
+  const uploads = [];
+
+  for await (const upload of entities) {
+    const uploadId = upload.rowKey || upload.id || "";
+    if (
+      uploadId !== excludedUploadId &&
+      upload.status === "published" &&
+      upload.scope === "service" &&
+      upload.serviceId === serviceId &&
+      upload.publicBlobUrl
+    ) {
+      uploads.push(upload);
+    }
+  }
+
+  return uploads.sort(
+    (a, b) =>
+      (Date.parse(b.updatedAt || b.createdAt || "") || 0) -
+      (Date.parse(a.updatedAt || a.createdAt || "") || 0),
+  );
+}
+
 async function getEntity(table, partitionKey, rowKey) {
   try {
     return await table.getEntity(partitionKey, rowKey);
@@ -187,6 +215,92 @@ async function updateCompanyImage(upload, publicBlobUrl, config, now) {
   if (upload.imageType === "logo") patch.logoUrl = publicBlobUrl;
 
   await companiesTable.updateEntity(patch, "Merge");
+  return {};
+}
+
+async function unpublishServiceImage(upload, config, now) {
+  if (upload.scope !== "service") return {};
+
+  const companyId = upload.partitionKey || "";
+  const serviceId = cleanText(upload.serviceId, 160);
+  const publicBlobUrl = cleanText(upload.publicBlobUrl, 600);
+  if (!companyId || !serviceId || !publicBlobUrl) return {};
+
+  await ensureServicesTable(config);
+  const servicesTable = getTableClient(config.servicesTable, config);
+  const service = await getEntity(servicesTable, companyId, serviceId);
+  if (!service) return { error: notFound("Not found") };
+
+  await ensureUploadsTable(config);
+  const uploadsTable = getTableClient(config.uploadsTable, config);
+  const remainingPublishedUploads = await listPublishedServiceUploads(
+    uploadsTable,
+    companyId,
+    serviceId,
+    upload.rowKey || upload.id || "",
+  );
+  const replacementCover =
+    remainingPublishedUploads.find((item) => item.imageType === "cover") ||
+    remainingPublishedUploads[0] ||
+    null;
+  const replacementCoverUrl = replacementCover?.publicBlobUrl || "";
+  const nextGallery = parseStoredArray(service.gallery).filter(
+    (url) => url !== publicBlobUrl && url !== replacementCoverUrl,
+  );
+  const patch = {
+    partitionKey: companyId,
+    rowKey: serviceId,
+    updatedAt: now,
+    gallery: JSON.stringify(nextGallery),
+  };
+
+  if (service.coverUrl === publicBlobUrl) {
+    patch.coverUrl = replacementCoverUrl;
+  } else if (replacementCoverUrl && !service.coverUrl) {
+    patch.coverUrl = replacementCoverUrl;
+  }
+
+  await servicesTable.updateEntity(patch, "Merge");
+
+  if (replacementCover && replacementCover.imageType !== "cover") {
+    await uploadsTable.updateEntity(
+      {
+        partitionKey: companyId,
+        rowKey: replacementCover.rowKey || replacementCover.id,
+        imageType: "cover",
+        updatedAt: now,
+      },
+      "Merge",
+    );
+  }
+
+  return {};
+}
+
+async function unpublishCompanyImage(upload, config, now) {
+  if (upload.scope !== "company" || !["cover", "logo"].includes(upload.imageType)) return {};
+
+  const companyId = upload.partitionKey || "";
+  const publicBlobUrl = cleanText(upload.publicBlobUrl, 600);
+  if (!companyId || !publicBlobUrl) return {};
+
+  await ensureCompaniesTable(config);
+  const companiesTable = getTableClient(config.companiesTable, config);
+  const company = await getEntity(companiesTable, "company", companyId);
+  if (!company) return { error: notFound("Not found") };
+
+  const patch = {
+    partitionKey: "company",
+    rowKey: companyId,
+    updatedAt: now,
+  };
+  if (upload.imageType === "cover" && company.coverUrl === publicBlobUrl) patch.coverUrl = "";
+  if (upload.imageType === "logo" && company.logoUrl === publicBlobUrl) patch.logoUrl = "";
+
+  if (Object.keys(patch).length > 3) {
+    await companiesTable.updateEntity(patch, "Merge");
+  }
+
   return {};
 }
 
@@ -492,6 +606,33 @@ async function rejectUpload(context, req, config) {
     return;
   }
   if (upload.status === "published") {
+    const now = new Date().toISOString();
+    const uploadForUpdate = { ...upload, partitionKey: companyId, rowKey: uploadId };
+    const relatedUpdate =
+      upload.scope === "service"
+        ? await unpublishServiceImage(uploadForUpdate, config, now)
+        : await unpublishCompanyImage(uploadForUpdate, config, now);
+
+    if (relatedUpdate.error) {
+      context.res = relatedUpdate.error;
+      return;
+    }
+
+    await uploadsTable.updateEntity(
+      {
+        partitionKey: companyId,
+        rowKey: uploadId,
+        status: "rejected",
+        rejectionReason: cleanText(req.body?.reason, 500),
+        updatedAt: now,
+      },
+      "Merge",
+    );
+
+    context.res = success("rejected");
+    return;
+  }
+  if (upload.status === "rejected") {
     context.res = conflict("Invalid state");
     return;
   }

@@ -292,6 +292,8 @@ Reglas:
 - Al confirmar la subida, el estado pasa a `pending`, `size` se reemplaza por el tamano real del blob y `expiresAt` se limpia porque ya no aplica como vencimiento de reserva.
 - Al aprobar internamente, el estado pasa a `published`, se guarda `publicBlobUrl` y la URL se aplica a `Service.coverUrl`, `Service.gallery`, `Company.coverUrl` o `Company.logoUrl` segun `scope` e `imageType`.
 - Para `scope=service`, la aprobacion normal ocurre como accion individual de imagen en admin, separada de la aprobacion interna del servicio.
+- Al rechazar/despublicar un upload `published`, el estado pasa a `rejected` sin borrar blobs; si era imagen de servicio, se remueve de `Service.gallery` y, si era `Service.coverUrl`, se reemplaza por otra imagen publicada del servicio o se limpia si no queda ninguna.
+- Rechazar/despublicar imagenes no cambia `Company.status` ni `Service.status`; la visibilidad publica se recalcula por lectura segun las imagenes que sigan `published`.
 - Si `scope=company` e `imageType=gallery`, el upload queda publicado pero no se aplica a la empresa porque el modelo MVP no define `Company.gallery`.
 - Publicar o asociar la imagen al perfil/servicio requiere validacion posterior.
 

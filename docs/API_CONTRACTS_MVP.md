@@ -570,7 +570,7 @@ Reglas:
 
 ### POST `/api/internal/uploads/{companyId}/{uploadId}/reject`
 
-Rechaza un upload.
+Rechaza o despublica un upload.
 
 Request opcional:
 
@@ -593,9 +593,16 @@ Reglas:
 
 - Requiere credencial interna admin.
 - El upload debe existir.
+- Puede aplicarse a uploads `pending`, `reserved` o `published`.
 - Cambia `Uploads.status` a `rejected`.
 - Guarda `rejectionReason` si se envia.
-- No copia ni publica el blob.
+- Si el upload estaba `published`, no borra el blob ni limpia `publicBlobUrl/publicBlobName`; solo deja de contarlo como imagen publica porque `status` deja de ser `published`.
+- Si `scope=service`, remueve la URL de `Services.gallery`.
+- Si `scope=service` y era la portada activa en `Services.coverUrl`, promueve otra imagen publicada del mismo servicio como portada; si no queda ninguna, limpia `Services.coverUrl`.
+- Si `scope=service`, no cambia `Services.status`; el servicio sigue aprobado internamente aunque pueda dejar de ser visible publicamente.
+- Si `scope=company` e `imageType=cover` o `logo`, limpia `Companies.coverUrl` o `Companies.logoUrl` solo si apuntaban a esa URL.
+- No cambia `Companies.status`.
+- No copia, mueve ni borra blobs.
 
 ### PATCH `/api/companies/me`
 
@@ -1091,7 +1098,7 @@ Upload/Image:
   - aprobar empresa no publica servicios/uploads;
   - aprobar servicio no publica uploads pendientes;
   - aprobar upload publica solo esa imagen;
-  - rechazar upload rechaza solo esa imagen;
+  - rechazar upload rechaza/despublica solo esa imagen y limpia sus referencias publicas directas;
   - rechazar empresa no rechaza servicios/uploads;
   - rechazar servicio no rechaza uploads.
 - Las cascadas futuras deben ser acciones explicitas con resumen y confirmacion.

@@ -739,16 +739,33 @@ function imagePublicUrl(image) {
   return cleanPublicUrl(image?.publicBlobUrl || image?.publicUrl || image?.url);
 }
 
+function serviceApprovedPublicImages(service) {
+  const publicUrls = new Set(servicePublicUrls(service));
+  if (!publicUrls.size) return [];
+
+  return serviceImages(service).filter((image) =>
+    String(image.status || "") === "published" && publicUrls.has(imagePublicUrl(image)),
+  );
+}
+
 function serviceHasApprovedPublicImage(service) {
   if (typeof service?.publicVisibility === "boolean") return service.publicVisibility;
   if (typeof service?.isPubliclyVisible === "boolean") return service.isPubliclyVisible;
+  return serviceApprovedPublicImages(service).length > 0;
+}
 
-  const publicUrls = new Set(servicePublicUrls(service));
-  if (!publicUrls.size) return false;
+function isActiveCoverImage(image, service) {
+  const coverUrl = cleanPublicUrl(service?.coverUrl);
+  return Boolean(coverUrl && imagePublicUrl(image) === coverUrl);
+}
 
-  return serviceImages(service).some((image) =>
-    String(image.status || "") === "published" && publicUrls.has(imagePublicUrl(image)),
-  );
+function publishedImageWarningMarkup(image, service) {
+  if (!isActiveCoverImage(image, service)) return "";
+  const approvedImages = serviceApprovedPublicImages(service);
+  const message = approvedImages.length <= 1
+    ? "Despublicar esta portada dejara el servicio pendiente de imagen y puede sacarlo del catalogo publico."
+    : "Despublicar esta portada puede cambiar la portada activa; si no queda otra imagen aprobada, el servicio dejara de verse publicamente.";
+  return `<p class="dependency-note image-warning">${escapeHtml(message)}</p>`;
 }
 
 function servicePublicState(service) {
@@ -820,6 +837,16 @@ function imageModerationActionsMarkup(image, service, options = {}) {
   const coverWarning = status === "pending" && image.imageType === "cover"
     ? '<p class="dependency-note image-warning">Aprobar esta portada reemplaza la portada activa del servicio.</p>'
     : "";
+
+  if (status === "published") {
+    return `
+      ${publishedImageWarningMarkup(image, service)}
+      <div class="internal-item-actions image-actions">
+        ${internalActionButton("uploads", "reject", { "company-id": companyId, "upload-id": uploadId, "current-status": status }, "", "Despublicar imagen")}
+      </div>
+      <p class="admin-note image-status-note">Imagen publicada; puedes despublicarla sin borrar el archivo.</p>
+    `;
+  }
 
   if (status !== "pending") {
     return `
@@ -1180,7 +1207,7 @@ function companyApproveMessage(response = {}) {
   };
 }
 
-function internalActionSuccessMessage(type, action, response = {}) {
+function internalActionSuccessMessage(type, action, response = {}, context = {}) {
   if (type === "companies" && action === "approve") {
     return companyApproveMessage(response);
   }
@@ -1193,10 +1220,13 @@ function internalActionSuccessMessage(type, action, response = {}) {
     };
   }
   if (type === "uploads") {
+    const wasPublished = context.currentStatus === "published";
     return {
       message: action === "approve"
         ? "Imagen aprobada. Solo esta imagen cambio de estado."
-        : "Imagen rechazada. Solo esta imagen cambio de estado.",
+        : wasPublished
+          ? "Imagen despublicada. El servicio se actualizo segun las imagenes aprobadas restantes."
+          : "Imagen rechazada. Solo esta imagen cambio de estado.",
       tone: action === "approve" ? "success" : "warning",
     };
   }
@@ -1218,6 +1248,7 @@ async function handleInternalAction(button) {
     serviceId: button.dataset.serviceId || "",
     uploadId: button.dataset.uploadId || "",
   };
+  const currentStatus = button.dataset.currentStatus || "";
   const path = internalActionPath(type, action, ids);
   if (!path) {
     setStatus("No se pudo ejecutar la accion: faltan IDs.");
@@ -1226,10 +1257,11 @@ async function handleInternalAction(button) {
 
   let reason = "";
   if (action === "reject") {
-    const promptedReason = window.prompt("Motivo de rechazo");
+    const isPublishedUpload = type === "uploads" && currentStatus === "published";
+    const promptedReason = window.prompt(isPublishedUpload ? "Motivo para despublicar imagen publicada" : "Motivo de rechazo");
     if (promptedReason === null) return;
     reason = promptedReason;
-    if (reason === "" && !window.confirm("Rechazar sin motivo?")) return;
+    if (reason === "" && !window.confirm(isPublishedUpload ? "Despublicar sin motivo?" : "Rechazar sin motivo?")) return;
   }
 
   button.disabled = true;
@@ -1239,7 +1271,7 @@ async function handleInternalAction(button) {
       method: "POST",
       body: action === "reject" ? JSON.stringify({ reason }) : "{}",
     });
-    const result = internalActionSuccessMessage(type, action, response);
+    const result = internalActionSuccessMessage(type, action, response, { currentStatus });
     await loadInternalModeration();
     setStatus(result.message, result.tone);
   } catch (error) {
