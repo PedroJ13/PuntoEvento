@@ -25,26 +25,32 @@ const PROVINCE_OPTIONS = [
 const PUBLIC_SERVICE_CATEGORIES = [
   {
     label: "Salón y jardín",
+    route: "/proveedores/salones-eventos",
     image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=1200&q=80",
   },
   {
     label: "Catering",
+    route: "/proveedores/catering",
     image: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80",
   },
   {
     label: "Fotografía",
+    route: "/proveedores/fotografia-video",
     image: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
   },
   {
     label: "Música y DJ",
+    route: "/proveedores/musica-dj",
     image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80",
   },
   {
     label: "Decoración",
+    route: "/proveedores/decoracion",
     image: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1200&q=80",
   },
   {
     label: "Mesa dulce",
+    route: "/proveedores/pasteleria-reposteria",
     image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80",
   },
 ];
@@ -827,14 +833,14 @@ function contactActionsMarkup(service, primaryClass = "primary-button") {
   const companyName = service.company?.name || "la empresa";
   if (whatsappHref) {
     return `
-      <a class="${primaryClass}" href="${safeUrl(whatsappHref)}" target="_blank" rel="noopener" data-whatsapp-contact${quoteButtonAttributes(service)}>Solicitar cotización</a>
-      <p class="contact-note full-note">Te abriremos WhatsApp con ${safeText(service.name)} de ${safeText(companyName)}.</p>
-      <button class="secondary-button" data-open-quote${quoteButtonAttributes(service)}>Enviar por formulario</button>
+      <a class="${primaryClass}" href="${safeUrl(whatsappHref)}" target="_blank" rel="noopener" data-whatsapp-contact${quoteButtonAttributes(service)}>Contactar empresa</a>
+      <p class="contact-note full-note">Te abriremos WhatsApp con ${safeText(companyName)} para consultar por ${safeText(service.name)}.</p>
+      <button class="secondary-button" data-open-quote${quoteButtonAttributes(service)}>Pedir cotización</button>
       <p class="contact-note full-note">También puedes enviar una solicitud registrada por Punto Evento CR.</p>
     `;
   }
   return `
-    <button class="${primaryClass}" data-open-quote${quoteButtonAttributes(service)}>Solicitar cotización</button>
+    <button class="${primaryClass}" data-open-quote${quoteButtonAttributes(service)}>Pedir cotización</button>
     <p class="contact-note full-note">Enviaremos tu solicitud a ${safeText(companyName)} y quedará registrada por Punto Evento CR.</p>
   `;
 }
@@ -849,46 +855,11 @@ function dataSourceNotice() {
 }
 
 function packageBandMarkup() {
-  if (!shouldShowReferenceCatalog()) return "";
-  return `
-    <section class="band">
-      <div class="section split">
-        <div>
-          <p class="eyebrow">Paquetes</p>
-          <h2>Precios que ayudan a decidir</h2>
-          <ul class="feature-list">
-            <li><span class="check">✓</span><span>Paquetes comparables por evento y presupuesto.</span></li>
-            <li><span class="check">✓</span><span>Proveedor, precio, ubicación y beneficios visibles desde el listado.</span></li>
-            <li><span class="check">✓</span><span>Contacto directo para convertir búsquedas en oportunidades.</span></li>
-          </ul>
-          <a class="primary-button" href="#bodas">Explorar paquetes</a>
-        </div>
-        <div class="image-stack">
-          <img src="${image("photo-1520854221256-17451cc331bf")}" alt="Recepción de boda" loading="lazy">
-          <img src="${image("photo-1546032996-6dfacbacbf3f")}" alt="Mesa de evento" loading="lazy">
-        </div>
-      </div>
-    </section>
-  `;
+  return "";
 }
 
 function weddingPackagesMarkup() {
-  if (!shouldShowReferenceCatalog()) return "";
-  return `
-    <section class="band">
-      <div class="section">
-        <div class="section-header">
-          <div>
-            <p class="eyebrow">Paquetes de boda</p>
-            <h2>Comparación rápida de precios</h2>
-          </div>
-        </div>
-        <div class="cards-grid">
-          ${packages.map(packageCard).join("")}
-        </div>
-      </div>
-    </section>
-  `;
+  return "";
 }
 
 function providerCard(provider) {
@@ -908,7 +879,7 @@ function providerCard(provider) {
         <strong>${safePrice(provider.price)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
-          <a class="secondary-button" href="#bodas" data-results-link>Elegir servicio</a>
+          <a class="secondary-button" href="#bodas" data-results-link>Ver servicios</a>
         </div>
       </div>
     </article>
@@ -958,7 +929,7 @@ function wideProviderCard(provider) {
         <strong>${safePrice(provider.price)}</strong>
         <div class="card-actions">
           <a class="ghost-button" href="${safeText(providerHref(provider))}">Ver ficha</a>
-          <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
+          <a class="primary-button" href="#bodas" data-results-link>Ver servicios</a>
         </div>
       </div>
     </article>
@@ -1009,7 +980,7 @@ function packageCard(pack) {
       <h3>${safeText(pack.title)}</h3>
       <p>${safeText(pack.details)}</p>
       <div class="package-price">${safePrice(pack.price)}</div>
-      <a class="secondary-button" href="#bodas" data-results-link>Elegir servicio</a>
+      <a class="secondary-button" href="#bodas" data-results-link>Ver servicios</a>
     </article>
   `;
 }
@@ -1305,7 +1276,7 @@ function seoCategoryPage(page) {
           <p class="eyebrow">Resultados por categoria</p>
           <h2>${safeText(resultLabel)}</h2>
         </div>
-        <a class="ghost-button" href="#inicio">Volver al inicio</a>
+        <a class="ghost-button" href="/">Volver al inicio</a>
       </div>
       <div class="result-list" id="providerResults" tabindex="-1" aria-live="polite">
         ${results.length ? results.map(wideServiceCard).join("") : categorySeoEmptyState(page)}
@@ -1375,7 +1346,7 @@ function seoLocationPage(page) {
           <p class="eyebrow">${safeText(page.eyebrow)}</p>
           <h2>${safeText(resultLabel)}</h2>
         </div>
-        <a class="ghost-button" href="#inicio">Volver al inicio</a>
+        <a class="ghost-button" href="/">Volver al inicio</a>
       </div>
       <div class="result-list" id="providerResults" tabindex="-1" aria-live="polite">
         ${results.length ? results.map(wideServiceCard).join("") : locationSeoEmptyState(page)}
@@ -1461,7 +1432,7 @@ function homePage() {
         ${PUBLIC_SERVICE_CATEGORIES
           .map(
             (category) => `
-              <a class="category-tile" href="#bodas" data-service-category="${safeText(category.label)}">
+              <a class="category-tile" href="${safeText(category.route)}">
                 <img src="${safeImageUrl(category.image)}" alt="${safeText(category.label)}" loading="lazy" ${imageFallbackAttribute()}>
                 <span>${safeText(category.label)}</span>
               </a>
@@ -1476,12 +1447,12 @@ function homePage() {
         <div class="section-header">
           <div>
             <p class="eyebrow">Flujo de contacto</p>
-            <h2>Busca, compara y solicita información</h2>
+            <h2>Busca, revisa y solicita información</h2>
           </div>
         </div>
         <div class="steps">
           <article class="step"><span class="step-number">01</span><h3>Elige un servicio</h3><p>Empieza por lo que necesitas: salón, catering, fotos, música o decoración.</p></article>
-          <article class="step"><span class="step-number">02</span><h3>Compara opciones</h3><p>Precios, fotos, zona y descripción ayudan a decidir más rápido.</p></article>
+          <article class="step"><span class="step-number">02</span><h3>Revisa opciones</h3><p>Fotos, zona, precio desde y descripción ayudan a decidir más rápido.</p></article>
           <article class="step"><span class="step-number">03</span><h3>Contacta directo</h3><p>Usa WhatsApp cuando esté disponible o envía una solicitud asociada al servicio elegido.</p></article>
         </div>
       </div>
@@ -1493,7 +1464,7 @@ function homePage() {
           <p class="eyebrow">Destacados</p>
           <h2>Servicios listos para contactar</h2>
         </div>
-        <a class="ghost-button" href="#bodas" data-results-link>Elegir servicio</a>
+        <a class="ghost-button" href="#bodas" data-results-link>Ver servicios</a>
       </div>
       <div class="cards-grid">
         ${services.slice(0, 3).map(serviceCard).join("")}
@@ -1524,8 +1495,8 @@ function weddingsPage() {
         <div>
           <p class="eyebrow">Servicios en Costa Rica</p>
           <h1>Encuentra proveedores por categoria de servicio</h1>
-          <p>Compara salones, catering, decoración, música y fotografía con información clara y contacto directo.</p>
-          <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
+          <p>Revisa salones, catering, decoración, música y fotografía con información clara y contacto directo.</p>
+          <a class="primary-button" href="#bodas" data-results-link>Ver servicios</a>
         </div>
         <img src="${image("photo-1523438885200-e635ba2c371e")}" alt="Decoracion de boda">
       </div>
@@ -1558,7 +1529,7 @@ function weddingsPage() {
             <p class="eyebrow">Resultados</p>
               <h2>Servicios recomendados</h2>
             </div>
-            <a class="ghost-button" href="#bodas" data-results-link>Elegir servicio</a>
+            <a class="ghost-button" href="#bodas" data-results-link>Ver servicios</a>
           </div>
           <div class="result-list" id="providerResults" tabindex="-1" aria-live="polite">
             ${results.length ? results.map(wideServiceCard).join("") : emptyServicesState()}
@@ -1776,7 +1747,7 @@ function providerDemoPage(providerId) {
         <p class="eyebrow">Proveedor no disponible</p>
         <h1>No encontramos proveedores publicados</h1>
         <p>Vuelve al inicio para revisar los servicios disponibles.</p>
-        <a class="primary-button" href="#inicio">Volver al inicio</a>
+        <a class="primary-button" href="/">Volver al inicio</a>
       </section>
     `;
   }
@@ -1792,7 +1763,6 @@ function providerDemoPage(providerId) {
     `;
   }
 
-  const providerPackages = packagesForProvider(provider.id);
   providerGallery = Array.isArray(provider.gallery) && provider.gallery.length
     ? provider.gallery
     : [{ src: provider.image || CONFIG.fallbackProviderImage, alt: provider.name || "Proveedor" }];
@@ -1829,11 +1799,11 @@ function providerDemoPage(providerId) {
         <p class="card-meta">${safeText(provider.category)} · ${safeText(provider.location)}</p>
         ${ratingStars(provider.rating, provider.reviews)}
         <div class="summary-price">
-          <span>Paquetes</span>
+          <span>Precio desde</span>
           <strong>${safePrice(provider.price)}</strong>
         </div>
         <div class="card-actions">
-          <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
+          <a class="primary-button" href="#bodas" data-results-link>Ver servicios</a>
           <button class="secondary-button" data-toast="Elige un servicio publicado para contactar por WhatsApp cuando este disponible.">WhatsApp</button>
         </div>
       </aside>
@@ -1848,21 +1818,16 @@ function providerDemoPage(providerId) {
             <p>${safeText(provider.description)}</p>
             <ul class="feature-list">
               <li><span class="check">✓</span><span>Perfil con información comercial lista para revisar.</span></li>
-              <li><span class="check">✓</span><span>Precio, ubicación, fotos y paquetes visibles antes del contacto.</span></li>
+              <li><span class="check">✓</span><span>Precio, ubicación, fotos y descripción visibles antes del contacto.</span></li>
               <li><span class="check">✓</span><span>Solicitud por formulario cuando exista un servicio publicado.</span></li>
             </ul>
           </article>
 
           <article class="content-block">
-            <p class="eyebrow">Paquetes</p>
-            <h2>Opciones disponibles</h2>
-            <div class="cards-grid">
-              ${
-                providerPackages.length
-                  ? providerPackages.map(packageCard).join("")
-                  : '<article class="package-card"><p class="package-meta">Referencia</p><h3>Paquetes por definir</h3><p>Este proveedor todavia no tiene paquetes cargados.</p><div class="package-price">Consultar</div><a class="secondary-button" href="#bodas" data-results-link>Elegir servicio</a></article>'
-              }
-            </div>
+            <p class="eyebrow">Servicios</p>
+            <h2>Opciones publicadas</h2>
+            <p>El catálogo público prioriza servicios aprobados con fotos visibles y contacto directo con la empresa.</p>
+            <a class="secondary-button" href="#bodas" data-results-link>Ver servicios</a>
           </article>
 
           <article class="content-block">
@@ -1880,10 +1845,10 @@ function providerDemoPage(providerId) {
           <ul class="feature-list">
             <li><span class="check">✓</span><span>${safeText(provider.location)}.</span></li>
             <li><span class="check">✓</span><span>${safePrice(provider.price)}.</span></li>
-            <li><span class="check">✓</span><span>${providerPackages.length} paquete(s) disponible(s).</span></li>
+            <li><span class="check">✓</span><span>Contacto directo cuando haya WhatsApp publicado.</span></li>
             <li><span class="check">✓</span><span>Solicitud por formulario asociada a servicio publicado.</span></li>
           </ul>
-          <a class="primary-button" href="#bodas" data-results-link>Elegir servicio</a>
+          <a class="primary-button" href="#bodas" data-results-link>Ver servicios</a>
         </aside>
       </div>
     </section>
@@ -1897,7 +1862,7 @@ function companiesPage() {
         <div>
           <p class="eyebrow">Proveedores</p>
           <h1>Recibe clientes interesados en tus servicios de eventos</h1>
-          <p>Crea un perfil profesional, publica paquetes, muestra fotos y recibe solicitudes de presupuesto desde un solo lugar.</p>
+          <p>Crea un perfil profesional, publica servicios, muestra fotos y recibe solicitudes de presupuesto desde un solo lugar.</p>
           <a class="primary-button" href="#registro-empresa" data-scroll-register>Crear perfil gratis</a>
         </div>
         <img src="${image("photo-1556761175-b413da4baf72")}" alt="Equipo revisando solicitudes">
@@ -1909,7 +1874,7 @@ function companiesPage() {
         <p class="eyebrow">Valor para empresas</p>
         <h2>Una página que vende antes del formulario</h2>
         <ul class="feature-list">
-          <li><span class="check">✓</span><span>Perfil con galería, paquetes, promociones y datos de contacto.</span></li>
+          <li><span class="check">✓</span><span>Perfil con galería, servicios publicados y datos de contacto.</span></li>
           <li><span class="check">✓</span><span>Solicitudes de presupuesto de personas con intencion real.</span></li>
           <li><span class="check">✓</span><span>Insignias y estadisticas para mejorar confianza y conversion.</span></li>
           <li><span class="check">✓</span><span>Opciones destacadas para aparecer en categorías clave.</span></li>
@@ -2036,7 +2001,7 @@ function companiesPage() {
             <div class="plan-price">₡29k</div>
             <ul>
               <li>Mayor posicion en listados</li>
-              <li>Paquetes y promociones</li>
+              <li>Servicios destacados</li>
               <li>Solicitudes priorizadas</li>
             </ul>
             <button class="primary-button" data-toast="Plan destacado seleccionado.">Destacar empresa</button>
@@ -2220,7 +2185,7 @@ function companiesPageNew() {
             <div class="plan-price">CRC 29k</div>
             <ul>
               <li>Mayor posicion en listados</li>
-              <li>Paquetes y promociones</li>
+              <li>Servicios destacados</li>
               <li>Solicitudes priorizadas</li>
             </ul>
             <button class="primary-button" data-toast="Plan destacado seleccionado.">Destacar empresa</button>
@@ -2738,7 +2703,7 @@ function openQuote(event) {
   }
 
   if (quoteTitle) {
-    quoteTitle.textContent = serviceName ? `Solicitar cotización por ${serviceName}` : "Solicitar cotización";
+    quoteTitle.textContent = serviceName ? `Pedir cotización por ${serviceName}` : "Pedir cotización";
   }
   if (quoteContextNode) {
     quoteContextNode.textContent = quoteContext.companyName
