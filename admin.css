@@ -269,7 +269,7 @@
 .admin-image img {
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
   background: var(--soft);
 }
 
@@ -463,7 +463,7 @@
 .service-image-placeholder {
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
   background: var(--soft);
 }
 
@@ -785,7 +785,7 @@
 .photo-file-placeholder {
   width: 100%;
   aspect-ratio: 4 / 3;
-  object-fit: cover;
+  object-fit: contain;
   background: var(--soft);
 }
 
