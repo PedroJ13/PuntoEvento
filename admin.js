@@ -947,6 +947,17 @@ function companyMetaRow(label, value) {
   return `<div><strong>${escapeHtml(label)}</strong><span>${escapeHtml(cleanValue)}</span></div>`;
 }
 
+function companyPasswordResetMarkup(companyId, company) {
+  const email = safeCompanyContactValue(company.email);
+  const disabledReason = email ? "" : "La empresa no tiene correo registrado.";
+  return `
+    <div class="internal-item-actions">
+      <button class="secondary-button compact-button" type="button" data-company-password-reset data-company-id="${escapeHtml(companyId)}" ${disabledReason ? "disabled" : ""} title="${escapeHtml(disabledReason)}">Enviar reset de acceso</button>
+    </div>
+    <p class="admin-note compact-empty">Envía un correo de recuperación al contacto registrado. El admin no ve enlaces ni tokens.</p>
+  `;
+}
+
 function pendingCountLabel(count, singular, plural) {
   if (count === 0) return `0 ${plural}`;
   return `${count} ${count === 1 ? singular : plural}`;
@@ -1009,6 +1020,7 @@ function caseCompanyDetail(company) {
         ${contactRows}
       </div>
       ${companyActions}
+      ${companyPasswordResetMarkup(companyId, company)}
     </article>
   `;
 }
@@ -1280,6 +1292,32 @@ async function handleInternalAction(button) {
   }
 }
 
+async function handleCompanyPasswordReset(button) {
+  if (state.demoMode) {
+    setStatus("El reset de acceso requiere login admin real.");
+    return;
+  }
+  const companyId = button.dataset.companyId || "";
+  if (!companyId) {
+    setStatus("No se pudo enviar reset: falta ID de empresa.", "error");
+    return;
+  }
+  if (!window.confirm("Enviar correo de recuperación al contacto registrado de esta empresa?")) return;
+
+  button.disabled = true;
+  setStatus("Enviando correo de recuperación...");
+  try {
+    await adminFetch(`/internal/companies/${encodeURIComponent(companyId)}/password-reset`, {
+      method: "POST",
+      body: "{}",
+    });
+    setStatus("Correo de recuperación enviado.", "success");
+  } catch (error) {
+    setStatus(error.message || "No se pudo enviar el reset de acceso.", "error");
+    button.disabled = false;
+  }
+}
+
 function setActiveTab(tabName) {
   state.activeTab = tabName;
   document.querySelectorAll("[data-tab-target]").forEach((button) => {
@@ -1483,6 +1521,7 @@ document.addEventListener("click", async (event) => {
   const tabButton = event.target.closest("[data-tab-target]");
   const editServiceButton = event.target.closest("[data-edit-service]");
   const internalButton = event.target.closest("[data-internal-action]");
+  const companyPasswordResetButton = event.target.closest("[data-company-password-reset]");
 
   if (event.target.matches("[data-demo-login]")) {
     showDemo();
@@ -1544,6 +1583,10 @@ document.addEventListener("click", async (event) => {
 
   if (internalButton) {
     await handleInternalAction(internalButton);
+  }
+
+  if (companyPasswordResetButton) {
+    await handleCompanyPasswordReset(companyPasswordResetButton);
   }
 
   const companySelectButton = event.target.closest("[data-select-company]");

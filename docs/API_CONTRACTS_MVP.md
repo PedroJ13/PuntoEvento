@@ -257,6 +257,153 @@ Reglas:
 - Limpiar cookie con expiracion inmediata.
 - Si no hay sesion, puede responder `200` idempotente.
 
+### POST `/api/company-auth/password`
+
+Cambia la contrasena de una empresa autenticada desde el panel.
+
+Request:
+
+```json
+{
+  "currentPassword": "password-actual",
+  "newPassword": "password-nuevo-seguro",
+  "passwordConfirmation": "password-nuevo-seguro"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "revokedSessions": 0
+}
+```
+
+Errores:
+
+- `401 UNAUTHORIZED` si no hay sesion de empresa valida.
+- `401 INVALID_CURRENT_PASSWORD` si la contrasena actual no coincide.
+- `400 MISSING_PASSWORD_FIELDS` si faltan campos requeridos.
+- `400 PASSWORD_TOO_SHORT` si `newPassword` tiene menos de 10 caracteres.
+- `400 PASSWORD_TOO_LONG` si `newPassword` tiene mas de 128 caracteres.
+- `400 PASSWORD_WEAK` si `newPassword` no incluye letras y numeros.
+- `400 PASSWORD_CONFIRMATION_MISMATCH` si la confirmacion no coincide.
+- `400 PASSWORD_UNCHANGED` si la nueva contrasena es igual a la actual.
+- `400 FORBIDDEN_FIELDS` si el cliente envia `email`, `companyId` o `userId`.
+- `403 COMPANY_STATUS_FORBIDDEN` si la empresa no puede acceder al panel.
+
+Reglas:
+
+- Requiere cookie `pe_company_session` activa.
+- El backend deriva `companyId` y usuario desde la sesion; el cliente no puede elegir empresa ni usuario.
+- Guarda solo `passwordHash` con `scrypt` y salt aleatorio en `Users`.
+- Mantiene la sesion actual.
+- Revoca otras sesiones activas de la misma empresa y email cuando existen.
+- No devuelve password, hash, token, cookie cruda, `partitionKey`, `rowKey` ni metadata interna.
+
+### POST `/api/company-password-resets`
+
+Solicita recuperacion de acceso por correo.
+
+Request:
+
+```json
+{
+  "email": "empresa@email.com"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "message": "Si el correo esta registrado, enviaremos instrucciones para recuperar el acceso."
+}
+```
+
+Reglas:
+
+- Respuesta publica generica para correos existentes, inexistentes, sin usuario activo o sin empresa habilitada.
+- Si existe un usuario activo de empresa con ese email y la empresa esta `pending` o `published`, crea un reset en `CompanyPasswordResets`.
+- Guarda solo `tokenHash`; nunca guarda ni devuelve el token plano.
+- Revoca resets pendientes anteriores del mismo usuario/email antes de crear uno nuevo.
+- Envia enlace al correo registrado de empresa usando `APP_PUBLIC_URL/panel.html?reset=...`.
+- No devuelve link, token, hash, `companyId`, `userId`, `partitionKey`, `rowKey` ni metadata interna.
+
+### GET `/api/company-password-resets/validate?token=...`
+
+Valida un enlace de recuperacion sin exponer datos de empresa o usuario.
+
+Response `200` valido:
+
+```json
+{
+  "valid": true,
+  "status": "valid"
+}
+```
+
+Response `200` invalido:
+
+```json
+{
+  "valid": false,
+  "status": "expired"
+}
+```
+
+Estados seguros: `invalid`, `expired`, `used`.
+
+Reglas:
+
+- Busca por hash del token recibido.
+- No devuelve email, empresa, usuario, hash, token ni timestamps internos.
+- El frontend debe usar esta respuesta solo para mostrar estados seguros.
+
+### POST `/api/company-password-resets/complete`
+
+Completa recuperacion de acceso y define nueva contrasena.
+
+Request:
+
+```json
+{
+  "token": "token-del-correo",
+  "password": "password-nuevo-seguro",
+  "passwordConfirmation": "password-nuevo-seguro"
+}
+```
+
+Response `200`:
+
+```json
+{
+  "ok": true,
+  "revokedSessions": 1
+}
+```
+
+Errores:
+
+- `400 RESET_INVALID` si el token no existe o no corresponde a un reset vigente.
+- `400 RESET_EXPIRED` si el token vencio.
+- `400 RESET_USED` si el token ya fue usado.
+- `400 MISSING_PASSWORD_FIELDS` si faltan campos requeridos.
+- `400 PASSWORD_TOO_SHORT` si la nueva contrasena tiene menos de 10 caracteres.
+- `400 PASSWORD_TOO_LONG` si la nueva contrasena supera 128 caracteres.
+- `400 PASSWORD_WEAK` si la nueva contrasena no incluye letras y numeros.
+- `400 PASSWORD_CONFIRMATION_MISMATCH` si la confirmacion no coincide.
+
+Reglas:
+
+- Actualiza solo el usuario asociado al reset pendiente.
+- Marca el reset como `used`.
+- Revoca sesiones activas de la misma empresa y email.
+- No crea sesion automaticamente.
+- No devuelve token, hash, cookie cruda, email, `companyId`, `userId`, `partitionKey`, `rowKey` ni metadata interna.
+
 ### POST `/api/internal/company-invites`
 
 Genera una invitacion para que una empresa acceda al panel.
@@ -311,6 +458,34 @@ Validaciones:
 - Devolver el token solo una vez dentro de `inviteUrl`.
 - No devolver `tokenHash`, storage keys, connection strings ni secretos.
 - Registrar `status: active`, `expiresAt`, `createdAt`, `updatedAt`.
+
+### POST `/api/internal/companies/{companyId}/password-reset`
+
+Envia un correo de recuperacion de acceso desde el admin interno.
+
+Autenticacion interna MVP:
+
+- Mismo esquema que `POST /api/internal/company-invites`.
+
+Response `200`:
+
+```json
+{
+  "ok": true
+}
+```
+
+Errores:
+
+- `404 COMPANY_NOT_FOUND` si la empresa no existe.
+- `409 RESET_RECIPIENT_UNAVAILABLE` si no hay correo/usuario activo con password para esa empresa.
+
+Reglas:
+
+- Solo usa el correo registrado de la empresa.
+- Reutiliza la tabla `CompanyPasswordResets` y guarda solo `tokenHash`.
+- Revoca resets pendientes anteriores del mismo usuario/email.
+- No devuelve link, token, hash, email, `userId`, `partitionKey`, `rowKey` ni metadata interna.
 
 ### POST `/api/internal/companies/{companyId}/approve`
 

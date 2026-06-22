@@ -395,11 +395,26 @@ async function sendCompanyActivationInviteEmail({ company, inviteUrl }, config) 
   });
 }
 
+async function sendCompanyPasswordResetEmail({ company, resetUrl }, config) {
+  await sendEmail(config, {
+    to: [company.email],
+    subject: "Recupera tu acceso a Punto Evento CR",
+    html: emailShell(`
+      <h2 style="${EMAIL_STYLES.h2}">Recupera tu acceso</h2>
+      <p style="${EMAIL_STYLES.p}">Hola ${escapeText(company.name || "equipo")}.</p>
+      <p style="${EMAIL_STYLES.p}">Recibimos una solicitud para crear una nueva contraseña del panel de empresa.</p>
+      ${emailCta(resetUrl, "Crear nueva contraseña")}
+      <p style="${EMAIL_STYLES.p}">Por seguridad, este enlace vence automáticamente. Si no solicitaste este cambio, puedes ignorar este correo.</p>
+    `),
+  });
+}
+
 module.exports = {
   notifyCompanyRegistration,
   notifyProviderRegistration,
   notifyServiceSubmittedForReview,
   sendCompanyActivationInviteEmail,
+  sendCompanyPasswordResetEmail,
   sendLeadEmailToCompany,
   sendEmail,
 };

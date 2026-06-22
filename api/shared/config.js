@@ -5,6 +5,7 @@ const DEFAULT_PROVIDER_IMAGES_TABLE = "ProviderImages";
 const DEFAULT_COMPANIES_TABLE = "Companies";
 const DEFAULT_COMPANY_INVITES_TABLE = "CompanyInvites";
 const DEFAULT_COMPANY_SESSIONS_TABLE = "CompanySessions";
+const DEFAULT_COMPANY_PASSWORD_RESETS_TABLE = "CompanyPasswordResets";
 const DEFAULT_USERS_TABLE = "Users";
 const DEFAULT_SERVICES_TABLE = "Services";
 const DEFAULT_LEADS_TABLE = "Leads";
@@ -12,6 +13,7 @@ const DEFAULT_UPLOADS_TABLE = "Uploads";
 const DEFAULT_COMPANY_SESSION_COOKIE_NAME = "pe_company_session";
 const DEFAULT_COMPANY_INVITE_TOKEN_TTL_MINUTES = 1440;
 const DEFAULT_COMPANY_SESSION_TTL_DAYS = 14;
+const DEFAULT_COMPANY_PASSWORD_RESET_TTL_MINUTES = 30;
 
 function normalizeOrigin(value) {
   const origin = String(value || "").trim();
@@ -68,6 +70,8 @@ function getConfig() {
       process.env.AZURE_TABLE_COMPANY_INVITES || DEFAULT_COMPANY_INVITES_TABLE,
     companySessionsTable:
       process.env.AZURE_TABLE_COMPANY_SESSIONS || DEFAULT_COMPANY_SESSIONS_TABLE,
+    companyPasswordResetsTable:
+      process.env.AZURE_TABLE_COMPANY_PASSWORD_RESETS || DEFAULT_COMPANY_PASSWORD_RESETS_TABLE,
     usersTable:
       process.env.AZURE_TABLE_USERS || DEFAULT_USERS_TABLE,
     companySessionCookieName:
@@ -79,6 +83,13 @@ function getConfig() {
       DEFAULT_COMPANY_INVITE_TOKEN_TTL_MINUTES,
     companySessionTtlDays:
       Number(process.env.COMPANY_SESSION_TTL_DAYS || 0) || DEFAULT_COMPANY_SESSION_TTL_DAYS,
+    companyPasswordResetTtlMinutes:
+      Number(
+        process.env.COMPANY_PASSWORD_RESET_EXPIRES_MINUTES ||
+        process.env.COMPANY_PASSWORD_RESET_TTL_MINUTES ||
+        0,
+      ) ||
+      DEFAULT_COMPANY_PASSWORD_RESET_TTL_MINUTES,
     allowedOrigins,
     emailProvider: String(process.env.EMAIL_PROVIDER || "acs").trim().toLowerCase(),
     azureCommunicationConnectionString:

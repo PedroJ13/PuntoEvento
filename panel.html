@@ -6,7 +6,7 @@
     <title>Panel empresa | Punto Evento CR</title>
     <meta name="robots" content="noindex,nofollow" />
     <link rel="stylesheet" href="styles.css?v=20" />
-    <link rel="stylesheet" href="panel.css?v=15" />
+    <link rel="stylesheet" href="panel.css?v=17" />
   </head>
   <body class="panel-body">
     <main class="panel-shell">
@@ -120,21 +120,68 @@
             </label>
             <label>
               <span>Contraseña</span>
-              <input name="password" type="password" autocomplete="current-password" minlength="8" required />
+              <span class="password-control">
+                <input name="password" type="password" autocomplete="current-password" minlength="8" required />
+                <button class="password-toggle" type="button" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </span>
             </label>
             <button class="primary-button" type="submit">Iniciar sesión</button>
+            <button class="ghost-button auth-link-button" type="button" data-show-reset-request>Recuperar acceso</button>
           </form>
           <form class="auth-form is-hidden" data-activate-form>
             <input name="token" type="hidden" />
             <label>
               <span>Contraseña</span>
-              <input name="password" type="password" autocomplete="new-password" minlength="8" required />
+              <span class="password-control">
+                <input name="password" type="password" autocomplete="new-password" minlength="8" required />
+                <button class="password-toggle" type="button" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </span>
             </label>
             <label>
               <span>Confirmar contraseña</span>
-              <input name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required />
+              <span class="password-control">
+                <input name="passwordConfirm" type="password" autocomplete="new-password" minlength="8" required />
+                <button class="password-toggle" type="button" data-password-toggle aria-label="Mostrar contraseña" aria-pressed="false" title="Mostrar contraseña">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </span>
             </label>
             <button class="primary-button" type="submit">Activar acceso</button>
+          </form>
+          <form class="auth-form is-hidden" data-reset-request-form>
+            <label>
+              <span>Correo de la empresa</span>
+              <input name="email" type="email" autocomplete="email" required />
+            </label>
+            <button class="primary-button" type="submit">Enviar instrucciones</button>
+            <button class="ghost-button auth-link-button" type="button" data-show-login>Volver al inicio de sesión</button>
+          </form>
+          <form class="auth-form is-hidden" data-reset-complete-form>
+            <input name="token" type="hidden" />
+            <label>
+              <span>Nueva contraseña</span>
+              <span class="password-control">
+                <input name="password" type="password" autocomplete="new-password" minlength="10" maxlength="128" required />
+                <button class="password-toggle" type="button" data-password-toggle aria-label="Mostrar nueva contraseña" aria-pressed="false" title="Mostrar contraseña">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </span>
+            </label>
+            <label>
+              <span>Confirmar nueva contraseña</span>
+              <span class="password-control">
+                <input name="passwordConfirmation" type="password" autocomplete="new-password" minlength="10" maxlength="128" required />
+                <button class="password-toggle" type="button" data-password-toggle aria-label="Mostrar confirmación de contraseña" aria-pressed="false" title="Mostrar contraseña">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </span>
+            </label>
+            <button class="primary-button" type="submit" data-reset-submit>Actualizar contraseña</button>
+            <button class="ghost-button auth-link-button" type="button" data-show-login>Volver al inicio de sesión</button>
           </form>
           <p class="panel-message" data-auth-message aria-live="polite"></p>
         </section>
@@ -166,6 +213,44 @@
             <strong>Datos generales</strong>
             <p>Tu empresa está registrada. Para cambiar datos generales, contacta al equipo de Punto Evento CR durante esta etapa inicial.</p>
           </div>
+          <section class="account-security" aria-labelledby="passwordChangeTitle">
+            <div>
+              <p class="eyebrow">Seguridad</p>
+              <h3 id="passwordChangeTitle">Cambiar contraseña</h3>
+              <p>Actualiza tu acceso con tu contraseña actual.</p>
+            </div>
+            <form class="password-form" data-password-form>
+              <label>
+                <span>Contraseña actual</span>
+                <span class="password-control">
+                  <input name="currentPassword" type="password" autocomplete="current-password" required />
+                  <button class="password-toggle" type="button" data-password-toggle aria-label="Mostrar contraseña actual" aria-pressed="false" title="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </span>
+              </label>
+              <label>
+                <span>Nueva contraseña</span>
+                <span class="password-control">
+                  <input name="newPassword" type="password" autocomplete="new-password" minlength="10" maxlength="128" required />
+                  <button class="password-toggle" type="button" data-password-toggle aria-label="Mostrar nueva contraseña" aria-pressed="false" title="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </span>
+              </label>
+              <label>
+                <span>Confirmar nueva contraseña</span>
+                <span class="password-control">
+                  <input name="passwordConfirmation" type="password" autocomplete="new-password" minlength="10" maxlength="128" required />
+                  <button class="password-toggle" type="button" data-password-toggle aria-label="Mostrar confirmación de contraseña" aria-pressed="false" title="Mostrar contraseña">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </span>
+              </label>
+              <p class="panel-message" data-password-message aria-live="polite"></p>
+              <button class="primary-button compact-button" type="submit">Actualizar contraseña</button>
+            </form>
+          </section>
         </section>
 
         <section class="panel-section panel-view" data-authenticated-only data-panel-view="services">
@@ -248,6 +333,6 @@
         </section>
       </div>
     </main>
-    <script src="panel.js?v=18"></script>
+    <script src="panel.js?v=20"></script>
   </body>
 </html>

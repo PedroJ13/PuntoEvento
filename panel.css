@@ -62,6 +62,12 @@
   background: var(--brand-surface);
 }
 
+.panel-body .auth-link-button {
+  width: 100%;
+  min-height: 42px;
+  box-shadow: none;
+}
+
 .panel-body .primary-button:disabled,
 .panel-body .secondary-button:disabled,
 .panel-body .ghost-button:disabled {
@@ -431,7 +437,8 @@
   font-weight: 750;
 }
 
-.auth-form input {
+.auth-form input,
+.password-form input {
   width: 100%;
   min-height: 46px;
   border: 1px solid var(--brand-line);
@@ -442,7 +449,49 @@
   font: inherit;
 }
 
-.auth-form input:focus {
+.password-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px;
+  align-items: stretch;
+  width: 100%;
+}
+
+.password-control input {
+  min-width: 0;
+  border-radius: 10px 0 0 10px;
+}
+
+.password-toggle {
+  display: inline-grid;
+  place-items: center;
+  min-width: 46px;
+  min-height: 46px;
+  border: 1px solid var(--brand-line);
+  border-left: 0;
+  border-radius: 0 10px 10px 0;
+  color: var(--brand-ink-soft);
+  background: #fff;
+  cursor: pointer;
+}
+
+.password-toggle:hover,
+.password-toggle[aria-pressed="true"] {
+  color: var(--brand-gold-dark);
+  background: var(--brand-gold-soft);
+}
+
+.password-toggle svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.auth-form input:focus,
+.password-form input:focus {
   border-color: var(--brand-gold);
   box-shadow: 0 0 0 4px rgba(185, 147, 75, 0.18);
   outline: 0;
@@ -504,6 +553,37 @@
 
 .company-note strong {
   color: var(--brand-ink);
+}
+
+.account-security {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(0, 0.7fr) minmax(300px, 1fr);
+  gap: 18px;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--brand-line);
+}
+
+.account-security h3 {
+  margin: 0;
+  color: var(--brand-ink);
+  font-size: 1.2rem;
+}
+
+.account-security p {
+  margin-bottom: 0;
+}
+
+.password-form {
+  display: grid;
+  gap: 12px;
+}
+
+.password-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--brand-ink-soft);
+  font-weight: 750;
 }
 
 .panel-section {
@@ -1017,6 +1097,7 @@
 
   .company-card-main,
   .summary-grid,
+  .account-security,
   .readonly-summary,
   .service-meta,
   .form-actions {

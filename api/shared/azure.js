@@ -67,6 +67,12 @@ async function ensureCompanyAuthTables(config = getConfig()) {
   });
 }
 
+async function ensureCompanyPasswordResetsTable(config = getConfig()) {
+  await getTableClient(config.companyPasswordResetsTable, config).createTable().catch((error) => {
+    if (error.statusCode !== 409) throw error;
+  });
+}
+
 async function ensureServicesTable(config = getConfig()) {
   await getTableClient(config.servicesTable, config).createTable().catch((error) => {
     if (error.statusCode !== 409) throw error;
@@ -397,6 +403,7 @@ module.exports = {
   createReadSasUrl,
   createWriteSasUrl,
   ensureCompanyAuthTables,
+  ensureCompanyPasswordResetsTable,
   ensureCompaniesTable,
   ensureLeadsTable,
   ensureServicesTable,

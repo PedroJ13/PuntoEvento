@@ -20,6 +20,60 @@ function cleanPassword(value, maxLength = 256) {
   return String(value || "").slice(0, maxLength);
 }
 
+function validateCompanyPassword(password) {
+  const value = String(password || "");
+  if (value.length < 10) {
+    return { code: "PASSWORD_TOO_SHORT", message: "Password must be at least 10 characters" };
+  }
+  if (value.length > 128) {
+    return { code: "PASSWORD_TOO_LONG", message: "Password must be at most 128 characters" };
+  }
+  if (!/[A-Za-z]/.test(value) || !/[0-9]/.test(value)) {
+    return {
+      code: "PASSWORD_WEAK",
+      message: "Password must include letters and numbers",
+    };
+  }
+  return null;
+}
+
+function validatePasswordChangePayload(body = {}) {
+  const forbiddenFields = ["email", "companyId", "userId"].filter((field) =>
+    Object.prototype.hasOwnProperty.call(body, field),
+  );
+  if (forbiddenFields.length) {
+    return {
+      code: "FORBIDDEN_FIELDS",
+      message: "Request includes fields that cannot be changed here",
+      details: { fields: forbiddenFields },
+    };
+  }
+
+  const currentPassword = String(body.currentPassword || "");
+  const newPassword = String(body.newPassword || "");
+  const passwordConfirmation = String(body.passwordConfirmation || "");
+  if (!currentPassword || !newPassword || !passwordConfirmation) {
+    return {
+      code: "MISSING_PASSWORD_FIELDS",
+      message: "currentPassword, newPassword and passwordConfirmation are required",
+    };
+  }
+  if (newPassword !== passwordConfirmation) {
+    return {
+      code: "PASSWORD_CONFIRMATION_MISMATCH",
+      message: "Password confirmation does not match",
+    };
+  }
+  if (currentPassword === newPassword) {
+    return {
+      code: "PASSWORD_UNCHANGED",
+      message: "New password must be different from current password",
+    };
+  }
+
+  return validateCompanyPassword(newPassword);
+}
+
 function createSecureToken(bytes = 32) {
   return crypto.randomBytes(bytes).toString("base64url");
 }
@@ -205,6 +259,20 @@ async function findCompanyOwnerUser(companyId, email, config = getConfig()) {
   return null;
 }
 
+async function updateCompanyOwnerPassword(user, password, config = getConfig()) {
+  const now = new Date().toISOString();
+  await getTableClient(config.usersTable, config).updateEntity(
+    {
+      partitionKey: user.partitionKey,
+      rowKey: user.rowKey,
+      passwordHash: hashPassword(password),
+      passwordSetAt: now,
+      updatedAt: now,
+    },
+    "Merge",
+  );
+}
+
 async function upsertCompanyOwnerPassword({ companyId, email, password }, config = getConfig()) {
   const normalizedEmail = normalizeEmail(email);
   const existing = await findCompanyOwnerUser(companyId, normalizedEmail, config);
@@ -281,6 +349,66 @@ async function revokeSession(session, config = getConfig()) {
   );
 }
 
+async function revokeOtherCompanySessions(session, config = getConfig()) {
+  if (!session?.partitionKey || !session?.rowKey) return 0;
+
+  const table = getTableClient(config.companySessionsTable, config);
+  const email = normalizeEmail(session.email);
+  const entities = table.listEntities({
+    queryOptions: { filter: odata`PartitionKey eq ${session.partitionKey} and status eq ${"active"}` },
+  });
+  const now = new Date().toISOString();
+  let revoked = 0;
+
+  for await (const entity of entities) {
+    if (entity.rowKey === session.rowKey) continue;
+    if (email && normalizeEmail(entity.email) !== email) continue;
+
+    await table.updateEntity(
+      {
+        partitionKey: entity.partitionKey,
+        rowKey: entity.rowKey,
+        status: "revoked",
+        revokedAt: now,
+        updatedAt: now,
+      },
+      "Merge",
+    );
+    revoked += 1;
+  }
+
+  return revoked;
+}
+
+async function revokeCompanySessionsForUser({ companyId, email }, config = getConfig()) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!companyId || !normalizedEmail) return 0;
+
+  const table = getTableClient(config.companySessionsTable, config);
+  const entities = table.listEntities({
+    queryOptions: { filter: odata`PartitionKey eq ${companyId} and status eq ${"active"}` },
+  });
+  const now = new Date().toISOString();
+  let revoked = 0;
+
+  for await (const entity of entities) {
+    if (normalizeEmail(entity.email) !== normalizedEmail) continue;
+    await table.updateEntity(
+      {
+        partitionKey: entity.partitionKey,
+        rowKey: entity.rowKey,
+        status: "revoked",
+        revokedAt: now,
+        updatedAt: now,
+      },
+      "Merge",
+    );
+    revoked += 1;
+  }
+
+  return revoked;
+}
+
 module.exports = {
   clearSessionCookie,
   cleanToken,
@@ -289,6 +417,7 @@ module.exports = {
   createCompanySessionForCompany,
   createSecureToken,
   findUserByEmail,
+  findCompanyOwnerUser,
   listUsersByEmail,
   findInviteByToken,
   getCurrentCompanySession,
@@ -298,9 +427,14 @@ module.exports = {
   publicSessionPayload,
   normalizeEmail,
   revokeSession,
+  revokeOtherCompanySessions,
+  revokeCompanySessionsForUser,
   sessionCookie,
+  updateCompanyOwnerPassword,
   upsertCompanyOwnerPassword,
   validateActiveInvite,
+  validateCompanyPassword,
+  validatePasswordChangePayload,
   verifyPassword,
   markInviteUsed,
 };

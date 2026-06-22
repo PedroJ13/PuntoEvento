@@ -662,3 +662,31 @@ Excluido:
 Actualizacion:
 
 `TASK-279` corrigio la configuracion y `TASK-280` aprobo registro desde apex y `www`. Product / Architect / Release levanta el NO-GO tecnico y deja estado `GO condicionado`: antes de aprobar una empresa real, Product/QA/Admin debe limpiar o rechazar las dos empresas QA de `TASK-280` y confirmar que el enlace de activacion generado por admin usa `https://puntoeventocr.com`.
+
+## 2026-06-22: Password-flows de empresa como ampliacion MVP segura
+
+Decision:
+
+Implementar password-flows de empresa para Punto Evento CR como ampliacion acotada del MVP, reutilizando la arquitectura actual de Azure Functions, Azure Table Storage, ACS Email, `Users`, `CompanySessions`, hash `scrypt` y cookies server-side.
+
+Alcance aprobado:
+
+- Ver/ocultar password en login, activacion, cambio de password y reset.
+- Cambio autenticado de password desde panel empresa.
+- Recuperar/resetear password por correo.
+- Accion admin para enviar reset de acceso sin mostrar token ni link completo.
+- Pantalla publica segura de reset por token.
+
+Reglas:
+
+- El frontend nunca es autoridad de `companyId`, `userId` ni `email` para cambiar o resetear password.
+- No imprimir passwords, tokens raw, hashes, cookies ni links completos en logs, consola, UI admin, Markdown ni handoffs.
+- Guardar tokens de reset solo como hash en Table Storage.
+- La respuesta publica de solicitud de reset no debe revelar si el correo existe.
+- Mantener la sesion actual al cambiar password y revocar otras sesiones activas si es viable.
+- Al completar reset, revocar sesiones activas del usuario/empresa.
+- Publicar backend/API antes de web para evitar UI apuntando a endpoints inexistentes.
+
+Motivo:
+
+El login recurrente ya existe, pero las primeras empresas necesitan recuperar acceso y cambiar su password sin depender de soporte manual ni exponer secretos. La guia reusable de Punto Club aplica conceptualmente, pero se adapta a Table Storage en vez de SQL.

@@ -65,6 +65,7 @@ const state = {
   existingImages: [],
   existingImagesLoaded: false,
   inviteToken: "",
+  resetToken: "",
   activeView: "services",
 };
 
@@ -111,6 +112,103 @@ function setAuthMessage(message, tone = "") {
   if (!node) return;
   node.textContent = message;
   node.dataset.tone = tone;
+}
+
+function setPasswordMessage(message, tone = "") {
+  const node = $("[data-password-message]");
+  if (!node) return;
+  node.textContent = message;
+  node.dataset.tone = tone;
+}
+
+function setPasswordFieldsHidden(root = document) {
+  $$("input[type='text'][autocomplete*='password'], input[type='password']", root).forEach((input) => {
+    if (input.autocomplete && input.autocomplete.includes("password")) {
+      input.type = "password";
+    }
+  });
+  $$("[data-password-toggle]", root).forEach((button) => {
+    const label = button.getAttribute("aria-label") || "Mostrar contraseña";
+    button.setAttribute("aria-pressed", "false");
+    button.setAttribute("aria-label", label.replace(/^Ocultar/, "Mostrar"));
+    button.title = "Mostrar contraseña";
+  });
+}
+
+function togglePasswordVisibility(button) {
+  const control = button.closest(".password-control");
+  const input = control?.querySelector("input");
+  if (!input) return;
+  const shouldShow = input.type === "password";
+  input.type = shouldShow ? "text" : "password";
+  button.setAttribute("aria-pressed", shouldShow ? "true" : "false");
+  const currentLabel = button.getAttribute("aria-label") || "Mostrar contraseña";
+  button.setAttribute(
+    "aria-label",
+    shouldShow ? currentLabel.replace(/^Mostrar/, "Ocultar") : currentLabel.replace(/^Ocultar/, "Mostrar"),
+  );
+  button.title = shouldShow ? "Ocultar contraseña" : "Mostrar contraseña";
+}
+
+function validatePasswordForm(form) {
+  const currentPassword = String(form.elements.currentPassword.value || "");
+  const newPassword = String(form.elements.newPassword.value || "");
+  const passwordConfirmation = String(form.elements.passwordConfirmation.value || "");
+  if (!currentPassword || !newPassword || !passwordConfirmation) {
+    return "Completa la contraseña actual, la nueva y la confirmación.";
+  }
+  if (newPassword.length < 10) {
+    return "La nueva contraseña debe tener al menos 10 caracteres.";
+  }
+  if (newPassword.length > 128) {
+    return "La nueva contraseña no debe superar 128 caracteres.";
+  }
+  if (!/[A-Za-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+    return "La nueva contraseña debe incluir letras y números.";
+  }
+  if (newPassword !== passwordConfirmation) {
+    return "La confirmación no coincide con la nueva contraseña.";
+  }
+  if (currentPassword === newPassword) {
+    return "La nueva contraseña debe ser distinta de la actual.";
+  }
+  return "";
+}
+
+function validateNewPasswordFields(password, confirmation) {
+  if (!password || !confirmation) {
+    return "Completa la nueva contraseña y la confirmación.";
+  }
+  if (password.length < 10) {
+    return "La nueva contraseña debe tener al menos 10 caracteres.";
+  }
+  if (password.length > 128) {
+    return "La nueva contraseña no debe superar 128 caracteres.";
+  }
+  if (!/[A-Za-z]/.test(password) || !/[0-9]/.test(password)) {
+    return "La nueva contraseña debe incluir letras y números.";
+  }
+  if (password !== confirmation) {
+    return "La confirmación no coincide con la nueva contraseña.";
+  }
+  return "";
+}
+
+function passwordChangeErrorMessage(error) {
+  const code = error.data?.code || "";
+  const messages = {
+    INVALID_CURRENT_PASSWORD: "La contraseña actual no coincide.",
+    MISSING_PASSWORD_FIELDS: "Completa la contraseña actual, la nueva y la confirmación.",
+    PASSWORD_TOO_SHORT: "La nueva contraseña debe tener al menos 10 caracteres.",
+    PASSWORD_TOO_LONG: "La nueva contraseña no debe superar 128 caracteres.",
+    PASSWORD_WEAK: "La nueva contraseña debe incluir letras y números.",
+    PASSWORD_CONFIRMATION_MISMATCH: "La confirmación no coincide con la nueva contraseña.",
+    PASSWORD_UNCHANGED: "La nueva contraseña debe ser distinta de la actual.",
+    FORBIDDEN_FIELDS: "No pudimos actualizar la contraseña desde este formulario.",
+    COMPANY_STATUS_FORBIDDEN: "Este acceso no está disponible. Contacta al equipo de Punto Evento CR.",
+    UNAUTHORIZED: "Tu sesión expiró. Inicia sesión otra vez.",
+  };
+  return messages[code] || "No pudimos actualizar la contraseña. Inténtalo de nuevo en unos minutos.";
 }
 
 function panelViewContent(view) {
@@ -290,10 +388,29 @@ function getInviteTokenFromUrl() {
   return params.get("invite") || params.get("token") || "";
 }
 
+function getResetTokenFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("reset")) return params.get("reset") || "";
+  if (params.get("mode") === "reset") return params.get("token") || "";
+  return "";
+}
+
 function cleanInviteParams() {
   const params = new URLSearchParams(window.location.search);
   params.delete("invite");
   params.delete("token");
+  params.delete("mode");
+  const cleanUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
+  window.history.replaceState({}, "", cleanUrl);
+}
+
+function cleanResetParams() {
+  const params = new URLSearchParams(window.location.search);
+  params.delete("reset");
+  if (params.get("mode") === "reset") {
+    params.delete("mode");
+    params.delete("token");
+  }
   const cleanUrl = `${window.location.pathname}${params.toString() ? `?${params}` : ""}`;
   window.history.replaceState({}, "", cleanUrl);
 }
@@ -306,19 +423,51 @@ function genericAuthError(error) {
 
 function renderAuthMode(mode = "login", message = "") {
   const isActivation = mode === "activate";
+  const isResetRequest = mode === "resetRequest";
+  const isResetComplete = mode === "resetComplete";
   const section = $("[data-auth-section]");
   if (!section) return;
   section.hidden = false;
-  $("[data-auth-eyebrow]").textContent = isActivation ? "Activación inicial" : "Acceso empresa";
-  $("[data-auth-title]").textContent = isActivation ? "Activa tu acceso" : "Iniciar sesión";
-  $("[data-auth-copy]").textContent = isActivation
-    ? "Define una contraseña para entrar al panel ahora y volver después con tu correo."
-    : "Ingresa con el correo y la contraseña activados para tu empresa.";
-  $("[data-login-form]")?.classList.toggle("is-hidden", isActivation);
+  const content = {
+    login: {
+      eyebrow: "Acceso empresa",
+      title: "Iniciar sesión",
+      copy: "Ingresa con el correo y la contraseña activados para tu empresa.",
+      idleMessage: "",
+    },
+    activate: {
+      eyebrow: "Activación inicial",
+      title: "Activa tu acceso",
+      copy: "Define una contraseña para entrar al panel ahora y volver después con tu correo.",
+      idleMessage: "Usa el enlace de invitación para activar tu acceso.",
+    },
+    resetRequest: {
+      eyebrow: "Recuperar acceso",
+      title: "Recuperar acceso",
+      copy: "Ingresa el correo registrado de la empresa para recibir instrucciones.",
+      idleMessage: "",
+    },
+    resetComplete: {
+      eyebrow: "Nueva contraseña",
+      title: "Crear nueva contraseña",
+      copy: "Define una nueva contraseña para el panel de empresa.",
+      idleMessage: "Validando enlace de recuperación...",
+    },
+  };
+  const selected = content[mode] || content.login;
+  $("[data-auth-eyebrow]").textContent = selected.eyebrow;
+  $("[data-auth-title]").textContent = selected.title;
+  $("[data-auth-copy]").textContent = selected.copy;
+  $("[data-login-form]")?.classList.toggle("is-hidden", mode !== "login");
   $("[data-activate-form]")?.classList.toggle("is-hidden", !isActivation);
+  $("[data-reset-request-form]")?.classList.toggle("is-hidden", !isResetRequest);
+  $("[data-reset-complete-form]")?.classList.toggle("is-hidden", !isResetComplete);
   const tokenInput = $("[data-activate-form] input[name='token']");
   if (tokenInput) tokenInput.value = state.inviteToken || "";
-  setAuthMessage(message || (isActivation ? "Usa el enlace de invitación para activar tu acceso." : ""), message ? "error" : "");
+  const resetInput = $("[data-reset-complete-form] input[name='token']");
+  if (resetInput) resetInput.value = state.resetToken || "";
+  setPasswordFieldsHidden(section);
+  setAuthMessage(message || selected.idleMessage, message ? "error" : "");
 }
 
 function setAuthenticatedView(isAuthenticated) {
@@ -387,7 +536,7 @@ function renderAuthRequired() {
   state.company = null;
   state.services = [];
   setAuthenticatedView(false);
-  renderAuthMode(state.inviteToken ? "activate" : "login");
+  renderAuthMode(state.resetToken ? "resetComplete" : state.inviteToken ? "activate" : "login");
   renderCompany();
   const list = $("[data-services-list]");
   list.innerHTML = `
@@ -961,6 +1110,7 @@ async function activateAccess(form) {
     state.inviteToken = "";
     cleanInviteParams();
     form.reset();
+    setPasswordFieldsHidden(form);
     setPanelMessage("Acceso activado. Sesión iniciada.", "success");
     await loadRealPanel();
   } catch (error) {
@@ -990,6 +1140,7 @@ async function loginCompany(form) {
       body: JSON.stringify({ email, password }),
     });
     form.reset();
+    setPasswordFieldsHidden(form);
     setPanelMessage("Sesión iniciada.", "success");
     await loadRealPanel();
   } catch (error) {
@@ -1001,7 +1152,168 @@ async function loginCompany(form) {
   }
 }
 
+function resetRequestErrorMessage(error) {
+  if (error.status === 403) return "No pudimos procesar la solicitud desde este origen.";
+  return "No pudimos enviar las instrucciones. Inténtalo de nuevo en unos minutos.";
+}
+
+function resetCompleteErrorMessage(error) {
+  const code = error.data?.code || "";
+  const messages = {
+    RESET_INVALID: "El enlace de recuperación no es válido.",
+    RESET_EXPIRED: "El enlace de recuperación venció. Solicita uno nuevo.",
+    RESET_USED: "Este enlace de recuperación ya fue usado.",
+    MISSING_PASSWORD_FIELDS: "Completa la nueva contraseña y la confirmación.",
+    PASSWORD_TOO_SHORT: "La nueva contraseña debe tener al menos 10 caracteres.",
+    PASSWORD_TOO_LONG: "La nueva contraseña no debe superar 128 caracteres.",
+    PASSWORD_WEAK: "La nueva contraseña debe incluir letras y números.",
+    PASSWORD_CONFIRMATION_MISMATCH: "La confirmación no coincide con la nueva contraseña.",
+  };
+  return messages[code] || "No pudimos actualizar la contraseña. Solicita un nuevo enlace.";
+}
+
+async function validateResetToken() {
+  if (!state.resetToken) return;
+  renderAuthMode("resetComplete");
+  const form = $("[data-reset-complete-form]");
+  const submit = $("[data-reset-submit]");
+  if (submit) submit.disabled = true;
+  try {
+    const result = await apiJson(`/company-password-resets/validate?token=${encodeURIComponent(state.resetToken)}`);
+    if (!result?.valid) {
+      const status = result?.status || "invalid";
+      throw Object.assign(new Error("Invalid reset token"), {
+        data: { code: `RESET_${status.toUpperCase()}` },
+      });
+    }
+    if (submit) submit.disabled = false;
+    setAuthMessage("Enlace validado. Define tu nueva contraseña.", "success");
+  } catch (error) {
+    state.resetToken = "";
+    if (form) form.reset();
+    setPasswordFieldsHidden(form || document);
+    if (submit) submit.disabled = true;
+    setAuthMessage(resetCompleteErrorMessage(error), "error");
+  }
+}
+
+async function requestPasswordReset(form) {
+  const email = String(form.elements.email.value || "").trim();
+  if (!email) {
+    setAuthMessage("Ingresa el correo registrado de la empresa.", "error");
+    return;
+  }
+
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.textContent = "Enviando...";
+  setAuthMessage("Procesando solicitud...");
+  try {
+    await apiJson("/company-password-resets", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+    form.reset();
+    setAuthMessage("Si el correo esta registrado, enviaremos instrucciones para recuperar el acceso.", "success");
+  } catch (error) {
+    setAuthMessage(resetRequestErrorMessage(error), "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Enviar instrucciones";
+  }
+}
+
+async function completePasswordReset(form) {
+  const password = String(form.elements.password.value || "");
+  const passwordConfirmation = String(form.elements.passwordConfirmation.value || "");
+  const validationError = validateNewPasswordFields(password, passwordConfirmation);
+  if (validationError) {
+    setAuthMessage(validationError, "error");
+    return;
+  }
+
+  const token = state.resetToken || form.elements.token.value;
+  if (!token) {
+    setAuthMessage("Solicita un nuevo enlace de recuperación.", "error");
+    return;
+  }
+
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.textContent = "Actualizando...";
+  setAuthMessage("Actualizando contraseña...");
+  try {
+    await apiJson("/company-password-resets/complete", {
+      method: "POST",
+      body: JSON.stringify({ token, password, passwordConfirmation }),
+    });
+    state.resetToken = "";
+    cleanResetParams();
+    form.reset();
+    setPasswordFieldsHidden(form);
+    renderAuthMode("login");
+    setAuthMessage("Contraseña actualizada. Inicia sesión con tu nuevo acceso.", "success");
+  } catch (error) {
+    setAuthMessage(resetCompleteErrorMessage(error), "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Actualizar contraseña";
+  }
+}
+
+async function changeCompanyPassword(form) {
+  const validationError = validatePasswordForm(form);
+  if (validationError) {
+    setPasswordMessage(validationError, "error");
+    return;
+  }
+
+  const button = form.querySelector('button[type="submit"]');
+  button.disabled = true;
+  button.textContent = "Actualizando...";
+  setPasswordMessage("Actualizando contraseña...");
+
+  try {
+    if (state.mode === "demo") {
+      form.reset();
+      setPasswordFieldsHidden(form);
+      setPasswordMessage("Modo local: contraseña validada sin guardar cambios.", "success");
+      return;
+    }
+
+    await apiJson("/company-auth/password", {
+      method: "POST",
+      body: JSON.stringify({
+        currentPassword: form.elements.currentPassword.value,
+        newPassword: form.elements.newPassword.value,
+        passwordConfirmation: form.elements.passwordConfirmation.value,
+      }),
+    });
+    form.reset();
+    setPasswordFieldsHidden(form);
+    setPasswordMessage("Contraseña actualizada.", "success");
+  } catch (error) {
+    console.warn(error);
+    setPasswordMessage(passwordChangeErrorMessage(error), "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "Actualizar contraseña";
+  }
+}
+
 document.addEventListener("submit", async (event) => {
+  if (event.target.matches("[data-reset-request-form]")) {
+    event.preventDefault();
+    await requestPasswordReset(event.target);
+    return;
+  }
+
+  if (event.target.matches("[data-reset-complete-form]")) {
+    event.preventDefault();
+    await completePasswordReset(event.target);
+    return;
+  }
+
   if (event.target.matches("[data-activate-form]")) {
     event.preventDefault();
     await activateAccess(event.target);
@@ -1011,6 +1323,12 @@ document.addEventListener("submit", async (event) => {
   if (event.target.matches("[data-login-form]")) {
     event.preventDefault();
     await loginCompany(event.target);
+    return;
+  }
+
+  if (event.target.matches("[data-password-form]")) {
+    event.preventDefault();
+    await changeCompanyPassword(event.target);
     return;
   }
 
@@ -1025,9 +1343,30 @@ document.addEventListener("submit", async (event) => {
 });
 
 document.addEventListener("click", async (event) => {
+  const passwordToggle = event.target.closest("[data-password-toggle]");
+  if (passwordToggle) {
+    togglePasswordVisibility(passwordToggle);
+    return;
+  }
+
   const navButton = event.target.closest("[data-panel-nav]");
   if (navButton) {
     setActivePanelView(navButton.dataset.panelNav);
+    return;
+  }
+
+  if (event.target.closest("[data-show-reset-request]")) {
+    state.inviteToken = "";
+    state.resetToken = "";
+    cleanInviteParams();
+    renderAuthMode("resetRequest");
+    return;
+  }
+
+  if (event.target.closest("[data-show-login]")) {
+    state.resetToken = "";
+    cleanResetParams();
+    renderAuthMode("login");
     return;
   }
 
@@ -1181,7 +1520,9 @@ document.addEventListener("keydown", (event) => {
 });
 
 async function init() {
+  state.resetToken = getResetTokenFromUrl();
   state.inviteToken = getInviteTokenFromUrl();
+  if (state.resetToken) state.inviteToken = "";
   setActivePanelView("services");
   await loadCatalogs();
   renderCatalogControls();
@@ -1189,7 +1530,12 @@ async function init() {
   if (state.mode === "demo") {
     loadDemoPanel();
   } else {
-    await loadRealPanel();
+    if (state.resetToken) {
+      renderAuthRequired();
+      await validateResetToken();
+    } else {
+      await loadRealPanel();
+    }
   }
 }
 
