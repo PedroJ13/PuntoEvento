@@ -1,4 +1,6 @@
 tasks/generated/
 local-secrets/
 node_modules/
+playwright-report/
+test-results/
 *.local.secrets.ps1

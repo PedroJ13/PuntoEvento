@@ -2,7 +2,11 @@
 
 ## Equipo
 
-Web Dev / Backend API / Infra Azure / QA / Product Architect
+Proyecto / Pulso / QA / Ejecucion Tecnica
+
+## Modo de ejecucion
+
+No aplica / Web Dev / Backend/API / Infra Azure / Diseno/UX / Copy / Data
 
 ## Estado
 
@@ -11,6 +15,23 @@ Pendiente / En progreso / Completada / Bloqueada
 ## Objetivo
 
 Describir que se queria lograr con esta tarea.
+
+## Resultado
+
+Aprobado / completado / bloqueado / aprobado con observaciones / no aprobado.
+
+## Decision para Proyecto
+
+Decision, cierre o coordinacion que Proyecto debe tomar.
+
+## P0/P1
+
+- Ninguno / detalle.
+
+## Pendientes accionables
+
+- Pendiente 1.
+- Pendiente 2.
 
 ## Alcance
 
@@ -40,6 +61,15 @@ Que no se toco y no debe asumirse como resuelto.
 - Comando o prueba manual.
 - Resultado.
 
+## Evidencia resumida
+
+- Evidencia 1.
+- Evidencia 2.
+
+## Uso cloud/SQL
+
+No / Si, motivo, alcance y resultado.
+
 ## Riesgos
 
 - Riesgo 1.
@@ -50,9 +80,13 @@ Que no se toco y no debe asumirse como resuelto.
 - Pendiente 1.
 - Pendiente 2.
 
-## Recomendacion para Product/Architect
+## Recomendacion para Proyecto
 
 Que deberia decidir o coordinar el chat central despues de esta tarea.
+
+## Movimiento de tablero sugerido
+
+Mover a Hecho / Mantener bloqueada / Enviar a QA / Enviar a Infra / Crear seguimiento.
 
 ## Siguiente tarea sugerida
 

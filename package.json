@@ -1,0 +1,18 @@
+{
+  "name": "punto-evento-web-tooling",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:smoke": "node tools/run-smoke.mjs",
+    "lint": "eslint app.js admin.js panel.js playwright.config.js tests/**/*.js tools/**/*.mjs",
+    "format:check": "prettier --check package.json playwright.config.js eslint.config.mjs tests/**/*.js tools/**/*.mjs docs/TOOLS.md",
+    "check": "npm run lint && npm run format:check"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@playwright/test": "^1.54.0",
+    "eslint": "^9.29.0",
+    "prettier": "^3.5.3"
+  }
+}

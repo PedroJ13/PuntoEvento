@@ -1,8 +1,24 @@
 # TASK-###: Titulo de la tarea
 
-## Equipo encargado
+## Equipo
 
-Web Dev / Backend API / Infra Azure / QA / Product Architect
+Proyecto / Pulso / QA / Ejecucion Tecnica
+
+## Modo de ejecucion
+
+No aplica / Web Dev / Backend/API / Infra Azure / Diseno/UX / Copy / Data
+
+## Estado
+
+Pendiente / En progreso / Bloqueada / Lista para ejecutar
+
+## Prioridad
+
+P0 / P1 / P2 / P3
+
+## Depende de
+
+Ninguna / TASK-### / Handoff especifico
 
 ## Mensaje para iniciar el chat
 
@@ -16,37 +32,33 @@ Sigue las instrucciones y al terminar actualiza el handoff indicado.
 Obligatorios:
 
 - `AGENTS.md`
+- `codex-project-templates/CHAT_MODEL.md`
+- `codex-project-templates/READY_DONE.md`
 - `docs/README.md`
-- `docs/BACKLOG.md`
-- `docs/DATA_MODEL.md`
-- `docs/DECISION_LOG.md`
+- `docs/ESTADO_OPERATIVO.md`
 
 Segun equipo:
 
-- Web Dev:
-  - `chat-start/WEB_DEV.md`
-  - `docs/ARCHITECTURE.md`
-  - `docs/ADMIN_REGISTRATION_FLOW.md`
-  - `EQUIPO_WEB_DEV_NUEVO_ENFOQUE.md`
-- Backend API:
-  - `chat-start/BACKEND_API.md`
-  - `docs/API_CONTRACTS_MVP.md`
-  - `docs/ARCHITECTURE.md`
-  - `EQUIPO_INFRA_AZURE_NUEVO_ENFOQUE.md`
-- Infra Azure:
-  - `chat-start/INFRA_AZURE.md`
-  - `docs/ARCHITECTURE.md`
-  - `docs/API_CONTRACTS_MVP.md`
-  - `EQUIPO_INFRA_AZURE_NUEVO_ENFOQUE.md`
+- Proyecto:
+  - `codex-project-templates/PROYECTO.md`
+  - `docs/BACKLOG.md`
+  - `docs/DECISION_LOG.md`
+- Pulso:
+  - `codex-project-templates/PULSO_PROYECTO.md`
 - QA:
-  - `chat-start/QA.md`
+  - `codex-project-templates/QA.md`
   - `docs/MVP_CRITERIA.md`
   - `docs/QA_TEST_PLAN.md`
-  - `EQUIPO_QA_NUEVO_ENFOQUE.md`
-- Product Architect:
-  - `chat-start/PRODUCT_ARCHITECT.md`
-  - `docs/PROJECT_RESTART.md`
-  - `docs/WORKFLOW_CODEX.md`
+- Ejecucion Tecnica:
+  - `codex-project-templates/EJECUCION_TECNICA.md`
+  - Referencia por modo si aplica:
+    - `codex-project-templates/WEB_DEV.md`
+    - `codex-project-templates/BACKEND_API.md`
+    - `codex-project-templates/INFRA.md`
+    - `codex-project-templates/DISENO_UX.md`
+    - `codex-project-templates/DATA_DEV.md`
+  - `docs/ARCHITECTURE.md`
+  - `docs/API_CONTRACTS_MVP.md`
 
 ## Objetivo
 
@@ -78,6 +90,10 @@ Explicar por que existe esta tarea y de que decision/backlog viene.
 - Comando o prueba manual.
 - Resultado esperado.
 
+## Uso de cloud / SQL / servicios externos
+
+No / Si, motivo, alcance y limites.
+
 ## Handoff requerido
 
 Crear o actualizar:
@@ -88,19 +104,19 @@ tasks/TASK-###-HANDOFF.md
 
 Debe incluir:
 
-- Resumen.
-- Archivos tocados.
-- Cambios realizados.
-- Verificacion.
-- Riesgos.
-- Pendientes.
-- Recomendacion para Product/Architect.
+- Resultado.
+- Decision para Proyecto.
+- P0/P1.
+- Pendientes accionables.
+- Evidencia resumida.
+- Archivos / commits.
+- Detalle tecnico.
 
 ## Al finalizar
 
 Responder en el chat de la tarea:
 
 ```text
-Termine TASK-###. Product/Architect debe leer `tasks/TASK-###-HANDOFF.md`.
+Termine TASK-###. Proyecto debe leer `tasks/TASK-###-HANDOFF.md`.
 ```
 
