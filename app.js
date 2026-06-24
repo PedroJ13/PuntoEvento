@@ -2057,6 +2057,42 @@ function companiesPageNew() {
     </section>
 
     <section class="section" id="registro-empresa">
+      <div class="registration-guide" aria-labelledby="registrationGuideTitle">
+        <div class="registration-guide-intro">
+          <p class="eyebrow">Como funciona</p>
+          <h2 id="registrationGuideTitle">De solicitud a perfil listo en 5 pasos</h2>
+          <p>Te acompañamos desde el registro inicial hasta que tus servicios y fotos queden listos para mostrarse a personas que organizan eventos.</p>
+          <a class="primary-button" href="#companyForm">Completar registro</a>
+        </div>
+        <ol class="registration-steps" aria-label="Pasos para registrar una empresa">
+          <li>
+            <span>1</span>
+            <strong>Registra tu empresa</strong>
+            <p>Envía los datos básicos para que sepamos quién ofrece el servicio.</p>
+          </li>
+          <li>
+            <span>2</span>
+            <strong>Revisamos tu información</strong>
+            <p>Validamos que la solicitud esté clara antes de activar tu acceso.</p>
+          </li>
+          <li>
+            <span>3</span>
+            <strong>Recibes un correo de bienvenida</strong>
+            <p>Te avisamos cuando puedas entrar al panel de empresa.</p>
+          </li>
+          <li>
+            <span>4</span>
+            <strong>Completa tu perfil</strong>
+            <p>Agrega descripción, ubicación, canales de contacto y detalles útiles.</p>
+          </li>
+          <li>
+            <span>5</span>
+            <strong>Carga servicios y fotos</strong>
+            <p>Prepara lo que quieres publicar para que los clientes puedan comparar.</p>
+          </li>
+        </ol>
+      </div>
+
       <div class="section-header">
         <div>
           <p class="eyebrow">Alta gratuita</p>

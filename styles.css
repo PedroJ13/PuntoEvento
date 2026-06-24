@@ -1137,6 +1137,76 @@ button:focus-visible,
   align-items: stretch;
 }
 
+.registration-guide {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 1.28fr);
+  gap: 22px;
+  align-items: stretch;
+  margin-bottom: 34px;
+}
+
+.registration-guide-intro,
+.registration-steps li {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--brand-surface);
+  box-shadow: var(--public-shadow-card);
+}
+
+.registration-guide-intro {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  padding: 28px;
+}
+
+.registration-guide-intro p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.registration-steps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.registration-steps li {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 208px;
+  padding: 18px;
+}
+
+.registration-steps span {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: var(--brand-surface);
+  background: var(--brand-gold-dark);
+  font-weight: 900;
+}
+
+.registration-steps strong {
+  color: var(--brand-ink);
+  line-height: 1.15;
+}
+
+.registration-steps p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
 .company-form {
   display: grid;
   grid-template-columns: 1.15fr 0.85fr;
@@ -1422,10 +1492,15 @@ button:disabled,
   .trust-strip,
   .category-grid,
   .cards-grid,
+  .registration-guide,
   .plan-grid,
   .company-form,
   .company-form-grid,
   .publish-summary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .registration-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1495,6 +1570,8 @@ button:disabled,
   .category-grid,
   .cards-grid,
   .steps,
+  .registration-guide,
+  .registration-steps,
   .seo-faq-grid,
   .plan-grid,
   .review-grid,
