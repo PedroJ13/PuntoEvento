@@ -54,33 +54,56 @@ const PUBLIC_SERVICE_CATEGORIES = [
     image: "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80",
   },
 ];
-const SITE_ORIGIN = "https://puntoeventocr.com";
+const CANONICAL_HOST = "puntoeventocr.com";
+const SITE_ORIGIN = `https://${CANONICAL_HOST}`;
 const CATEGORY_SEO_PAGES = [
   {
     slug: "salones-eventos",
     route: "/proveedores/salones-eventos",
     eyebrow: "Salones y espacios",
-    h1: "Salones y espacios para eventos en Costa Rica",
+    h1: "Salones para eventos en Costa Rica",
     title: "Salones para eventos en Costa Rica | Punto Evento CR",
-    description: "Encuentra salones, jardines y espacios para bodas, fiestas y eventos corporativos en Costa Rica.",
+    description:
+      "Encuentra salones para eventos en Costa Rica para bodas, reuniones corporativas, fiestas privadas y capacitaciones.",
     intro:
-      "Compara salones, jardines y espacios para celebrar eventos en Costa Rica. Revisa opciones publicadas y contacta proveedores cuando encuentres una propuesta que se ajuste a tu evento.",
+      "Encuentra salones para eventos en Costa Rica y revisa opciones para bodas, eventos corporativos, fiestas privadas, reuniones y capacitaciones. Punto Evento CR te ayuda a comparar servicios publicados por proveedores, revisar ubicacion, capacidad aproximada cuando este disponible, fotos, condiciones y formas de contacto antes de solicitar informacion. Empieza por el tipo de actividad que estas organizando y evalua si necesitas jardin, salon cerrado, espacio para montaje, catering, mobiliario, decoracion, sonido u otros servicios complementarios. Cada ficha publicada debe ayudarte a entender que ofrece la empresa y como contactarla sin prometer disponibilidad inmediata ni precios cerrados. La idea es darte un punto de partida claro para cotizar con proveedores reales y elegir un lugar que se ajuste al estilo, tamano y necesidades de tu evento.",
     aliases: ["Salones", "Salon", "Salon y jardin", "Jardin", "Espacios"],
+    sections: [
+      {
+        title: "Salones para bodas",
+        text: "Busca espacios para ceremonias, recepciones y celebraciones familiares. Revisa fotos, ubicacion, capacidad y servicios complementarios antes de contactar.",
+      },
+      {
+        title: "Eventos corporativos",
+        text: "Compara lugares para lanzamientos, cenas, actividades de equipo o eventos de clientes, considerando acceso, montaje y necesidades tecnicas.",
+      },
+      {
+        title: "Fiestas privadas",
+        text: "Encuentra opciones para cumpleanos, graduaciones y celebraciones sociales donde el ambiente, la seguridad y la comodidad importan.",
+      },
+      {
+        title: "Reuniones y capacitaciones",
+        text: "Explora espacios para sesiones de trabajo, talleres o capacitaciones, con atencion a ubicacion, distribucion y servicios disponibles.",
+      },
+    ],
     emptyTitle: "Pronto mostraremos salones y espacios publicados",
     emptyText:
       "Pronto mostraremos salones y espacios publicados para eventos en Costa Rica. Puedes explorar el catalogo general mientras sumamos nuevas opciones.",
     faqs: [
       {
-        question: "Como elegir un salon para eventos?",
-        answer: "Revisa ubicacion, capacidad, servicios incluidos, fotos y condiciones antes de contactar.",
+        question: "Cuanto cuesta alquilar un salon para eventos en Costa Rica?",
+        answer:
+          "El costo depende de ubicacion, capacidad, fecha, duracion y servicios incluidos. Punto Evento CR no publica precios cerrados si el proveedor no los informa; usa la ficha para contactar y solicitar detalles.",
       },
       {
-        question: "Puedo contactar directamente al proveedor?",
-        answer: "Si el proveedor tiene contacto publicado, puedes usar WhatsApp o enviar una solicitud desde Punto Evento CR.",
+        question: "Que incluye un salon para eventos?",
+        answer:
+          "Puede incluir espacio, mobiliario, parqueo, areas verdes, montaje, cocina, sonido o coordinacion basica, segun cada proveedor. Revisa la descripcion del servicio antes de contactar.",
       },
       {
-        question: "Aparecen solo salones publicados?",
-        answer: "Si. La pagina publica debe mostrar solo servicios aprobados/publicados.",
+        question: "Como elegir un lugar para eventos corporativos?",
+        answer:
+          "Valora ubicacion, accesos, capacidad, privacidad, facilidad de montaje, disponibilidad de servicios complementarios y si el espacio se adapta al formato del evento.",
       },
     ],
   },
@@ -1128,6 +1151,19 @@ function locationSeoPageForPath(pathname = window.location.pathname) {
   return LOCATION_SEO_PAGES.find((page) => page.route === cleanPath) || null;
 }
 
+function seoPageForCurrentPath(pathname = window.location.pathname) {
+  return categorySeoPageForPath(pathname) || locationSeoPageForPath(pathname);
+}
+
+function redirectWwwToCanonicalHost() {
+  if (window.location.hostname !== `www.${CANONICAL_HOST}`) return false;
+  const canonicalUrl = new URL(window.location.href);
+  canonicalUrl.hostname = CANONICAL_HOST;
+  canonicalUrl.protocol = "https:";
+  window.location.replace(canonicalUrl.href);
+  return true;
+}
+
 function setMetaContent(selector, content) {
   const element = document.querySelector(selector);
   if (element) element.setAttribute("content", content);
@@ -1283,6 +1319,32 @@ function seoCategoryPage(page) {
       </div>
       ${dataSourceNotice()}
     </section>
+    ${
+      page.sections?.length
+        ? `
+          <section class="section">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Tipos de evento</p>
+                <h2>Opciones para comparar</h2>
+              </div>
+            </div>
+            <div class="seo-topic-grid">
+              ${page.sections
+                .map(
+                  (item) => `
+                    <article class="seo-topic">
+                      <h3>${safeText(item.title)}</h3>
+                      <p>${safeText(item.text)}</p>
+                    </article>
+                  `,
+                )
+                .join("")}
+            </div>
+          </section>
+        `
+        : ""
+    }
     <section class="band">
       <div class="section">
         <div class="section-header">
@@ -2922,6 +2984,12 @@ document.addEventListener("keydown", (event) => {
 window.addEventListener("hashchange", render);
 
 async function init() {
+  if (redirectWwwToCanonicalHost()) return;
+
+  const initialSeoPage = seoPageForCurrentPath();
+  updateDocumentMetadata(initialSeoPage);
+  updateStructuredData(initialSeoPage);
+
   app.innerHTML = '<div class="page"><section class="section"><p>Cargando proveedores...</p></section></div>';
 
   try {

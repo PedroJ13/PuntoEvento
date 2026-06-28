@@ -780,6 +780,33 @@ button:focus-visible,
   margin-top: 4px;
 }
 
+.seo-topic-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.seo-topic {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  min-height: 180px;
+  border: 1px solid var(--line);
+  border-radius: var(--public-radius);
+  background: var(--brand-surface);
+  padding: 18px;
+  box-shadow: var(--public-shadow-card);
+}
+
+.seo-topic h3 {
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.seo-topic p {
+  color: var(--muted);
+}
+
 .seo-faq-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1493,6 +1520,7 @@ button:disabled,
   .category-grid,
   .cards-grid,
   .registration-guide,
+  .seo-topic-grid,
   .plan-grid,
   .company-form,
   .company-form-grid,
@@ -1572,6 +1600,7 @@ button:disabled,
   .steps,
   .registration-guide,
   .registration-steps,
+  .seo-topic-grid,
   .seo-faq-grid,
   .plan-grid,
   .review-grid,
